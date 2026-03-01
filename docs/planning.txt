@@ -1,0 +1,434 @@
+Who is this for? 
+
+Computer Science or related field students which takes same/similar subjects. 
+
+ 
+
+What painful problem does it solve? 
+
+Finding answers and solutions to their subject related question and problems easier. Creating an archive of materials online which is essential for students. Being in direct connection with other students, graduates and professors. 
+
+ 
+
+Why is your solution better/simpler? 
+
+It gives all the opportunity to any student asking their question to a whole community of people who have been through similar experience. Faster problem solving community. 
+
+ 
+
+MVP: 
+
+A working university Q&A forum where students can ask questions, get answers, vote on quality content, and search for information by subject. (Milestone 1-7) 
+
+ 
+
+Milestone List: 
+
+ 
+Milestone 1: Foundation 
+
+Goal: Project runs, database connected, basic setup done 
+
+Deliverables: 
+
+    Spring Boot project created 
+
+    PostgreSQL database setup 
+
+    Basic project structure (controllers, services, repositories) 
+
+    Database schema designed 
+
+    React project created 
+
+    Projects talk to each other (test endpoint works) 
+
+ 
+
+Milestone 2: Authentication System 
+
+Goal: Users can register and login 
+
+Deliverables: 
+
+    User registration (backend + frontend) 
+
+    User login with JWT (backend + frontend) 
+
+    Password hashing 
+
+    Protected routes (authentication required) 
+
+    Basic user profile view 
+
+ 
+
+Milestone 3: Core Q&A - Backend 
+
+Goal: Question and answer functionality works on backend 
+
+Deliverables: 
+
+    Post questions (with title, body, category) 
+
+    View all questions 
+
+    View single question 
+
+    Post answers to questions 
+
+    Database relationships (User → Questions → Answers) 
+
+    Edit/delete own questions and answers 
+
+ 
+
+Milestone 4: Core Q&A - Frontend 
+
+Goal: Users can ask and answer questions through UI 
+
+Deliverables: 
+
+    Questions list page 
+
+    Single question view page 
+
+    Post question form 
+
+    Post answer form 
+
+    Edit question/answer 
+
+    Delete question/answer 
+
+    Basic navigation 
+
+ 
+
+Milestone 5: Voting System 
+
+Goal: Upvote/downvote working, reputation tracking 
+
+Deliverables: 
+
+    Upvote/downvote questions (backend + frontend) 
+
+    Upvote/downvote answers (backend + frontend) 
+
+    Vote count display 
+
+    Prevent duplicate votes 
+
+    Basic reputation points system 
+
+    Reputation display on profiles 
+
+    Accept answer functionality 
+
+ 
+
+Milestone 6: Comments 
+
+Goal: Users can comment on questions and answers 
+
+Deliverables: 
+
+    Comment on questions (backend + frontend) 
+
+    Comment on answers (backend + frontend) 
+
+    Display comments 
+
+    Edit/delete own comments 
+
+    Nested comment structure 
+
+ 
+
+Milestone 7: Categories & Search 
+
+Goal: Content is organized and searchable 
+
+Deliverables: 
+
+    Subject/course categories 
+
+    Browse by category 
+
+    Search questions by keywords 
+
+    Filter by category/subject 
+
+    Sort by date/votes/activity 
+
+    Question view counter 
+
+ 
+
+Milestone 8: User Profiles & Social 
+
+Goal: Rich user profiles and social features 
+
+Deliverables: 
+
+    Enhanced user profiles (bio, stats, activity) 
+
+    User activity timeline (all questions/answers) 
+
+    Follow users 
+
+    View followers/following lists 
+
+    User mentions (@username) 
+
+    Activity feed 
+
+ 
+
+Milestone 9: Resource Library - Backend 
+
+Goal: File upload/download system works 
+
+Deliverables: 
+
+    File upload endpoint 
+
+    File storage system 
+
+    File download endpoint 
+
+    Attach files to questions 
+
+    Separate resource library (independent uploads) 
+
+    Resource categorization 
+
+    File metadata storage 
+
+ 
+
+Milestone 10: Resource Library - Frontend 
+
+Goal: Users can share and access resources 
+
+Deliverables: 
+
+    File upload UI (attach to questions) 
+
+    Resource library page 
+
+    Download files 
+
+    Browse resources by category 
+
+    Resource ratings and reviews 
+
+    Resource organization by semester/year 
+
+ 
+
+Milestone 11: Star/Watch System 
+
+Goal: Users can bookmark and track questions 
+
+Deliverables: 
+
+    Star questions (backend + frontend) 
+
+    Watch questions (backend + frontend) 
+
+    View starred questions list 
+
+    View watched questions list 
+
+    Question status tags (solved/unsolved/needs clarification) 
+
+ 
+
+Milestone 12: Email Notifications 
+
+Goal: Email system working 
+
+Deliverables: 
+
+    Email service setup 
+
+    Registration verification emails 
+
+    Password reset emails 
+
+    Task scheduler setup 
+
+    Answer notifications 
+
+    Mention notifications 
+
+    Watched question update emails 
+
+    Daily digest emails (optional) 
+
+ 
+
+Milestone 13: Real-time Chat 
+
+Goal: Users can message each other in real-time 
+
+Deliverables: 
+
+    WebSocket setup (backend) 
+
+    User-to-user chat (backend) 
+
+    Chat message storage 
+
+    Chat UI (popup interface) 
+
+    Chat history 
+
+    Online status indicators 
+
+    Unread message notifications 
+
+ 
+
+Milestone 14: Achievement System 
+
+Goal: Gamification elements working 
+
+Deliverables: 
+
+    Achievement/badge system 
+
+    Milestone badges (First Question, Helpful, etc.) 
+
+    Badge display on profiles 
+
+    Badge display next to usernames 
+
+    User levels based on reputation 
+
+    Subject expertise badges 
+
+    Leaderboard (top contributors) 
+
+    Trending questions section 
+
+ 
+
+Milestone 15: UI/UX Enhancements 
+
+Goal: Platform looks polished and professional 
+
+Deliverables: 
+
+    Dark mode toggle 
+
+    Markdown support for posts 
+
+    Code syntax highlighting 
+
+    Responsive design (mobile-friendly) 
+
+    UI polish and styling 
+
+    Loading states 
+
+    Error handling UI 
+
+ 
+
+Milestone 16: ML Features - Foundation 
+
+Goal: Intelligent features setup (can start simple) 
+
+Deliverables: 
+
+    Question similarity detection (algorithm or ML) 
+
+    Auto-tagging system (keyword-based or ML) 
+
+    Python microservice (if doing ML route) 
+
+    Integration with main backend 
+
+ 
+
+Milestone 17: ML Features - Enhancement (Optional if time) 
+
+Goal: Upgrade to real ML models 
+
+Deliverables: 
+
+    Sentence-BERT model integration 
+
+    pgvector setup 
+
+    Vector embeddings storage 
+
+    Optimized similarity search 
+
+    ML-based auto-tagging 
+
+ 
+
+Milestone 18: Admin & Calendar 
+
+Goal: Admin tools and productivity features 
+
+Deliverables: 
+
+    Admin dashboard 
+
+    Subject/category management 
+
+    User analytics/statistics 
+
+    Shared calendar for exams/deadlines 
+
+    University branding configuration (logo, colors) 
+
+ 
+
+Milestone 19: Testing & Quality 
+
+Goal: Code is tested and stable 
+
+Deliverables: 
+
+    Backend unit tests (key features) 
+
+    Frontend component tests 
+
+    Integration tests 
+
+    Bug fixes 
+
+    Performance optimization 
+
+    Security review 
+
+ 
+
+Milestone 20: Documentation & Deployment 
+
+Goal: Project is documented and deployable 
+
+Deliverables: 
+
+    API documentation 
+
+    User guide 
+
+    README files 
+
+    Deployment setup (optional: Docker) 
+
+    Code cleanup 
+
+    Thesis documentation 
+
+ 
+
+ 
+
+ 
