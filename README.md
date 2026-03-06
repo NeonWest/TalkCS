@@ -18,7 +18,7 @@ A university forum platform built as a thesis project.
 - ✅ Password hashing with BCrypt
 - ✅ Protected routes (frontend + backend)
 - ✅ Persistent auth via localStorage
-- 🔜 Forum categories
+- ✅ Forum categories (admin-only creation)
 - 🔜 Posts and threads
 - 🔜 Comments
 - 🔜 Shared calendars
@@ -29,7 +29,7 @@ A university forum platform built as a thesis project.
 TalkCS/
 ├── backend/          # Spring Boot API
 ├── frontend/         # React + Vite app
-└── docs/             # Architecture documentation
+└── docs/             # Architecture & progress docs
 ```
 
 ## Getting Started
@@ -51,11 +51,10 @@ DB_PASSWORD=your_db_password
 JWT_SECRET=your_very_long_random_secret_key
 ```
 
-3. Source the env and run:
+3. Run using the start script (from `backend/`):
 
 ```bash
-set -a && source .env && set +a
-cd backend && ./gradlew bootRun
+./start.sh
 ```
 
 Backend runs on `http://localhost:8080`
@@ -76,4 +75,6 @@ Frontend runs on `http://localhost:5173`
 |---|---|---|---|
 | POST | `/api/auth/register` | Public | Register a new user |
 | POST | `/api/auth/login` | Public | Login and receive JWT token |
-| * | `/api/**` | Required | All other routes require `Authorization: Bearer <token>` |
+| GET | `/api/categories` | Required | List all categories |
+| POST | `/api/categories` | ADMIN only | Create a category |
+| GET | `/api/categories/{id}` | Required | Get a category by ID |
