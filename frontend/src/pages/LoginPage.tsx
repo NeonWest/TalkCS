@@ -25,9 +25,8 @@ export default function LoginPage() {
             const response = await loginApi(data);
             login(response);
             navigate('/');
-        } catch (err: any) {
-            const msg = err?.response?.data;
-            setError(typeof msg === 'string' ? msg : 'Invalid email or password.');
+        } catch {
+            setError('Invalid email or password.');
         } finally {
             setLoading(false);
         }
