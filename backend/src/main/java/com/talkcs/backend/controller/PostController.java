@@ -24,4 +24,9 @@ public class PostController{
     public ResponseEntity<PostResponse> createPost(@Valid @RequestBody PostRequest request){
         return ResponseEntity.ok(postservice.createPost(request));
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PostResponse> getPostById(@PathVariable Long id) {
+        return ResponseEntity.ok(postservice.getPostById(id));
+    }
 }
