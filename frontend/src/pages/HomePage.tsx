@@ -94,6 +94,7 @@ export default function HomePage() {
                         {categories.map(cat => (
                             <div
                                 key={cat.id}
+                                onClick={() => navigate(`/category/${cat.id}`)}
                                 className="flex items-start gap-4 px-5 py-4 hover:bg-gray-50 transition cursor-pointer"
                             >
                                 <div className="flex-1 min-w-0">
