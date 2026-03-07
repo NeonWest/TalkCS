@@ -42,7 +42,28 @@ npm run dev
   - `GET /api/categories` — any authenticated user
   - `GET /api/categories/{id}` — any authenticated user
   - `POST /api/categories` — **ADMIN only** (`@PreAuthorize("hasRole('ADMIN')")`)
-- Frontend: `src/api/categories.ts`, `HomePage.tsx` shows category list + admin create modal
+- Frontend: `src/api/categories.ts`, `HomePage.tsx` shows category list + admin create modal, clicking a category navigates to `/category/:id`
+
+### Posts (complete)
+- `Post` entity → `posts` table (id, title, body, createdAt, author `@ManyToOne User`, category `@ManyToOne Category`)
+- `PostRepository` — `findByCategoryId()`
+- `PostRequest` / `PostResponse` (includes `commentCount`, `authorUsername`) DTOs
+- `PostService` — `getAllPostsByCategoryId()`, `createPost()`, `getPostById()`
+- `PostController`:
+  - `GET /api/posts?categoryId={id}` — any authenticated user
+  - `POST /api/posts` — any authenticated user
+  - `GET /api/posts/{id}` — any authenticated user
+- Frontend: `src/api/posts.ts`, `CategoryPage.tsx` (lists posts, create post modal)
+
+### Comments (complete)
+- `Comment` entity → `comments` table (id, body, createdAt, author `@ManyToOne User`, post `@ManyToOne Post`, parent `@ManyToOne Comment` nullable for threading)
+- `CommentRepository` — `countByPostId()`
+- `CommentRequest` / `CommentResponse` (includes `children: List<CommentResponse>` for nested tree) DTOs
+- `CommentService` — `getCommentsByPostId()`, `createComment()`
+- `CommentController`:
+  - `GET /api/comments?postId={id}` — any authenticated user
+  - `POST /api/comments` — any authenticated user
+- Frontend: `src/api/comments.ts`, `PostPage.tsx` (shows post, nested comments recursively, inline reply form)
 
 ## Current user in DB
 - Email: `omar@uni.edu`, password: `password123`, role: `ADMIN`
@@ -52,23 +73,8 @@ npm run dev
 - `@PreAuthorize` must use `hasRole('ADMIN')` not `hasAuthority('ADMIN')` — because `UserLoader` uses `.roles()` which prefixes with `ROLE_`
 
 ## What to build next
-
-### Posts (next feature)
-Backend:
-- `Post` entity: id, title, content, createdAt, author (`@ManyToOne User`), category (`@ManyToOne Category`)
-- `PostRepository`, `PostRequest`/`PostResponse` DTOs
-- `PostService` — get all posts by category, create post, get post by id
-- `PostController` — `GET /api/categories/{categoryId}/posts`, `POST /api/categories/{categoryId}/posts`, `GET /api/posts/{id}`
-
-Frontend:
-- `src/api/posts.ts`
-- `CategoryPage.tsx` — clicking a category on home page navigates here, shows posts in that category
-- `CreatePostForm` or modal for submitting a post
-
-### After posts
-- Comments on posts
 - User profile page
-- Shared calendar feature (later)
+- Shared calendar feature
 
 ## Code style conventions
 - Java: Lombok (`@Data`, `@Builder`, `@NoArgsConstructor`, `@AllArgsConstructor`, `@RequiredArgsConstructor`), `jakarta.persistence.*`, `java.time.LocalDateTime` (not `java.util`)

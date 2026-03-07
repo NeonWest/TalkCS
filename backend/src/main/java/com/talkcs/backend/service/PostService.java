@@ -52,4 +52,16 @@ public class PostService{
         .build();
 
     }
+    public PostResponse getPostById(Long id) {
+        Post post = postrepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Post not found"));
+        return PostResponse.builder()
+            .id(post.getId())
+            .title(post.getTitle())
+            .body(post.getBody())
+            .authorUsername(post.getAuthor().getUsername())
+            .createdAt(post.getCreatedAt())
+            .commentCount(commentrepository.countByPostId(post.getId()))
+            .build();
+    }
 }

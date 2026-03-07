@@ -6,7 +6,7 @@ A university forum platform built as a thesis project.
 
 | Layer | Technology |
 |---|---|
-| Backend | Java 21 · Spring Boot 4 · Spring Security |
+| Backend | Java 21 · Spring Boot 4 · Spring Security 6 |
 | Database | PostgreSQL 16 |
 | Auth | JWT (jjwt 0.12.6) + BCrypt |
 | Frontend | React 18 · TypeScript · Vite · Tailwind CSS |
@@ -19,8 +19,9 @@ A university forum platform built as a thesis project.
 - ✅ Protected routes (frontend + backend)
 - ✅ Persistent auth via localStorage
 - ✅ Forum categories (admin-only creation)
-- 🔜 Posts and threads
-- 🔜 Comments
+- ✅ Posts per category (any authenticated user)
+- ✅ Nested threaded comments with replies
+- 🔜 User profile page
 - 🔜 Shared calendars
 
 ## Project Structure
@@ -78,3 +79,8 @@ Frontend runs on `http://localhost:5173`
 | GET | `/api/categories` | Required | List all categories |
 | POST | `/api/categories` | ADMIN only | Create a category |
 | GET | `/api/categories/{id}` | Required | Get a category by ID |
+| GET | `/api/posts?categoryId={id}` | Required | Get posts in a category |
+| POST | `/api/posts` | Required | Create a post |
+| GET | `/api/posts/{id}` | Required | Get a post by ID |
+| GET | `/api/comments?postId={id}` | Required | Get comments on a post (nested) |
+| POST | `/api/comments` | Required | Create a comment or reply |
