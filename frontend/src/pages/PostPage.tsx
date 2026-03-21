@@ -16,6 +16,7 @@ function CommentItem({
     onCommentsChanged,
     onEditComment,
     onDeleteComment,
+    onAuthorClick,
 }: {
     comment: CommentResponse;
     postId: number;
@@ -25,6 +26,7 @@ function CommentItem({
     onCommentsChanged: () => Promise<void>;
     onEditComment: (commentId: number, body: string) => Promise<void>;
     onDeleteComment: (commentId: number) => Promise<void>;
+    onAuthorClick: (username: string) => void;
 }) {
     const canEdit = currentUsername === comment.authorUsername;
     const canDelete = canEdit || isAdmin;
@@ -88,7 +90,12 @@ function CommentItem({
             <div className="bg-white rounded border border-gray-200 px-4 py-3">
                 <div className="flex items-center justify-between gap-2 mb-1">
                     <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-700">{comment.authorUsername}</span>
+                        <button
+                            onClick={() => onAuthorClick(comment.authorUsername)}
+                            className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition"
+                        >
+                            {comment.authorUsername}
+                        </button>
                         <span className="text-xs text-gray-400">{new Date(comment.createdAt).toLocaleDateString()}</span>
                     </div>
                     {(canEdit || canDelete) && (
@@ -195,6 +202,7 @@ function CommentItem({
                     onCommentsChanged={onCommentsChanged}
                     onEditComment={onEditComment}
                     onDeleteComment={onDeleteComment}
+                    onAuthorClick={onAuthorClick}
                 />
             ))}
         </div>
@@ -233,6 +241,15 @@ export default function PostPage() {
     }, [postId]);
 
     const handleLogout = () => { logout(); navigate('/login'); };
+
+    const handleMyProfile = () => {
+        if (!user?.username) return;
+        navigate(`/profile/${user.username}`);
+    };
+
+    const navigateToProfile = (username: string) => {
+        navigate(`/profile/${username}`);
+    };
 
     const refreshComments = async () => {
         const updated = await getComments(postId);
@@ -325,16 +342,22 @@ export default function PostPage() {
                 <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button
-                            onClick={() => navigate(-1)}
-                            className="text-sm text-gray-500 hover:text-gray-800 transition"
+                            onClick={() => navigate('/')}
+                            className="font-bold text-gray-800 hover:text-gray-900 text-lg transition cursor-pointer"
                         >
-                            ← Back
+                            TalkCS
                         </button>
-                        <span className="font-bold text-gray-800 text-lg">TalkCS</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="text-sm text-gray-600">{user?.email}</span>
                         <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-medium">{user?.role}</span>
+                        <button
+                            onClick={handleMyProfile}
+                            disabled={!user?.username}
+                            className="text-sm text-blue-500 hover:text-blue-700 transition disabled:opacity-50"
+                        >
+                            My Profile
+                        </button>
                         <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-gray-800 transition">Log out</button>
                     </div>
                 </div>
@@ -353,7 +376,14 @@ export default function PostPage() {
                                 <div>
                                     <h1 className="text-xl font-semibold text-gray-800 mb-1">{post.title}</h1>
                                     <p className="text-xs text-gray-400 mb-2">
-                                        by {post.authorUsername} · {new Date(post.createdAt).toLocaleDateString()}
+                                        by{' '}
+                                        <button
+                                            onClick={() => navigateToProfile(post.authorUsername)}
+                                            className="text-blue-500 hover:text-blue-700 transition"
+                                        >
+                                            {post.authorUsername}
+                                        </button>{' '}
+                                        · {new Date(post.createdAt).toLocaleDateString()}
                                     </p>
                                 </div>
                                 {canDeletePost && (
@@ -398,6 +428,7 @@ export default function PostPage() {
                                         onCommentsChanged={refreshComments}
                                         onEditComment={handleEditComment}
                                         onDeleteComment={handleDeleteComment}
+                                        onAuthorClick={navigateToProfile}
                                     />
                                 ))
                             )}

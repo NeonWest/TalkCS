@@ -32,6 +32,11 @@ export default function CategoryPage() {
 
     const handleLogout = () => { logout(); navigate('/login'); };
 
+    const handleMyProfile = () => {
+        if (!user?.username) return;
+        navigate(`/profile/${user.username}`);
+    };
+
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -99,15 +104,21 @@ export default function CategoryPage() {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => navigate('/')}
-                            className="text-sm text-gray-500 hover:text-gray-800 transition"
+                            className="font-bold text-gray-800 hover:text-gray-900 text-lg transition cursor-pointer"
                         >
-                            ← Back
+                            TalkCS
                         </button>
-                        <span className="font-bold text-gray-800 text-lg">TalkCS</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="text-sm text-gray-600">{user?.email}</span>
                         <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-medium">{user?.role}</span>
+                        <button
+                            onClick={handleMyProfile}
+                            disabled={!user?.username}
+                            className="text-sm text-blue-500 hover:text-blue-700 transition disabled:opacity-50"
+                        >
+                            My Profile
+                        </button>
                         <button
                             onClick={handleLogout}
                             className="text-sm text-gray-500 hover:text-gray-800 transition"
@@ -149,7 +160,18 @@ export default function CategoryPage() {
                             >
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold text-blue-600 hover:text-blue-800 truncate">{post.title}</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">by {post.authorUsername}</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">
+                                        by{' '}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/profile/${post.authorUsername}`);
+                                            }}
+                                            className="text-blue-500 hover:text-blue-700 transition"
+                                        >
+                                            {post.authorUsername}
+                                        </button>
+                                    </p>
                                 </div>
                                 <div className="text-right shrink-0 flex items-center gap-4">
                                     <p className="text-xs text-gray-500">{post.commentCount} comment{post.commentCount !== 1 ? 's' : ''}</p>

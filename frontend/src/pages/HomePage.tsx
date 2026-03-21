@@ -28,6 +28,11 @@ export default function HomePage() {
         navigate('/login');
     };
 
+    const handleMyProfile = () => {
+        if (!user?.username) return;
+        navigate(`/profile/${user.username}`);
+    };
+
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -49,10 +54,22 @@ export default function HomePage() {
             {/* Navbar */}
             <header className="bg-white border-b border-gray-200">
                 <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
-                    <span className="font-bold text-gray-800 text-lg">TalkCS</span>
+                    <button
+                        onClick={() => navigate('/')}
+                        className="font-bold text-gray-800 hover:text-gray-900 text-lg transition cursor-pointer"
+                    >
+                        TalkCS
+                    </button>
                     <div className="flex items-center gap-3">
                         <span className="text-sm text-gray-600">{user?.email}</span>
                         <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-medium">{user?.role}</span>
+                        <button
+                            onClick={handleMyProfile}
+                            disabled={!user?.username}
+                            className="text-sm text-blue-500 hover:text-blue-700 transition disabled:opacity-50"
+                        >
+                            My Profile
+                        </button>
                         <button
                             id="logout-btn"
                             onClick={handleLogout}

@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage';
 import HomePage from './pages/HomePage';
 import CategoryPage from './pages/CategoryPage';
 import PostPage from './pages/PostPage';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/category/:id" element={<ProtectedRoute><CategoryPage /></ProtectedRoute>} />
           <Route path="/post/:id" element={<ProtectedRoute><PostPage /></ProtectedRoute>} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
