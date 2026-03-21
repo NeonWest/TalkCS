@@ -26,3 +26,11 @@ export const createPost = async (data: PostRequest): Promise<Post> => {
 export const getPostById = async (id: number): Promise<Post> => {
     return (await api.get<Post>(`/api/posts/${id}`)).data;
 };
+
+export const updatePost = async (id: number, data: PostRequest): Promise<Post> => {
+    return (await api.put<Post>(`/api/posts/${id}`, data)).data;
+};
+
+export const deletePost = async (id: number): Promise<void> => {
+    await api.delete(`/api/posts/${id}`);
+};

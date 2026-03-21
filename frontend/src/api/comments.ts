@@ -21,3 +21,11 @@ export const getComments = async (postId: number): Promise<CommentResponse[]> =>
 export const createComment = async (data: CommentRequest): Promise<CommentResponse> => {
     return (await api.post<CommentResponse>('/api/comments', data)).data;
 };
+
+export const updateComment = async (id: number, data: CommentRequest): Promise<CommentResponse> => {
+    return (await api.put<CommentResponse>(`/api/comments/${id}`, data)).data;
+};
+
+export const deleteComment = async (id: number): Promise<void> => {
+    await api.delete(`/api/comments/${id}`);
+};
