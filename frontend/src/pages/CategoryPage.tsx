@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getCategoryById } from '../api/categories';
 import { getPosts, createPost, updatePost, deletePost } from '../api/posts';
+import { voteOnPost, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
 
 export default function CategoryPage() {
@@ -22,7 +23,13 @@ export default function CategoryPage() {
     const [editForm, setEditForm] = useState({ title: '', body: '' });
     const [savingEdit, setSavingEdit] = useState(false);
     const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
+    const [votingPostId, setVotingPostId] = useState<number | null>(null);
     const [error, setError] = useState('');
+
+    const refreshPosts = async () => {
+        const updated = await getPosts(categoryId);
+        setPosts(updated);
+    };
 
     useEffect(() => {
         Promise.all([
@@ -97,6 +104,20 @@ export default function CategoryPage() {
             setError('Failed to delete post.');
         } finally {
             setDeletingPostId(null);
+        }
+    };
+
+    const handleVotePost = async (postId: number, value: 1 | -1, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setError('');
+        setVotingPostId(postId);
+        try {
+            await voteOnPost(postId, value);
+            await refreshPosts();
+        } catch (error) {
+            setError(getVoteErrorMessage(error));
+        } finally {
+            setVotingPostId(null);
         }
     };
 
@@ -200,6 +221,23 @@ export default function CategoryPage() {
                                             <span>•</span>
                                             <span className="font-semibold">{post.commentCount} comments</span>
                                         </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <button
+                                            onClick={(e) => void handleVotePost(post.id, 1, e)}
+                                            disabled={votingPostId === post.id}
+                                            className={`text-sm transition ${post.userVote === 1 ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                        >
+                                            ▲
+                                        </button>
+                                        <span className="text-sm font-semibold text-gray-200 w-6 text-center">{post.voteScore ?? 0}</span>
+                                        <button
+                                            onClick={(e) => void handleVotePost(post.id, -1, e)}
+                                            disabled={votingPostId === post.id}
+                                            className={`text-sm transition ${post.userVote === -1 ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                        >
+                                            ▼
+                                        </button>
                                     </div>
                                 </div>
                                 {(user?.username === post.authorUsername || user?.role === 'ADMIN') && (

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getUserPosts } from '../api/users';
+import { voteOnPost } from '../api/votes';
 import type { UserProfile } from '../api/users';
 import type { Post } from '../api/posts';
 
@@ -14,6 +15,12 @@ export default function ProfilePage() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [votingPostId, setVotingPostId] = useState<number | null>(null);
+
+    const refreshUserPosts = async (targetUsername: string) => {
+        const updated = await getUserPosts(targetUsername);
+        setPosts(updated);
+    };
 
     useEffect(() => {
         if (!username) {
@@ -124,8 +131,8 @@ export default function ProfilePage() {
                                     <div className="text-xs text-gray-300 mt-1">Comments</div>
                                 </div>
                                 <div className="bg-[#2b2b2b] rounded-xl p-3 text-center border border-white/10">
-                                    <div className="text-base text-gray-100 font-semibold capitalize">{profile.role}</div>
-                                    <div className="text-xs text-gray-300 mt-1">Role</div>
+                                    <div className="text-base text-gray-100 font-semibold">{profile.reputation ?? 0}</div>
+                                    <div className="text-xs text-gray-300 mt-1">Reputation</div>
                                 </div>
                             </div>
                         </div>
@@ -158,6 +165,43 @@ export default function ProfilePage() {
                                                         {post.commentCount} comment{post.commentCount !== 1 ? 's' : ''}
                                                     </p>
                                                 </div>
+                                                {isAuthenticated && (
+                                                    <div className="flex items-center gap-1 shrink-0">
+                                                        <button
+                                                            onClick={async (e) => {
+                                                                e.stopPropagation();
+                                                                setVotingPostId(post.id);
+                                                                try {
+                                                                    await voteOnPost(post.id, 1);
+                                                                    if (username) await refreshUserPosts(username);
+                                                                } finally {
+                                                                    setVotingPostId(null);
+                                                                }
+                                                            }}
+                                                            disabled={votingPostId === post.id}
+                                                            className={`text-sm transition ${post.userVote === 1 ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                                        >
+                                                            ▲
+                                                        </button>
+                                                        <span className="text-sm font-semibold text-gray-200 w-6 text-center">{post.voteScore ?? 0}</span>
+                                                        <button
+                                                            onClick={async (e) => {
+                                                                e.stopPropagation();
+                                                                setVotingPostId(post.id);
+                                                                try {
+                                                                    await voteOnPost(post.id, -1);
+                                                                    if (username) await refreshUserPosts(username);
+                                                                } finally {
+                                                                    setVotingPostId(null);
+                                                                }
+                                                            }}
+                                                            disabled={votingPostId === post.id}
+                                                            className={`text-sm transition ${post.userVote === -1 ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                                        >
+                                                            ▼
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))}

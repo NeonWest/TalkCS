@@ -8,6 +8,7 @@ export interface UserProfile {
     role: string;
     postCount: number;
     commentCount: number;
+    reputation: number;
 }
 
 export const getUserProfile = async (username: string): Promise<UserProfile> => {
