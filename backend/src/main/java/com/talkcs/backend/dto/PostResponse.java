@@ -14,4 +14,6 @@ public class PostResponse{
     private LocalDateTime createdAt;
     private String authorUsername;
     private int commentCount;
+    private int voteScore;
+    private int userVote;
 }

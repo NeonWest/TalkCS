@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.security.core.Authentication;
 
+
 @Service
 @RequiredArgsConstructor
 public class PostService{
@@ -17,6 +18,7 @@ public class PostService{
     private final CommentRepository commentrepository;
     private final UserRepository userrepository;
     private final CategoryRepository categoryrepository;
+    private final VoteRepository voteRepository;
     public List<PostResponse> getAllPostsByCategoryId(Long Id){
         return postrepository.findByCategoryId(Id)
         .stream()
@@ -27,6 +29,8 @@ public class PostService{
         .authorUsername(post.getAuthor().getUsername())
         .createdAt(post.getCreatedAt())
         .commentCount(commentrepository.countByPostId(post.getId()))
+        .voteScore(getVoteScore(post.getId()))
+    .userVote(getUserVote(post.getId()))
         .build()).toList();
     }
     public PostResponse createPost(PostRequest request){
@@ -51,6 +55,8 @@ public class PostService{
         .authorUsername(saved.getAuthor().getUsername())
         .commentCount(0)
         .createdAt(saved.getCreatedAt())
+        .voteScore(getVoteScore(saved.getId()))
+        .userVote(getUserVote(saved.getId()))
         .build();
 
     }
@@ -64,6 +70,8 @@ public class PostService{
             .authorUsername(post.getAuthor().getUsername())
             .createdAt(post.getCreatedAt())
             .commentCount(commentrepository.countByPostId(post.getId()))
+            .voteScore(getVoteScore(post.getId()))
+            .userVote(getUserVote(post.getId()))
             .build();
     }
 
@@ -83,6 +91,8 @@ public class PostService{
         .authorUsername(saved.getAuthor().getUsername())
         .createdAt(saved.getCreatedAt())
         .commentCount(commentrepository.countByPostId(saved.getId()))
+        .voteScore(getVoteScore(saved.getId()))
+        .userVote(getUserVote(saved.getId()))
         .build();
     }
 
@@ -96,5 +106,20 @@ public class PostService{
         if (!post.getAuthor().getEmail().equals(email) && !isAdmin)
             throw new RuntimeException("Unauthorized");
         postrepository.delete(post);
+    }
+
+    private int getVoteScore(Long postId) {
+    return voteRepository.countByPostIdAndValue(postId, 1) -
+           voteRepository.countByPostIdAndValue(postId, -1);
+    }
+
+    private int getUserVote(Long postId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getName().equals("anonymousUser"))
+            return 0;
+        User currentUser = userrepository.findByEmail(auth.getName()).orElse(null);
+        if (currentUser == null) return 0;
+        return voteRepository.findByVoterIdAndPostId(currentUser.getId(), postId)
+            .map(Vote::getValue).orElse(0);
     }
 }

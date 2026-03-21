@@ -11,6 +11,7 @@ import java.util.List;
 public class UserService {
     private final UserRepository userrepository;
     private final PostRepository postrepository;
+    private final CommentRepository commentrepository;
 
     public UserResponse getUserProfile(String username) {
         User user = userrepository.findByUsername(username)
@@ -21,6 +22,8 @@ public class UserService {
             .createdAt(user.getCreatedAt())
             .role(user.getRole())
             .postCount(postrepository.countByAuthorId(user.getId()))
+            .commentCount(commentrepository.countByAuthorId(user.getId()))
+            .reputation(user.getReputation())
             .build();
     }
 

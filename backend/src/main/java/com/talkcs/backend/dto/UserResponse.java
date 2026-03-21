@@ -12,4 +12,6 @@ public class UserResponse {
     private LocalDateTime createdAt;
     private String role;
     private long postCount;
+    private long commentCount;
+    private int reputation;
 }
