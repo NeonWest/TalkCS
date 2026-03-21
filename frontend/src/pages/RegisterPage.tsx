@@ -35,16 +35,19 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-sm">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-md">
                 {/* Logo */}
-                <div className="text-center mb-6">
-                    <h1 className="text-3xl font-bold text-gray-800">TalkCS</h1>
-                    <p className="text-gray-500 text-sm mt-1">Join your university forum</p>
+                <div className="text-center mb-8">
+                    <div className="inline-block mb-3">
+                        <h1 className="text-5xl font-bold text-orange-600 tracking-wider">\u25a0 TalkCS</h1>
+                    </div>
+                    <p className="text-gray-600 text-base font-medium">Your University Forum</p>
+                    <p className="text-gray-400 text-sm mt-2">Join the conversation</p>
                 </div>
 
                 {/* Card */}
-                <div className="bg-white border border-gray-200 rounded-md p-6 shadow-sm">
+                <div className="bg-white rounded-lg shadow-md p-8 border border-gray-100">
                     {success ? (
                         <p className="text-green-600 text-sm text-center py-4">
                             Account created! Redirecting to login...

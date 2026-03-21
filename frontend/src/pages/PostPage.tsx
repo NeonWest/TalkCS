@@ -86,17 +86,17 @@ function CommentItem({
     };
 
     return (
-        <div className={`${depth > 0 ? 'ml-6 border-l-2 border-gray-100 pl-4' : ''} mt-4`}>
-            <div className="bg-white rounded border border-gray-200 px-4 py-3">
+        <div className={`mt-3 ${depth > 0 ? 'ml-6 border-l border-white/20 pl-3' : 'border-l-4 border-orange-500 pl-3'}`}>
+            <div className="px-2 py-1">
                 <div className="flex items-center justify-between gap-2 mb-1">
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => onAuthorClick(comment.authorUsername)}
-                            className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition"
+                            className="text-base font-semibold text-gray-100 hover:text-white transition"
                         >
                             {comment.authorUsername}
                         </button>
-                        <span className="text-xs text-gray-400">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                        <span className="text-xs text-gray-400">· {new Date(comment.createdAt).toLocaleDateString()}</span>
                     </div>
                     {(canEdit || canDelete) && (
                         <div className="flex items-center gap-2">
@@ -107,7 +107,7 @@ function CommentItem({
                                         setEditing(v => !v);
                                         setReplying(false);
                                     }}
-                                    className="text-xs text-blue-500 hover:text-blue-700 transition"
+                                    className="text-sm text-blue-400 hover:text-blue-300 transition"
                                 >
                                     {editing ? 'Cancel' : 'Edit'}
                                 </button>
@@ -116,7 +116,7 @@ function CommentItem({
                                 <button
                                     onClick={() => void handleDelete()}
                                     disabled={deleting}
-                                    className="text-xs text-red-500 hover:text-red-700 transition disabled:opacity-50"
+                                    className="text-sm text-red-400 hover:text-red-300 transition disabled:opacity-50"
                                 >
                                     {deleting ? 'Deleting...' : 'Delete'}
                                 </button>
@@ -133,20 +133,20 @@ function CommentItem({
                             onChange={e => setEditBody(e.target.value)}
                             required
                             rows={2}
-                            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                            className="w-full bg-[#242424] border border-white/15 rounded px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
                         />
                         <div className="flex items-center justify-end gap-2">
                             <button
                                 type="button"
                                 onClick={() => setEditing(false)}
-                                className="text-xs px-3 py-1.5 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                                className="text-sm px-3 py-1.5 rounded border border-white/20 text-gray-300 hover:bg-white/10 transition"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={editingSubmit}
-                                className="text-xs px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded transition disabled:opacity-50"
+                                className="text-sm px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded transition disabled:opacity-50"
                             >
                                 {editingSubmit ? 'Saving...' : 'Save'}
                             </button>
@@ -154,13 +154,13 @@ function CommentItem({
                     </form>
                 ) : (
                     <>
-                        <p className="text-sm text-gray-700 whitespace-pre-wrap">{comment.body}</p>
+                        <p className="text-sm text-gray-200 whitespace-pre-wrap">{comment.body}</p>
                         <button
                             onClick={() => {
                                 setReplying(r => !r);
                                 setEditing(false);
                             }}
-                            className="text-xs text-blue-500 hover:text-blue-700 mt-2 transition"
+                            className="text-sm text-blue-400 hover:text-blue-300 mt-2 transition"
                         >
                             {replying ? 'Cancel' : 'Reply'}
                         </button>
@@ -178,7 +178,7 @@ function CommentItem({
                             onChange={e => setReplyBody(e.target.value)}
                             required
                             placeholder="Write a reply..."
-                            className="flex-1 border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                            className="flex-1 bg-[#242424] border border-white/15 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                         />
                         <button
                             type="submit"
@@ -215,7 +215,7 @@ export default function PostPage() {
     const postId = Number(id);
     const navigate = useNavigate();
     const location = useLocation();
-    const { user, logout } = useAuth();
+    const { user, logout, isAuthenticated } = useAuth();
     const queryCategoryId = Number(new URLSearchParams(location.search).get('categoryId'));
     const stateCategoryId = (location.state as { categoryId?: number } | null)?.categoryId;
     const categoryId = Number.isFinite(queryCategoryId) && queryCategoryId > 0 ? queryCategoryId : stateCategoryId;
@@ -336,54 +336,68 @@ export default function PostPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-[#1f1f1f] text-gray-100">
             {/* Navbar */}
-            <header className="bg-white border-b border-gray-200">
-                <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
+            <header className="bg-[#323232] shadow-sm sticky top-0 z-50 border-b border-white/10">
+                <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => navigate('/')}
-                            className="font-bold text-gray-800 hover:text-gray-900 text-lg transition cursor-pointer"
+                            className="font-bold text-gray-100 hover:text-white text-xl leading-none transition cursor-pointer tracking-tight flex items-center gap-2"
                         >
+                            <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
                             TalkCS
                         </button>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="text-sm text-gray-600">{user?.email}</span>
-                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-medium">{user?.role}</span>
-                        <button
-                            onClick={handleMyProfile}
-                            disabled={!user?.username}
-                            className="text-sm text-blue-500 hover:text-blue-700 transition disabled:opacity-50"
-                        >
-                            My Profile
-                        </button>
-                        <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-gray-800 transition">Log out</button>
+                        {isAuthenticated ? (
+                            <>
+                                <span className="text-sm text-gray-300 hidden sm:inline">{user?.email}</span>
+                                <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">{user?.role}</span>
+                                <button
+                                    onClick={handleMyProfile}
+                                    disabled={!user?.username}
+                                    className="text-sm text-orange-500 hover:text-orange-400 transition disabled:opacity-50"
+                                >
+                                    My Profile
+                                </button>
+                                <button onClick={handleLogout} className="text-sm text-gray-300 hover:text-white transition">Log out</button>
+                            </>
+                        ) : (
+                            <button
+                                onClick={() => navigate('/login')}
+                                className="text-sm text-orange-500 hover:text-orange-400 transition"
+                            >
+                                Log In
+                            </button>
+                        )}
                     </div>
                 </div>
             </header>
 
-            <main className="max-w-5xl mx-auto px-4 py-8">
+            <main className="max-w-4xl mx-auto px-4 py-6">
                 {loading ? (
-                    <p className="text-sm text-gray-400">Loading...</p>
+                    <p className="text-base text-gray-400">Loading...</p>
                 ) : !post ? (
-                    <p className="text-sm text-red-500">Post not found.</p>
+                    <p className="text-base text-red-400">Post not found.</p>
                 ) : (
                     <>
                         {/* Post */}
-                        <div className="bg-white border border-gray-200 rounded p-6 mb-6">
+                        <div className="bg-[#343434] border border-white/10 rounded-xl p-5 mb-6 shadow-sm">
                             <div className="flex items-start justify-between gap-4 mb-2">
                                 <div>
-                                    <h1 className="text-xl font-semibold text-gray-800 mb-1">{post.title}</h1>
-                                    <p className="text-xs text-gray-400 mb-2">
+                                    <h1 className="text-2xl font-semibold text-gray-100 mb-2 leading-tight">{post.title}</h1>
+                                    <p className="text-sm text-gray-300 mb-2 flex items-center gap-2.5 flex-wrap">
                                         by{' '}
                                         <button
                                             onClick={() => navigateToProfile(post.authorUsername)}
-                                            className="text-blue-500 hover:text-blue-700 transition"
+                                            className="text-gray-200 hover:text-white transition"
                                         >
                                             {post.authorUsername}
-                                        </button>{' '}
-                                        · {new Date(post.createdAt).toLocaleDateString()}
+                                        </button>
+                                        <span>•</span>
+                                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                                        <span className="px-2 py-0.5 rounded-full bg-black/20 text-gray-200 text-xs">General</span>
                                     </p>
                                 </div>
                                 {canDeletePost && (
@@ -391,7 +405,7 @@ export default function PostPage() {
                                         {canEditPost && (
                                             <button
                                                 onClick={openPostEditModal}
-                                                className="text-xs text-blue-500 hover:text-blue-700 transition"
+                                                className="text-sm text-blue-400 hover:text-blue-300 transition"
                                             >
                                                 Edit
                                             </button>
@@ -399,24 +413,26 @@ export default function PostPage() {
                                         <button
                                             onClick={() => void handleDeletePost()}
                                             disabled={deletingPost}
-                                            className="text-xs text-red-500 hover:text-red-700 transition disabled:opacity-50"
+                                            className="text-sm text-red-400 hover:text-red-300 transition disabled:opacity-50"
                                         >
                                             {deletingPost ? 'Deleting...' : 'Delete'}
                                         </button>
                                     </div>
                                 )}
                             </div>
-                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.body}</p>
+                            <div className="border-t border-white/10 pt-3">
+                                <p className="text-base leading-relaxed text-gray-200 whitespace-pre-wrap">{post.body}</p>
+                            </div>
                             {postError && <p className="text-xs text-red-500 mt-3">{postError}</p>}
                         </div>
 
                         {/* Comments */}
-                        <div className="mb-4">
-                            <h2 className="text-base font-semibold text-gray-800 mb-2">
+                        <div className="mb-6">
+                            <h2 className="text-xl font-bold text-gray-300 tracking-wide mb-2">
                                 {comments.length} Comment{comments.length !== 1 ? 's' : ''}
                             </h2>
                             {comments.length === 0 ? (
-                                <p className="text-sm text-gray-400">No comments yet.</p>
+                                <p className="text-base text-gray-400">No comments yet.</p>
                             ) : (
                                 comments.map(c => (
                                     <CommentItem
@@ -436,8 +452,8 @@ export default function PostPage() {
                         </div>
 
                         {/* Comment form */}
-                        <div className="bg-white border border-gray-200 rounded p-4 mt-6">
-                            <p className="text-xs font-medium text-gray-600 mb-2">Leave a comment</p>
+                        <div className="bg-[#343434] border border-white/10 rounded-xl p-5 mt-8 shadow-sm">
+                            <p className="text-sm font-medium text-gray-300 mb-2">Leave a comment</p>
                             <form onSubmit={handleComment} className="flex gap-2">
                                 <textarea
                                     value={commentBody}
@@ -445,7 +461,7 @@ export default function PostPage() {
                                     required
                                     rows={2}
                                     placeholder="Write a comment..."
-                                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                                    className="flex-1 bg-[#242424] border border-white/15 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
                                 />
                                 <button
                                     type="submit"
@@ -463,27 +479,27 @@ export default function PostPage() {
             {/* Edit post modal */}
             {showEditPostModal && (
                 <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 mx-4">
-                        <h3 className="text-base font-semibold text-gray-800 mb-4">Edit Post</h3>
+                    <div className="bg-[#2d2d2d] text-gray-100 rounded-xl shadow-xl w-full max-w-lg p-6 mx-4 border border-white/10">
+                        <h3 className="text-base font-semibold text-gray-100 mb-4">Edit Post</h3>
                         <form onSubmit={handleEditPost} className="space-y-3">
                             <div>
-                                <label className="block text-xs font-medium text-gray-600 mb-1">Title</label>
+                                <label className="block text-xs font-medium text-gray-300 mb-1">Title</label>
                                 <input
                                     type="text"
                                     value={postForm.title}
                                     onChange={e => setPostForm(p => ({ ...p, title: e.target.value }))}
                                     required
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    className="w-full bg-[#242424] border border-white/15 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-600 mb-1">Body</label>
+                                <label className="block text-xs font-medium text-gray-300 mb-1">Body</label>
                                 <textarea
                                     value={postForm.body}
                                     onChange={e => setPostForm(p => ({ ...p, body: e.target.value }))}
                                     required
                                     rows={5}
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                                    className="w-full bg-[#242424] border border-white/15 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
                                 />
                             </div>
                             {postError && <p className="text-xs text-red-500">{postError}</p>}
@@ -491,7 +507,7 @@ export default function PostPage() {
                                 <button
                                     type="button"
                                     onClick={() => { setShowEditPostModal(false); setPostError(''); }}
-                                    className="text-sm px-4 py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                                    className="text-sm px-4 py-2 rounded border border-white/20 text-gray-300 hover:bg-white/10 transition"
                                 >
                                     Cancel
                                 </button>
