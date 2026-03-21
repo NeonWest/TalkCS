@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.core.context.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.security.core.Authentication;
+
 
 @Service 
 @RequiredArgsConstructor
@@ -68,5 +70,36 @@ public class CommentService{
         .children(getChildren(saved.getId()))
         .build();
 
+        
+
+    }
+
+    public CommentResponse editComment(Long id, CommentRequest request) {
+    String email = SecurityContextHolder.getContext().getAuthentication().getName();
+    Comment comment = commentrepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Comment not found"));
+    if (!comment.getAuthor().getEmail().equals(email))
+        throw new RuntimeException("Unauthorized");
+    comment.setBody(request.getBody());
+    Comment saved = commentrepository.save(comment);
+    return CommentResponse.builder()
+        .id(saved.getId())
+        .body(saved.getBody())
+        .authorUsername(saved.getAuthor().getUsername())
+        .createdAt(saved.getCreatedAt())
+        .children(getChildren(saved.getId()))
+        .build();
+    }
+
+    public void deleteComment(Long id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        Comment comment = commentrepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Comment not found"));
+        boolean isAdmin = auth.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!comment.getAuthor().getEmail().equals(email) && !isAdmin)
+            throw new RuntimeException("Unauthorized");
+        commentrepository.delete(comment);
     }
 }

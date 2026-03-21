@@ -29,4 +29,15 @@ public class PostController{
     public ResponseEntity<PostResponse> getPostById(@PathVariable Long id) {
         return ResponseEntity.ok(postservice.getPostById(id));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PostResponse> editPost(@PathVariable Long id, @Valid @RequestBody PostRequest request) {
+        return ResponseEntity.ok(postservice.editPost(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+        postservice.deletePost(id);
+        return ResponseEntity.noContent().build();
+    }
 }

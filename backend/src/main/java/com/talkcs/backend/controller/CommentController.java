@@ -24,4 +24,15 @@ public class CommentController{
     public ResponseEntity<CommentResponse> createComment(@Valid @RequestBody CommentRequest request){
         return ResponseEntity.ok(commentservice.createComment(request));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CommentResponse> editComment(@PathVariable Long id, @Valid @RequestBody CommentRequest request) {
+        return ResponseEntity.ok(commentservice.editComment(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteComment(@PathVariable Long id) {
+        commentservice.deleteComment(id);
+        return ResponseEntity.noContent().build();
+    }
 }
