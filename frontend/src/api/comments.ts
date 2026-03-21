@@ -5,6 +5,8 @@ export interface CommentResponse {
     body: string;
     createdAt: string;
     authorUsername: string;
+    voteScore: number;
+    userVote: number;
     children: CommentResponse[];
 }
 

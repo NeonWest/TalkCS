@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getPostById, updatePost, deletePost } from '../api/posts';
 import { getComments, createComment, updateComment, deleteComment } from '../api/comments';
+import { voteOnPost, voteOnComment, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
 import type { CommentResponse } from '../api/comments';
 
@@ -16,6 +17,7 @@ function CommentItem({
     onCommentsChanged,
     onEditComment,
     onDeleteComment,
+    onVoteComment,
     onAuthorClick,
 }: {
     comment: CommentResponse;
@@ -26,6 +28,7 @@ function CommentItem({
     onCommentsChanged: () => Promise<void>;
     onEditComment: (commentId: number, body: string) => Promise<void>;
     onDeleteComment: (commentId: number) => Promise<void>;
+    onVoteComment: (commentId: number, value: 1 | -1) => Promise<void>;
     onAuthorClick: (username: string) => void;
 }) {
     const canEdit = currentUsername === comment.authorUsername;
@@ -39,6 +42,7 @@ function CommentItem({
     const [submitting, setSubmitting] = useState(false);
     const [editingSubmit, setEditingSubmit] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [voting, setVoting] = useState(false);
 
     const handleReply = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -85,6 +89,18 @@ function CommentItem({
         }
     };
 
+    const handleVote = async (value: 1 | -1) => {
+        setActionError('');
+        setVoting(true);
+        try {
+            await onVoteComment(comment.id, value);
+        } catch (error) {
+            setActionError(getVoteErrorMessage(error));
+        } finally {
+            setVoting(false);
+        }
+    };
+
     return (
         <div className={`mt-3 ${depth > 0 ? 'ml-6 border-l border-white/20 pl-3' : 'border-l-4 border-orange-500 pl-3'}`}>
             <div className="px-2 py-1">
@@ -97,6 +113,23 @@ function CommentItem({
                             {comment.authorUsername}
                         </button>
                         <span className="text-xs text-gray-400">· {new Date(comment.createdAt).toLocaleDateString()}</span>
+                        <div className="ml-2 flex items-center gap-1">
+                            <button
+                                onClick={() => void handleVote(1)}
+                                disabled={voting}
+                                className={`text-xs transition ${comment.userVote === 1 ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                            >
+                                ▲
+                            </button>
+                            <span className="text-xs font-semibold text-gray-200 w-5 text-center">{comment.voteScore ?? 0}</span>
+                            <button
+                                onClick={() => void handleVote(-1)}
+                                disabled={voting}
+                                className={`text-xs transition ${comment.userVote === -1 ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                            >
+                                ▼
+                            </button>
+                        </div>
                     </div>
                     {(canEdit || canDelete) && (
                         <div className="flex items-center gap-2">
@@ -202,6 +235,7 @@ function CommentItem({
                     onCommentsChanged={onCommentsChanged}
                     onEditComment={onEditComment}
                     onDeleteComment={onDeleteComment}
+                    onVoteComment={onVoteComment}
                     onAuthorClick={onAuthorClick}
                 />
             ))}
@@ -232,6 +266,7 @@ export default function PostPage() {
     const [postForm, setPostForm] = useState({ title: '', body: '' });
     const [updatingPost, setUpdatingPost] = useState(false);
     const [deletingPost, setDeletingPost] = useState(false);
+    const [votingPost, setVotingPost] = useState(false);
 
     useEffect(() => {
         Promise.all([
@@ -279,6 +314,11 @@ export default function PostPage() {
 
     const handleDeleteComment = async (commentId: number) => {
         await deleteComment(commentId);
+        await refreshComments();
+    };
+
+    const handleVoteComment = async (commentId: number, value: 1 | -1) => {
+        await voteOnComment(commentId, value);
         await refreshComments();
     };
 
@@ -332,6 +372,21 @@ export default function PostPage() {
             setPostError('Failed to delete post.');
         } finally {
             setDeletingPost(false);
+        }
+    };
+
+    const handleVotePost = async (value: 1 | -1) => {
+        if (!post) return;
+        setPostError('');
+        setVotingPost(true);
+        try {
+            await voteOnPost(post.id, value);
+            const refreshed = await getPostById(post.id);
+            setPost(refreshed);
+        } catch (error) {
+            setPostError(getVoteErrorMessage(error));
+        } finally {
+            setVotingPost(false);
         }
     };
 
@@ -400,8 +455,26 @@ export default function PostPage() {
                                         <span className="px-2 py-0.5 rounded-full bg-black/20 text-gray-200 text-xs">General</span>
                                     </p>
                                 </div>
-                                {canDeletePost && (
-                                    <div className="flex items-center gap-2 shrink-0">
+                                <div className="flex items-center gap-4 shrink-0">
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            onClick={() => void handleVotePost(1)}
+                                            disabled={votingPost}
+                                            className={`text-sm transition ${post.userVote === 1 ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                        >
+                                            ▲
+                                        </button>
+                                        <span className="text-sm font-semibold text-gray-200 w-6 text-center">{post.voteScore ?? 0}</span>
+                                        <button
+                                            onClick={() => void handleVotePost(-1)}
+                                            disabled={votingPost}
+                                            className={`text-sm transition ${post.userVote === -1 ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                        >
+                                            ▼
+                                        </button>
+                                    </div>
+                                    {canDeletePost && (
+                                        <div className="flex items-center gap-2">
                                         {canEditPost && (
                                             <button
                                                 onClick={openPostEditModal}
@@ -417,8 +490,9 @@ export default function PostPage() {
                                         >
                                             {deletingPost ? 'Deleting...' : 'Delete'}
                                         </button>
-                                    </div>
-                                )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div className="border-t border-white/10 pt-3">
                                 <p className="text-base leading-relaxed text-gray-200 whitespace-pre-wrap">{post.body}</p>
@@ -444,6 +518,7 @@ export default function PostPage() {
                                         onCommentsChanged={refreshComments}
                                         onEditComment={handleEditComment}
                                         onDeleteComment={handleDeleteComment}
+                                        onVoteComment={handleVoteComment}
                                         onAuthorClick={navigateToProfile}
                                     />
                                 ))

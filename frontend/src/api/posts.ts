@@ -7,6 +7,8 @@ export interface Post {
     createdAt: string;
     authorUsername: string;
     commentCount: number;
+    voteScore: number;
+    userVote: number;
 }
 
 export interface PostRequest {
