@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getCategoryById } from '../api/categories';
-import { getPosts, createPost } from '../api/posts';
+import { getPosts, createPost, updatePost, deletePost } from '../api/posts';
 import type { Post } from '../api/posts';
 
 export default function CategoryPage() {
@@ -17,6 +17,10 @@ export default function CategoryPage() {
     const [showModal, setShowModal] = useState(false);
     const [form, setForm] = useState({ title: '', body: '' });
     const [creating, setCreating] = useState(false);
+    const [editingPost, setEditingPost] = useState<Post | null>(null);
+    const [editForm, setEditForm] = useState({ title: '', body: '' });
+    const [savingEdit, setSavingEdit] = useState(false);
+    const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -41,6 +45,49 @@ export default function CategoryPage() {
             setError('Failed to create post.');
         } finally {
             setCreating(false);
+        }
+    };
+
+    const openEditModal = (post: Post) => {
+        setError('');
+        setEditingPost(post);
+        setEditForm({ title: post.title, body: post.body });
+    };
+
+    const handleEdit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingPost) return;
+
+        setError('');
+        setSavingEdit(true);
+        try {
+            const updated = await updatePost(editingPost.id, {
+                title: editForm.title,
+                body: editForm.body,
+                categoryId,
+            });
+            setPosts(prev => prev.map(p => (p.id === updated.id ? updated : p)));
+            setEditingPost(null);
+        } catch {
+            setError('Failed to update post.');
+        } finally {
+            setSavingEdit(false);
+        }
+    };
+
+    const handleDelete = async (post: Post) => {
+        const confirmed = window.confirm('Delete this post? This action cannot be undone.');
+        if (!confirmed) return;
+
+        setError('');
+        setDeletingPostId(post.id);
+        try {
+            await deletePost(post.id);
+            setPosts(prev => prev.filter(p => p.id !== post.id));
+        } catch {
+            setError('Failed to delete post.');
+        } finally {
+            setDeletingPostId(null);
         }
     };
 
@@ -84,6 +131,7 @@ export default function CategoryPage() {
                         + New Post
                     </button>
                 </div>
+                {error && <p className="text-sm text-red-500 mb-3">{error}</p>}
 
                 {loading ? (
                     <p className="text-sm text-gray-400">Loading...</p>
@@ -96,16 +144,41 @@ export default function CategoryPage() {
                         {posts.map(post => (
                             <div
                                 key={post.id}
-                                onClick={() => navigate(`/post/${post.id}`)}
+                                onClick={() => navigate(`/post/${post.id}?categoryId=${categoryId}`, { state: { categoryId } })}
                                 className="flex items-start gap-4 px-5 py-4 hover:bg-gray-50 transition cursor-pointer"
                             >
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold text-blue-600 hover:text-blue-800 truncate">{post.title}</p>
                                     <p className="text-xs text-gray-500 mt-0.5">by {post.authorUsername}</p>
                                 </div>
-                                <div className="text-right shrink-0">
+                                <div className="text-right shrink-0 flex items-center gap-4">
                                     <p className="text-xs text-gray-500">{post.commentCount} comment{post.commentCount !== 1 ? 's' : ''}</p>
                                     <p className="text-xs text-gray-400 mt-0.5">{new Date(post.createdAt).toLocaleDateString()}</p>
+                                    {(user?.username === post.authorUsername || user?.role === 'ADMIN') && (
+                                        <div className="flex items-center gap-2">
+                                            {user?.username === post.authorUsername && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        openEditModal(post);
+                                                    }}
+                                                    className="text-xs text-blue-500 hover:text-blue-700 transition"
+                                                >
+                                                    Edit
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    void handleDelete(post);
+                                                }}
+                                                disabled={deletingPostId === post.id}
+                                                className="text-xs text-red-500 hover:text-red-700 transition disabled:opacity-50"
+                                            >
+                                                {deletingPostId === post.id ? 'Deleting...' : 'Delete'}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -156,6 +229,54 @@ export default function CategoryPage() {
                                     className="text-sm px-4 py-2 rounded bg-orange-500 hover:bg-orange-600 text-white font-medium transition disabled:opacity-50"
                                 >
                                     {creating ? 'Posting...' : 'Post'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit post modal */}
+            {editingPost && (
+                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 mx-4">
+                        <h3 className="text-base font-semibold text-gray-800 mb-4">Edit Post</h3>
+                        <form onSubmit={handleEdit} className="space-y-3">
+                            <div>
+                                <label className="block text-xs font-medium text-gray-600 mb-1">Title</label>
+                                <input
+                                    type="text"
+                                    value={editForm.title}
+                                    onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))}
+                                    required
+                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-600 mb-1">Body</label>
+                                <textarea
+                                    value={editForm.body}
+                                    onChange={e => setEditForm(p => ({ ...p, body: e.target.value }))}
+                                    required
+                                    rows={5}
+                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                                />
+                            </div>
+                            {error && <p className="text-xs text-red-500">{error}</p>}
+                            <div className="flex justify-end gap-2 pt-1">
+                                <button
+                                    type="button"
+                                    onClick={() => { setEditingPost(null); setError(''); }}
+                                    className="text-sm px-4 py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={savingEdit}
+                                    className="text-sm px-4 py-2 rounded bg-orange-500 hover:bg-orange-600 text-white font-medium transition disabled:opacity-50"
+                                >
+                                    {savingEdit ? 'Saving...' : 'Save'}
                                 </button>
                             </div>
                         </form>
