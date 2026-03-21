@@ -22,4 +22,6 @@ public class User{
     private String password;
     private String role;
     private LocalDateTime createdAt;
+    @Column(columnDefinition = "integer default 0")
+    private int reputation = 0;
 }

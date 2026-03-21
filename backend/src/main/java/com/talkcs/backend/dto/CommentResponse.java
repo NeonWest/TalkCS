@@ -14,4 +14,6 @@ public class CommentResponse{
     private LocalDateTime createdAt;
     private String authorUsername;
     private List<CommentResponse> children;
+    private int voteScore;
+    private int userVote;
 }

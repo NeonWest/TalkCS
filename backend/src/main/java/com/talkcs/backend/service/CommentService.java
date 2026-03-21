@@ -17,6 +17,7 @@ public class CommentService{
     private final PostRepository postrepository;
     private final CommentRepository commentrepository;
     private final UserRepository userrepository;
+    private final VoteRepository voteRepository;
 
     public List<CommentResponse> getCommentsByPostId(Long Id){
         return commentrepository.findByPostIdAndParentIsNull(Id)
@@ -27,6 +28,8 @@ public class CommentService{
         .createdAt(comment.getCreatedAt())
         .authorUsername(comment.getAuthor().getUsername())
         .children(getChildren(comment.getId()))
+        .voteScore(getCommentVoteScore(comment.getId()))
+        .userVote(getCommentUserVote(comment.getId()))
         .build()).toList();
     }
 
@@ -39,6 +42,8 @@ public class CommentService{
         .createdAt(children.getCreatedAt())
         .authorUsername(children.getAuthor().getUsername())
         .children(getChildren(children.getId()))
+        .voteScore(getCommentVoteScore(children.getId()))
+        .userVote(getCommentUserVote(children.getId()))
         .build()).toList();
     }
     
@@ -68,6 +73,8 @@ public class CommentService{
         .authorUsername(saved.getAuthor().getUsername())
         .createdAt(saved.getCreatedAt())
         .children(getChildren(saved.getId()))
+        .voteScore(getCommentVoteScore(saved.getId()))
+        .userVote(getCommentUserVote(saved.getId()))
         .build();
 
         
@@ -88,6 +95,8 @@ public class CommentService{
         .authorUsername(saved.getAuthor().getUsername())
         .createdAt(saved.getCreatedAt())
         .children(getChildren(saved.getId()))
+        .voteScore(getCommentVoteScore(saved.getId()))
+        .userVote(getCommentUserVote(saved.getId()))
         .build();
     }
 
@@ -101,5 +110,20 @@ public class CommentService{
         if (!comment.getAuthor().getEmail().equals(email) && !isAdmin)
             throw new RuntimeException("Unauthorized");
         commentrepository.delete(comment);
+    }
+
+    private int getCommentVoteScore(Long commentId) {
+    return voteRepository.countByCommentIdAndValue(commentId, 1) -
+           voteRepository.countByCommentIdAndValue(commentId, -1);
+    }
+
+    private int getCommentUserVote(Long commentId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getName().equals("anonymousUser"))
+            return 0;
+        User currentUser = userrepository.findByEmail(auth.getName()).orElse(null);
+        if (currentUser == null) return 0;
+        return voteRepository.findByVoterIdAndCommentId(currentUser.getId(), commentId)
+            .map(Vote::getValue).orElse(0);
     }
 }
