@@ -120,7 +120,7 @@ export default function ProfilePage() {
                                     <div className="text-xs text-gray-300 mt-1">Posts</div>
                                 </div>
                                 <div className="bg-[#2b2b2b] rounded-xl p-3 text-center border border-white/10">
-                                    <div className="text-2xl font-bold text-gray-100">{posts.reduce((sum, p) => sum + (p.commentCount || 0), 0)}</div>
+                                    <div className="text-2xl font-bold text-gray-100">{profile.commentCount ?? 0}</div>
                                     <div className="text-xs text-gray-300 mt-1">Comments</div>
                                 </div>
                                 <div className="bg-[#2b2b2b] rounded-xl p-3 text-center border border-white/10">
