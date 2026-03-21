@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post,Long> {
     List<Post> findByCategoryId(Long categoryId);
+    long countByAuthorId(Long authorId);
+    List<Post> findByAuthorId(Long authorId);
 }
