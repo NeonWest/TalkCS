@@ -9,9 +9,10 @@ export default function CategoryPage() {
     const { id } = useParams<{ id: string }>();
     const categoryId = Number(id);
     const navigate = useNavigate();
-    const { user, logout } = useAuth();
+    const { user, logout, isAuthenticated } = useAuth();
 
     const [categoryName, setCategoryName] = useState('');
+    const [categoryDescription, setCategoryDescription] = useState('');
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -25,7 +26,10 @@ export default function CategoryPage() {
 
     useEffect(() => {
         Promise.all([
-            getCategoryById(categoryId).then(c => setCategoryName(c.name)),
+            getCategoryById(categoryId).then(c => {
+                setCategoryName(c.name);
+                setCategoryDescription(c.description);
+            }),
             getPosts(categoryId).then(setPosts),
         ]).finally(() => setLoading(false));
     }, [categoryId]);
@@ -97,111 +101,134 @@ export default function CategoryPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-[#1f1f1f] text-gray-100">
             {/* Navbar */}
-            <header className="bg-white border-b border-gray-200">
-                <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
+            <header className="bg-[#323232] shadow-sm sticky top-0 z-50 border-b border-white/10">
+                <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => navigate('/')}
-                            className="font-bold text-gray-800 hover:text-gray-900 text-lg transition cursor-pointer"
+                            className="font-bold text-gray-100 hover:text-white text-xl leading-none transition cursor-pointer tracking-tight flex items-center gap-2"
                         >
+                            <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
                             TalkCS
                         </button>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="text-sm text-gray-600">{user?.email}</span>
-                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-medium">{user?.role}</span>
-                        <button
-                            onClick={handleMyProfile}
-                            disabled={!user?.username}
-                            className="text-sm text-blue-500 hover:text-blue-700 transition disabled:opacity-50"
-                        >
-                            My Profile
-                        </button>
-                        <button
-                            onClick={handleLogout}
-                            className="text-sm text-gray-500 hover:text-gray-800 transition"
-                        >
-                            Log out
-                        </button>
+                        {isAuthenticated ? (
+                            <>
+                                <span className="text-sm text-gray-300 hidden sm:inline">{user?.email}</span>
+                                <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">{user?.role}</span>
+                                <button
+                                    onClick={handleMyProfile}
+                                    disabled={!user?.username}
+                                    className="text-sm text-orange-500 hover:text-orange-400 transition disabled:opacity-50"
+                                >
+                                    My Profile
+                                </button>
+                                <button
+                                    onClick={handleLogout}
+                                    className="text-sm text-gray-300 hover:text-white transition"
+                                >
+                                    Log out
+                                </button>
+                            </>
+                        ) : (
+                            <button
+                                onClick={() => navigate('/login')}
+                                className="text-sm text-orange-500 hover:text-orange-400 transition"
+                            >
+                                Log In
+                            </button>
+                        )}
                     </div>
                 </div>
             </header>
 
-            <main className="max-w-5xl mx-auto px-4 py-8">
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h2 className="text-xl font-semibold text-gray-800">{categoryName || 'Loading...'}</h2>
-                        <p className="text-sm text-gray-500 mt-0.5">{posts.length} post{posts.length !== 1 ? 's' : ''}</p>
+            <main className="max-w-4xl mx-auto px-4 py-6">
+                {/* Category Banner */}
+                <div className="rounded-none md:rounded-xl shadow-sm border border-white/10 bg-[#343434] mb-6 overflow-hidden">
+                    <div className="h-1 bg-gradient-to-r from-orange-500 via-orange-400 to-orange-500" />
+                    <div className="p-5">
+                        <h2 className="text-2xl font-bold text-gray-100">{categoryName || 'Loading...'}</h2>
+                        <p className="text-sm text-gray-300 mt-1">{categoryDescription || 'General discussion space'}</p>
+                        {isAuthenticated && (
+                            <button
+                                onClick={() => setShowModal(true)}
+                                className="mt-4 text-sm bg-orange-500 text-white hover:bg-orange-600 px-4 py-1.5 rounded-xl transition font-semibold shadow-sm"
+                            >
+                                + New Post
+                            </button>
+                        )}
                     </div>
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="text-sm bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded transition font-medium"
-                    >
-                        + New Post
-                    </button>
                 </div>
-                {error && <p className="text-sm text-red-500 mb-3">{error}</p>}
+
+                {error && <p className="text-base text-red-400 mb-4">{error}</p>}
 
                 {loading ? (
-                    <p className="text-sm text-gray-400">Loading...</p>
+                    <p className="text-base text-gray-400">Loading...</p>
                 ) : posts.length === 0 ? (
-                    <div className="bg-white border border-gray-200 rounded p-8 text-center text-gray-400 text-sm">
+                    <div className="bg-[#101010] rounded-xl shadow-sm p-12 text-center text-gray-400 border border-white/10">
                         No posts yet. Be the first to post!
                     </div>
                 ) : (
-                    <div className="divide-y divide-gray-200 border border-gray-200 rounded bg-white">
+                    <div className="space-y-2.5">
                         {posts.map(post => (
                             <div
                                 key={post.id}
                                 onClick={() => navigate(`/post/${post.id}?categoryId=${categoryId}`, { state: { categoryId } })}
-                                className="flex items-start gap-4 px-5 py-4 hover:bg-gray-50 transition cursor-pointer"
+                                className="bg-[#343434] rounded-xl shadow-sm border border-white/10 px-4 py-3 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer"
                             >
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-blue-600 hover:text-blue-800 truncate">{post.title}</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">
-                                        by{' '}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                navigate(`/profile/${post.authorUsername}`);
-                                            }}
-                                            className="text-blue-500 hover:text-blue-700 transition"
-                                        >
-                                            {post.authorUsername}
-                                        </button>
-                                    </p>
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-lg font-semibold text-orange-500 truncate">{post.title}</p>
+                                        <div className="text-sm text-gray-300 mt-2 flex items-center gap-2.5 flex-wrap">
+                                            <span className="h-8 w-8 rounded-full bg-orange-500 text-white text-xs flex items-center justify-center font-semibold">
+                                                {post.authorUsername.charAt(0).toUpperCase()}
+                                            </span>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/profile/${post.authorUsername}`);
+                                                }}
+                                                className="text-gray-200 hover:text-white transition font-medium"
+                                            >
+                                                {post.authorUsername}
+                                            </button>
+                                            <span>•</span>
+                                            <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                                            <span>•</span>
+                                            <span className="font-semibold">{post.commentCount} comments</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="text-right shrink-0 flex items-center gap-4">
-                                    <p className="text-xs text-gray-500">{post.commentCount} comment{post.commentCount !== 1 ? 's' : ''}</p>
-                                    <p className="text-xs text-gray-400 mt-0.5">{new Date(post.createdAt).toLocaleDateString()}</p>
-                                    {(user?.username === post.authorUsername || user?.role === 'ADMIN') && (
-                                        <div className="flex items-center gap-2">
-                                            {user?.username === post.authorUsername && (
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        openEditModal(post);
-                                                    }}
-                                                    className="text-xs text-blue-500 hover:text-blue-700 transition"
-                                                >
-                                                    Edit
-                                                </button>
-                                            )}
+                                {(user?.username === post.authorUsername || user?.role === 'ADMIN') && (
+                                    <div className="mt-2 pt-2 border-t border-white/10 flex items-center gap-3">
+                                        {user?.username === post.authorUsername && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openEditModal(post);
+                                                }}
+                                                className="text-xs text-blue-400 hover:text-blue-300 transition"
+                                            >
+                                                Edit
+                                            </button>
+                                        )}
+                                        {user?.username === post.authorUsername || user?.role === 'ADMIN' ? (
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     void handleDelete(post);
                                                 }}
                                                 disabled={deletingPostId === post.id}
-                                                className="text-xs text-red-500 hover:text-red-700 transition disabled:opacity-50"
+                                                className="text-xs text-red-400 hover:text-red-300 transition disabled:opacity-50"
                                             >
                                                 {deletingPostId === post.id ? 'Deleting...' : 'Delete'}
                                             </button>
-                                        </div>
-                                    )}
-                                </div>
+                                        ) : null}
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -210,45 +237,47 @@ export default function CategoryPage() {
 
             {/* Create post modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 mx-4">
-                        <h3 className="text-base font-semibold text-gray-800 mb-4">New Post</h3>
-                        <form onSubmit={handleCreate} className="space-y-3">
+                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#2d2d2d] text-gray-100 rounded-xl shadow-xl w-full max-w-2xl p-6 border border-white/10">
+                        <h3 className="text-lg font-semibold text-gray-100 mb-4">New Post</h3>
+                        <form onSubmit={handleCreate} className="space-y-4">
                             <div>
-                                <label className="block text-xs font-medium text-gray-600 mb-1">Title</label>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">Title</label>
                                 <input
+                                    id="post-title"
                                     type="text"
                                     value={form.title}
                                     onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
                                     required
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-                                    placeholder="Post title"
+                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    placeholder="What's your question or topic?"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-600 mb-1">Body</label>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">Body</label>
                                 <textarea
+                                    id="post-body"
                                     value={form.body}
                                     onChange={e => setForm(p => ({ ...p, body: e.target.value }))}
                                     required
                                     rows={5}
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
-                                    placeholder="Write your post..."
+                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                                    placeholder="Share details, context, or your thoughts..."
                                 />
                             </div>
-                            {error && <p className="text-xs text-red-500">{error}</p>}
-                            <div className="flex justify-end gap-2 pt-1">
+                            {error && <p className="text-sm text-red-500">{error}</p>}
+                            <div className="flex justify-end gap-3 pt-2">
                                 <button
                                     type="button"
-                                    onClick={() => { setShowModal(false); setError(''); setForm({ title: '', body: '' }); }}
-                                    className="text-sm px-4 py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                                    onClick={() => { setShowModal(false); setError(''); }}
+                                    className="text-sm px-4 py-2 rounded-lg border border-white/20 text-gray-300 hover:bg-white/10 transition"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={creating}
-                                    className="text-sm px-4 py-2 rounded bg-orange-500 hover:bg-orange-600 text-white font-medium transition disabled:opacity-50"
+                                    className="text-sm px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium transition disabled:opacity-50"
                                 >
                                     {creating ? 'Posting...' : 'Post'}
                                 </button>
@@ -260,43 +289,45 @@ export default function CategoryPage() {
 
             {/* Edit post modal */}
             {editingPost && (
-                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 mx-4">
-                        <h3 className="text-base font-semibold text-gray-800 mb-4">Edit Post</h3>
-                        <form onSubmit={handleEdit} className="space-y-3">
+                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#2d2d2d] text-gray-100 rounded-xl shadow-xl w-full max-w-2xl p-6 border border-white/10">
+                        <h3 className="text-lg font-semibold text-gray-100 mb-4">Edit Post</h3>
+                        <form onSubmit={handleEdit} className="space-y-4">
                             <div>
-                                <label className="block text-xs font-medium text-gray-600 mb-1">Title</label>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">Title</label>
                                 <input
+                                    id="edit-post-title"
                                     type="text"
                                     value={editForm.title}
                                     onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))}
                                     required
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-600 mb-1">Body</label>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">Body</label>
                                 <textarea
+                                    id="edit-post-body"
                                     value={editForm.body}
                                     onChange={e => setEditForm(p => ({ ...p, body: e.target.value }))}
                                     required
                                     rows={5}
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
                                 />
                             </div>
-                            {error && <p className="text-xs text-red-500">{error}</p>}
-                            <div className="flex justify-end gap-2 pt-1">
+                            {error && <p className="text-sm text-red-500">{error}</p>}
+                            <div className="flex justify-end gap-3 pt-2">
                                 <button
                                     type="button"
                                     onClick={() => { setEditingPost(null); setError(''); }}
-                                    className="text-sm px-4 py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                                    className="text-sm px-4 py-2 rounded-lg border border-white/20 text-gray-300 hover:bg-white/10 transition"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={savingEdit}
-                                    className="text-sm px-4 py-2 rounded bg-orange-500 hover:bg-orange-600 text-white font-medium transition disabled:opacity-50"
+                                    className="text-sm px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium transition disabled:opacity-50"
                                 >
                                     {savingEdit ? 'Saving...' : 'Save'}
                                 </button>
