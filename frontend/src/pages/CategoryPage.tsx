@@ -5,6 +5,7 @@ import { getCategoryById } from '../api/categories';
 import { getPosts, createPost, updatePost, deletePost } from '../api/posts';
 import { voteOnPost, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
+import NavbarSearch from '../components/NavbarSearch';
 
 export default function CategoryPage() {
     const { id } = useParams<{ id: string }>();
@@ -135,6 +136,7 @@ export default function CategoryPage() {
                             TalkCS
                         </button>
                     </div>
+                    <NavbarSearch />
                     <div className="flex items-center gap-3">
                         {isAuthenticated ? (
                             <>

@@ -5,6 +5,7 @@ import { getUserProfile, getUserPosts } from '../api/users';
 import { voteOnPost } from '../api/votes';
 import type { UserProfile } from '../api/users';
 import type { Post } from '../api/posts';
+import NavbarSearch from '../components/NavbarSearch';
 
 export default function ProfilePage() {
     const { username } = useParams<{ username: string }>();
@@ -62,6 +63,7 @@ export default function ProfilePage() {
                             TalkCS
                         </button>
                     </div>
+                    <NavbarSearch />
                     <div className="flex items-center gap-3">
                         {isAuthenticated ? (
                             <>
