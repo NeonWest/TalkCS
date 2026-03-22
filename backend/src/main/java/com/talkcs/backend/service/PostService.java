@@ -26,12 +26,28 @@ public class PostService{
     private final CategoryRepository categoryrepository;
     private final VoteRepository voteRepository;
 
-    public Map<String, Object> getAllPostsByCategoryId(Long categoryId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    public Map<String, Object> getAllPostsByCategoryId(Long categoryId, int page, int size, String sortBy) {
+        Sort sort = switch (sortBy) {
+            case "votes" -> Sort.by("id").descending();
+            case "comments" -> Sort.by("id").descending();
+            default -> Sort.by("createdAt").descending();
+        };
+
+        Pageable pageable = PageRequest.of(page, size, sort);
         Page<Post> postPage = postrepository.findByCategoryId(categoryId, pageable);
         List<PostResponse> posts = postPage.getContent().stream()
             .map(this::toResponse)
             .toList();
+
+        if ("votes".equals(sortBy)) {
+            posts = posts.stream()
+                .sorted((a, b) -> Integer.compare(b.getVoteScore(), a.getVoteScore()))
+                .toList();
+        } else if ("comments".equals(sortBy)) {
+            posts = posts.stream()
+                .sorted((a, b) -> Integer.compare(b.getCommentCount(), a.getCommentCount()))
+                .toList();
+        }
 
         Map<String, Object> response = new HashMap<>();
         response.put("posts", posts);

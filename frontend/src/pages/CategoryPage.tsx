@@ -30,11 +30,12 @@ export default function CategoryPage() {
     const [totalPages, setTotalPages] = useState(0);
     const [hasNext, setHasNext] = useState(false);
     const [hasPrevious, setHasPrevious] = useState(false);
+    const [sortBy, setSortBy] = useState<'newest' | 'votes' | 'comments'>('newest');
 
     const PAGE_SIZE = 10;
 
     const refreshPosts = async () => {
-        const updated = await getPosts(categoryId, currentPage, PAGE_SIZE);
+        const updated = await getPosts(categoryId, currentPage, PAGE_SIZE, sortBy);
         setPosts(updated.posts);
         setCurrentPage(updated.currentPage);
         setTotalPages(updated.totalPages);
@@ -53,7 +54,7 @@ export default function CategoryPage() {
 
     useEffect(() => {
         setLoading(true);
-        getPosts(categoryId, currentPage, PAGE_SIZE)
+        getPosts(categoryId, currentPage, PAGE_SIZE, sortBy)
             .then((data) => {
                 setPosts(data.posts);
                 setCurrentPage(data.currentPage);
@@ -62,7 +63,7 @@ export default function CategoryPage() {
                 setHasPrevious(data.hasPrevious);
             })
             .finally(() => setLoading(false));
-    }, [categoryId, currentPage]);
+    }, [categoryId, currentPage, sortBy]);
 
     const handleLogout = () => { logout(); navigate('/login'); };
 
@@ -218,6 +219,25 @@ export default function CategoryPage() {
                     </div>
                 ) : (
                     <>
+                        <div className="mb-3 flex items-center justify-end">
+                            <label className="text-sm text-gray-300 flex items-center gap-2">
+                                Sort by
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => {
+                                        const value = e.target.value as 'newest' | 'votes' | 'comments';
+                                        setSortBy(value);
+                                        setCurrentPage(0);
+                                    }}
+                                    className="bg-[#242424] border border-white/15 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                >
+                                    <option value="newest">Newest</option>
+                                    <option value="votes">Most Voted</option>
+                                    <option value="comments">Most Commented</option>
+                                </select>
+                            </label>
+                        </div>
+
                         <div className="space-y-2.5">
                             {posts.map(post => (
                                 <div

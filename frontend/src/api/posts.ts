@@ -26,8 +26,13 @@ export interface PaginatedPosts {
     hasPrevious: boolean;
 }
 
-export const getPosts = async (categoryId: number, page = 0, size = 10): Promise<PaginatedPosts> => {
-    return (await api.get<PaginatedPosts>(`/api/posts?categoryId=${categoryId}&page=${page}&size=${size}`)).data;
+export const getPosts = async (
+    categoryId: number,
+    page = 0,
+    size = 10,
+    sortBy = 'newest'
+): Promise<PaginatedPosts> => {
+    return (await api.get<PaginatedPosts>(`/api/posts?categoryId=${categoryId}&page=${page}&size=${size}&sortBy=${sortBy}`)).data;
 };
 
 export const createPost = async (data: PostRequest): Promise<Post> => {
