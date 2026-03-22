@@ -6,6 +6,7 @@ import { getComments, createComment, updateComment, deleteComment } from '../api
 import { voteOnPost, voteOnComment, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
 import type { CommentResponse } from '../api/comments';
+import NavbarSearch from '../components/NavbarSearch';
 
 // --- Recursive comment component ---
 function CommentItem({
@@ -404,6 +405,7 @@ export default function PostPage() {
                             TalkCS
                         </button>
                     </div>
+                    <NavbarSearch />
                     <div className="flex items-center gap-3">
                         {isAuthenticated ? (
                             <>

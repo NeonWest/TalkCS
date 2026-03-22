@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getCategories, createCategory } from '../api/categories';
 import { getPosts } from '../api/posts';
 import type { Category } from '../api/categories';
+import NavbarSearch from '../components/NavbarSearch';
 
 export default function HomePage() {
     const { user, logout, isAuthenticated } = useAuth();
@@ -84,6 +85,7 @@ export default function HomePage() {
                         <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
                         TalkCS
                     </button>
+                    <NavbarSearch />
                     <div className="flex items-center gap-3">
                         {isAuthenticated ? (
                             <>
