@@ -22,4 +22,10 @@ public class VoteController {
         voteservice.voteOnComment(commentId, request.getValue());
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/resource/{resourceId}")
+    public ResponseEntity<Void> voteOnResource(@PathVariable Long resourceId, @RequestBody VoteRequest request) {
+        voteservice.voteOnResource(resourceId, request.getValue());
+        return ResponseEntity.ok().build();
+    }
 }
