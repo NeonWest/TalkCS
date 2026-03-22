@@ -29,8 +29,8 @@ export default function HomePage() {
                 const countResults = await Promise.all(
                     fetchedCategories.map(async (cat) => {
                         try {
-                            const posts = await getPosts(cat.id);
-                            return [cat.id, posts.length] as const;
+                            const paged = await getPosts(cat.id, 0, 1);
+                            return [cat.id, paged.totalItems] as const;
                         } catch {
                             return [cat.id, 0] as const;
                         }

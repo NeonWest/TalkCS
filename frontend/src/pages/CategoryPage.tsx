@@ -26,21 +26,43 @@ export default function CategoryPage() {
     const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
     const [votingPostId, setVotingPostId] = useState<number | null>(null);
     const [error, setError] = useState('');
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [hasNext, setHasNext] = useState(false);
+    const [hasPrevious, setHasPrevious] = useState(false);
+
+    const PAGE_SIZE = 10;
 
     const refreshPosts = async () => {
-        const updated = await getPosts(categoryId);
-        setPosts(updated);
+        const updated = await getPosts(categoryId, currentPage, PAGE_SIZE);
+        setPosts(updated.posts);
+        setCurrentPage(updated.currentPage);
+        setTotalPages(updated.totalPages);
+        setHasNext(updated.hasNext);
+        setHasPrevious(updated.hasPrevious);
     };
 
     useEffect(() => {
-        Promise.all([
-            getCategoryById(categoryId).then(c => {
+        getCategoryById(categoryId)
+            .then(c => {
                 setCategoryName(c.name);
                 setCategoryDescription(c.description);
-            }),
-            getPosts(categoryId).then(setPosts),
-        ]).finally(() => setLoading(false));
+            })
+            .finally(() => setLoading(false));
     }, [categoryId]);
+
+    useEffect(() => {
+        setLoading(true);
+        getPosts(categoryId, currentPage, PAGE_SIZE)
+            .then((data) => {
+                setPosts(data.posts);
+                setCurrentPage(data.currentPage);
+                setTotalPages(data.totalPages);
+                setHasNext(data.hasNext);
+                setHasPrevious(data.hasPrevious);
+            })
+            .finally(() => setLoading(false));
+    }, [categoryId, currentPage]);
 
     const handleLogout = () => { logout(); navigate('/login'); };
 
@@ -195,83 +217,105 @@ export default function CategoryPage() {
                         No posts yet. Be the first to post!
                     </div>
                 ) : (
-                    <div className="space-y-2.5">
-                        {posts.map(post => (
-                            <div
-                                key={post.id}
-                                onClick={() => navigate(`/post/${post.id}?categoryId=${categoryId}`, { state: { categoryId } })}
-                                className="bg-[#343434] rounded-xl shadow-sm border border-white/10 px-4 py-3 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer"
-                            >
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-lg font-semibold text-orange-500 truncate">{post.title}</p>
-                                        <div className="text-sm text-gray-300 mt-2 flex items-center gap-2.5 flex-wrap">
-                                            <span className="h-8 w-8 rounded-full bg-orange-500 text-white text-xs flex items-center justify-center font-semibold">
-                                                {post.authorUsername.charAt(0).toUpperCase()}
-                                            </span>
+                    <>
+                        <div className="space-y-2.5">
+                            {posts.map(post => (
+                                <div
+                                    key={post.id}
+                                    onClick={() => navigate(`/post/${post.id}?categoryId=${categoryId}`, { state: { categoryId } })}
+                                    className="bg-[#343434] rounded-xl shadow-sm border border-white/10 px-4 py-3 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer"
+                                >
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-lg font-semibold text-orange-500 truncate">{post.title}</p>
+                                            <div className="text-sm text-gray-300 mt-2 flex items-center gap-2.5 flex-wrap">
+                                                <span className="h-8 w-8 rounded-full bg-orange-500 text-white text-xs flex items-center justify-center font-semibold">
+                                                    {post.authorUsername.charAt(0).toUpperCase()}
+                                                </span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/profile/${post.authorUsername}`);
+                                                    }}
+                                                    className="text-gray-200 hover:text-white transition font-medium"
+                                                >
+                                                    {post.authorUsername}
+                                                </button>
+                                                <span>•</span>
+                                                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                                                <span>•</span>
+                                                <span className="font-semibold">{post.commentCount} comments</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 shrink-0">
                                             <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    navigate(`/profile/${post.authorUsername}`);
-                                                }}
-                                                className="text-gray-200 hover:text-white transition font-medium"
+                                                onClick={(e) => void handleVotePost(post.id, 1, e)}
+                                                disabled={votingPostId === post.id}
+                                                className={`text-sm transition ${post.userVote === 1 ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
                                             >
-                                                {post.authorUsername}
+                                                ▲
                                             </button>
-                                            <span>•</span>
-                                            <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                                            <span>•</span>
-                                            <span className="font-semibold">{post.commentCount} comments</span>
+                                            <span className="text-sm font-semibold text-gray-200 w-6 text-center">{post.voteScore ?? 0}</span>
+                                            <button
+                                                onClick={(e) => void handleVotePost(post.id, -1, e)}
+                                                disabled={votingPostId === post.id}
+                                                className={`text-sm transition ${post.userVote === -1 ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                            >
+                                                ▼
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                        <button
-                                            onClick={(e) => void handleVotePost(post.id, 1, e)}
-                                            disabled={votingPostId === post.id}
-                                            className={`text-sm transition ${post.userVote === 1 ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
-                                        >
-                                            ▲
-                                        </button>
-                                        <span className="text-sm font-semibold text-gray-200 w-6 text-center">{post.voteScore ?? 0}</span>
-                                        <button
-                                            onClick={(e) => void handleVotePost(post.id, -1, e)}
-                                            disabled={votingPostId === post.id}
-                                            className={`text-sm transition ${post.userVote === -1 ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
-                                        >
-                                            ▼
-                                        </button>
-                                    </div>
+                                    {(user?.username === post.authorUsername || user?.role === 'ADMIN') && (
+                                        <div className="mt-2 pt-2 border-t border-white/10 flex items-center gap-3">
+                                            {user?.username === post.authorUsername && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        openEditModal(post);
+                                                    }}
+                                                    className="text-xs text-blue-400 hover:text-blue-300 transition"
+                                                >
+                                                    Edit
+                                                </button>
+                                            )}
+                                            {user?.username === post.authorUsername || user?.role === 'ADMIN' ? (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        void handleDelete(post);
+                                                    }}
+                                                    disabled={deletingPostId === post.id}
+                                                    className="text-xs text-red-400 hover:text-red-300 transition disabled:opacity-50"
+                                                >
+                                                    {deletingPostId === post.id ? 'Deleting...' : 'Delete'}
+                                                </button>
+                                            ) : null}
+                                        </div>
+                                    )}
                                 </div>
-                                {(user?.username === post.authorUsername || user?.role === 'ADMIN') && (
-                                    <div className="mt-2 pt-2 border-t border-white/10 flex items-center gap-3">
-                                        {user?.username === post.authorUsername && (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    openEditModal(post);
-                                                }}
-                                                className="text-xs text-blue-400 hover:text-blue-300 transition"
-                                            >
-                                                Edit
-                                            </button>
-                                        )}
-                                        {user?.username === post.authorUsername || user?.role === 'ADMIN' ? (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    void handleDelete(post);
-                                                }}
-                                                disabled={deletingPostId === post.id}
-                                                className="text-xs text-red-400 hover:text-red-300 transition disabled:opacity-50"
-                                            >
-                                                {deletingPostId === post.id ? 'Deleting...' : 'Delete'}
-                                            </button>
-                                        ) : null}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-6 flex items-center justify-center gap-3">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                                disabled={!hasPrevious}
+                                className="text-sm px-3 py-1.5 rounded border border-white/20 text-gray-300 hover:bg-white/10 transition disabled:opacity-50"
+                            >
+                                Previous
+                            </button>
+                            <span className="text-sm text-gray-300">
+                                Page {totalPages === 0 ? 0 : currentPage + 1} of {totalPages}
+                            </span>
+                            <button
+                                onClick={() => setCurrentPage(prev => prev + 1)}
+                                disabled={!hasNext}
+                                className="text-sm px-3 py-1.5 rounded border border-white/20 text-gray-300 hover:bg-white/10 transition disabled:opacity-50"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </>
                 )}
             </main>
 

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -16,8 +17,11 @@ public class PostController{
     private final PostService postservice;
 
     @GetMapping
-    public ResponseEntity<List<PostResponse>> getAllPostsByCategoryId(@RequestParam Long categoryId) {
-        return ResponseEntity.ok(postservice.getAllPostsByCategoryId(categoryId));
+    public ResponseEntity<Map<String, Object>> getAllPostsByCategoryId(
+        @RequestParam Long categoryId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(postservice.getAllPostsByCategoryId(categoryId, page, size));
     }
     
     @PostMapping

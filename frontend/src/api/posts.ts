@@ -17,8 +17,17 @@ export interface PostRequest {
     categoryId: number;
 }
 
-export const getPosts = async (categoryId: number): Promise<Post[]> => {
-    return (await api.get<Post[]>(`/api/posts?categoryId=${categoryId}`)).data;
+export interface PaginatedPosts {
+    posts: Post[];
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+}
+
+export const getPosts = async (categoryId: number, page = 0, size = 10): Promise<PaginatedPosts> => {
+    return (await api.get<PaginatedPosts>(`/api/posts?categoryId=${categoryId}&page=${page}&size=${size}`)).data;
 };
 
 export const createPost = async (data: PostRequest): Promise<Post> => {
