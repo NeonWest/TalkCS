@@ -20,8 +20,9 @@ public class PostController{
     public ResponseEntity<Map<String, Object>> getAllPostsByCategoryId(
         @RequestParam Long categoryId,
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(postservice.getAllPostsByCategoryId(categoryId, page, size));
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "newest") String sortBy) {
+        return ResponseEntity.ok(postservice.getAllPostsByCategoryId(categoryId, page, size, sortBy));
     }
     
     @PostMapping
