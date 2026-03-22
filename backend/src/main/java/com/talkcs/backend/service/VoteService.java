@@ -13,6 +13,7 @@ public class VoteService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final ResourceRepository resourceRepository;
 
     public void voteOnPost(Long postId, int value) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -73,6 +74,39 @@ public class VoteService {
                 userRepository.save(author);
                 voteRepository.save(Vote.builder()
                     .voter(voter).comment(comment).value(value)
+                    .createdAt(LocalDateTime.now()).build());
+            }
+        );
+    }
+
+    public void voteOnResource(Long resourceId, int value) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User voter = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        Resource resource = resourceRepository.findById(resourceId).orElseThrow(() -> new RuntimeException("Resource not found"));
+
+        if (resource.getUploader().getId().equals(voter.getId())) {
+            throw new RuntimeException("Cannot vote on your own resource");
+        }
+
+        User author = resource.getUploader();
+        voteRepository.findByVoterIdAndResourceId(voter.getId(), resourceId).ifPresentOrElse(
+            existing -> {
+                if (existing.getValue() == value) {
+                    author.setReputation(author.getReputation() - value);
+                    userRepository.save(author);
+                    voteRepository.delete(existing);
+                } else {
+                    author.setReputation(author.getReputation() - existing.getValue() + value);
+                    userRepository.save(author);
+                    existing.setValue(value);
+                    voteRepository.save(existing);
+                }
+            },
+            () -> {
+                author.setReputation(author.getReputation() + value);
+                userRepository.save(author);
+                voteRepository.save(Vote.builder()
+                    .voter(voter).resource(resource).value(value)
                     .createdAt(LocalDateTime.now()).build());
             }
         );

@@ -7,7 +7,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "votes", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"user_id", "post_id"}),
-    @UniqueConstraint(columnNames = {"user_id", "comment_id"})
+    @UniqueConstraint(columnNames = {"user_id", "comment_id"}),
+    @UniqueConstraint(columnNames = {"user_id", "resource_id"})
 })
 public class Vote {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,4 +27,8 @@ public class Vote {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id")
     private Comment comment;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "resource_id")
+    private Resource resource;
 }
