@@ -292,7 +292,8 @@ export default function PostPage() {
     const [postError, setPostError] = useState('');
     const [commentError, setCommentError] = useState('');
     const [showEditPostModal, setShowEditPostModal] = useState(false);
-    const [postForm, setPostForm] = useState({ title: '', body: '' });
+    const [postForm, setPostForm] = useState({ title: '', body: '', tags: [] as string[] });
+    const [postTagInput, setPostTagInput] = useState('');
     const [updatingPost, setUpdatingPost] = useState(false);
     const [deletingPost, setDeletingPost] = useState(false);
     const [votingPost, setVotingPost] = useState(false);
@@ -363,7 +364,8 @@ export default function PostPage() {
     const openPostEditModal = () => {
         if (!post) return;
         setPostError('');
-        setPostForm({ title: post.title, body: post.body });
+        setPostForm({ title: post.title, body: post.body, tags: post.tags ?? [] });
+        setPostTagInput('');
         setShowEditPostModal(true);
     };
 
@@ -382,6 +384,7 @@ export default function PostPage() {
                 title: postForm.title,
                 body: postForm.body,
                 categoryId,
+                tags: postForm.tags,
             });
             setPost(updated);
             setShowEditPostModal(false);
@@ -629,6 +632,32 @@ export default function PostPage() {
                                     onChange={v => setPostForm(p => ({ ...p, body: v }))}
                                     rows={5}
                                     placeholder="Write your post body..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-300 mb-1">Tags</label>
+                                <div className="flex flex-wrap gap-1.5 mb-2">
+                                    {postForm.tags.map(tag => (
+                                        <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-orange-500/20 text-orange-300 rounded-full text-xs">
+                                            {tag}
+                                            <button type="button" onClick={() => setPostForm(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }))} className="hover:text-white">×</button>
+                                        </span>
+                                    ))}
+                                </div>
+                                <input
+                                    type="text"
+                                    value={postTagInput}
+                                    onChange={e => setPostTagInput(e.target.value)}
+                                    onKeyDown={e => {
+                                        if ((e.key === 'Enter' || e.key === ',') && postTagInput.trim()) {
+                                            e.preventDefault();
+                                            const tag = postTagInput.trim().toLowerCase();
+                                            if (!postForm.tags.includes(tag)) setPostForm(p => ({ ...p, tags: [...p.tags, tag] }));
+                                            setPostTagInput('');
+                                        }
+                                    }}
+                                    placeholder="Type a tag and press Enter"
+                                    className="w-full bg-[#242424] border border-white/15 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                                 />
                             </div>
                             {postError && <p className="text-xs text-red-500">{postError}</p>}
