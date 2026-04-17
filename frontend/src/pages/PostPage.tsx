@@ -7,6 +7,11 @@ import { voteOnPost, voteOnComment, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
 import type { CommentResponse } from '../api/comments';
 import NavbarSearch from '../components/NavbarSearch';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import MarkdownEditor from '../components/MarkdownEditor';
+import 'highlight.js/styles/github-dark.css';
 
 // --- Recursive comment component ---
 function CommentItem({
@@ -161,13 +166,11 @@ function CommentItem({
 
                 {editing ? (
                     <form onSubmit={handleSaveEdit} className="mt-2 space-y-2">
-                        <textarea
-                            autoFocus
+                        <MarkdownEditor
                             value={editBody}
-                            onChange={e => setEditBody(e.target.value)}
-                            required
-                            rows={2}
-                            className="w-full bg-[#242424] border border-white/15 rounded px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                            onChange={setEditBody}
+                            rows={3}
+                            placeholder="Edit your comment..."
                         />
                         <div className="flex items-center justify-end gap-2">
                             <button
@@ -188,7 +191,11 @@ function CommentItem({
                     </form>
                 ) : (
                     <>
-                        <p className="text-sm text-gray-200 whitespace-pre-wrap">{comment.body}</p>
+                        <div className="text-sm text-gray-200 prose prose-invert prose-sm max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+                            {comment.body}
+                        </ReactMarkdown>
+                    </div>
                         <button
                             onClick={() => {
                                 setReplying(r => !r);
@@ -497,7 +504,11 @@ export default function PostPage() {
                                 </div>
                             </div>
                             <div className="border-t border-white/10 pt-3">
-                                <p className="text-base leading-relaxed text-gray-200 whitespace-pre-wrap">{post.body}</p>
+                                <div className="text-base leading-relaxed text-gray-200 prose prose-invert max-w-none">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+                                        {post.body}
+                                    </ReactMarkdown>
+                                </div>
                             </div>
                             {postError && <p className="text-xs text-red-500 mt-3">{postError}</p>}
                         </div>
@@ -531,22 +542,22 @@ export default function PostPage() {
                         {/* Comment form */}
                         <div className="bg-[#343434] border border-white/10 rounded-xl p-5 mt-8 shadow-sm">
                             <p className="text-sm font-medium text-gray-300 mb-2">Leave a comment</p>
-                            <form onSubmit={handleComment} className="flex gap-2">
-                                <textarea
+                            <form onSubmit={handleComment} className="space-y-2">
+                                <MarkdownEditor
                                     value={commentBody}
-                                    onChange={e => setCommentBody(e.target.value)}
-                                    required
-                                    rows={2}
-                                    placeholder="Write a comment..."
-                                    className="flex-1 bg-[#242424] border border-white/15 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                                    onChange={setCommentBody}
+                                    rows={3}
+                                    placeholder="Write a comment... (markdown supported)"
                                 />
-                                <button
-                                    type="submit"
-                                    disabled={submitting}
-                                    className="self-end text-sm px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded transition font-medium disabled:opacity-50"
-                                >
-                                    {submitting ? '...' : 'Comment'}
-                                </button>
+                                <div className="flex justify-end">
+                                    <button
+                                        type="submit"
+                                        disabled={submitting}
+                                        className="text-sm px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded transition font-medium disabled:opacity-50"
+                                    >
+                                        {submitting ? '...' : 'Comment'}
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </>
@@ -571,12 +582,11 @@ export default function PostPage() {
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-gray-300 mb-1">Body</label>
-                                <textarea
+                                <MarkdownEditor
                                     value={postForm.body}
-                                    onChange={e => setPostForm(p => ({ ...p, body: e.target.value }))}
-                                    required
+                                    onChange={v => setPostForm(p => ({ ...p, body: v }))}
                                     rows={5}
-                                    className="w-full bg-[#242424] border border-white/15 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                                    placeholder="Write your post body..."
                                 />
                             </div>
                             {postError && <p className="text-xs text-red-500">{postError}</p>}
