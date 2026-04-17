@@ -7,11 +7,9 @@ import { voteOnPost, voteOnComment, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
 import type { CommentResponse } from '../api/comments';
 import NavbarSearch from '../components/NavbarSearch';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
+import MDEditor from '@uiw/react-md-editor';
+import '@uiw/react-md-editor/markdown-editor.css';
 import MarkdownEditor from '../components/MarkdownEditor';
-import 'highlight.js/styles/github-dark.css';
 
 // --- Recursive comment component ---
 function CommentItem({
@@ -191,10 +189,8 @@ function CommentItem({
                     </form>
                 ) : (
                     <>
-                        <div className="text-sm text-gray-200 prose prose-invert prose-sm max-w-none">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
-                            {comment.body}
-                        </ReactMarkdown>
+                        <div className="text-sm text-gray-200" data-color-mode="dark">
+                        <MDEditor.Markdown source={comment.body} style={{ background: 'transparent', color: 'inherit' }} />
                     </div>
                         <button
                             onClick={() => {
@@ -504,10 +500,8 @@ export default function PostPage() {
                                 </div>
                             </div>
                             <div className="border-t border-white/10 pt-3">
-                                <div className="text-base leading-relaxed text-gray-200 prose prose-invert max-w-none">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
-                                        {post.body}
-                                    </ReactMarkdown>
+                                <div className="text-base leading-relaxed text-gray-200" data-color-mode="dark">
+                                    <MDEditor.Markdown source={post.body} style={{ background: 'transparent', color: 'inherit' }} />
                                 </div>
                                 {post.tags && post.tags.length > 0 && (
                                     <div className="flex flex-wrap gap-1.5 mt-4">
@@ -554,7 +548,7 @@ export default function PostPage() {
                                     value={commentBody}
                                     onChange={setCommentBody}
                                     rows={3}
-                                    placeholder="Write a comment... (markdown supported)"
+                                    placeholder="Write a comment..."
                                 />
                                 <div className="flex justify-end">
                                     <button

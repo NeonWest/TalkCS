@@ -544,7 +544,7 @@ export default function CategoryPage() {
                                     value={form.body}
                                     onChange={v => setForm(p => ({ ...p, body: v }))}
                                     rows={5}
-                                    placeholder="Share details, context, or your thoughts... (markdown supported)"
+                                    placeholder="Share details, context, or your thoughts..."
                                 />
                             </div>
                             <div>
