@@ -16,4 +16,5 @@ public class CommentResponse{
     private List<CommentResponse> children;
     private int voteScore;
     private int userVote;
+    private String authorLevel;
 }

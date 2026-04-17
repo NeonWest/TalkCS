@@ -9,6 +9,9 @@ export interface UserProfile {
     postCount: number;
     commentCount: number;
     reputation: number;
+    level: number;
+    levelTitle: string;
+    nextLevelRepRequired: number | null;
 }
 
 export const getUserProfile = async (username: string): Promise<UserProfile> => {

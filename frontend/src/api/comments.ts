@@ -8,6 +8,7 @@ export interface CommentResponse {
     voteScore: number;
     userVote: number;
     children: CommentResponse[];
+    authorLevel?: string;
 }
 
 export interface CommentRequest {
