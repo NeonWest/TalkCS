@@ -39,12 +39,14 @@ export default function CategoryPage() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [showResourceModal, setShowResourceModal] = useState(false);
-    const [form, setForm] = useState({ title: '', body: '' });
+    const [form, setForm] = useState({ title: '', body: '', tags: [] as string[] });
+    const [formTagInput, setFormTagInput] = useState('');
     const [resourceForm, setResourceForm] = useState({ title: '', description: '', file: null as File | null });
     const [creating, setCreating] = useState(false);
     const [uploadingResource, setUploadingResource] = useState(false);
     const [editingPost, setEditingPost] = useState<Post | null>(null);
-    const [editForm, setEditForm] = useState({ title: '', body: '' });
+    const [editForm, setEditForm] = useState({ title: '', body: '', tags: [] as string[] });
+    const [editTagInput, setEditTagInput] = useState('');
     const [savingEdit, setSavingEdit] = useState(false);
     const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
     const [deletingResourceId, setDeletingResourceId] = useState<number | null>(null);
@@ -116,7 +118,8 @@ export default function CategoryPage() {
         try {
             const created = await createPost({ ...form, categoryId });
             setPosts(prev => [created, ...prev]);
-            setForm({ title: '', body: '' });
+            setForm({ title: '', body: '', tags: [] });
+            setFormTagInput('');
             setShowModal(false);
         } catch {
             setError('Failed to create post.');
@@ -149,7 +152,8 @@ export default function CategoryPage() {
     const openEditModal = (post: Post) => {
         setError('');
         setEditingPost(post);
-        setEditForm({ title: post.title, body: post.body });
+        setEditForm({ title: post.title, body: post.body, tags: post.tags ?? [] });
+        setEditTagInput('');
     };
 
     const handleEdit = async (e: React.FormEvent) => {
@@ -163,6 +167,7 @@ export default function CategoryPage() {
                 title: editForm.title,
                 body: editForm.body,
                 categoryId,
+                tags: editForm.tags,
             });
             setPosts(prev => prev.map(p => (p.id === updated.id ? updated : p)));
             setEditingPost(null);
@@ -382,6 +387,13 @@ export default function CategoryPage() {
                                                         <span>•</span>
                                                         <span className="font-semibold">{post.commentCount} comments</span>
                                                     </div>
+                                                    {post.tags && post.tags.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1.5 mt-2">
+                                                            {post.tags.map(tag => (
+                                                                <span key={tag} className="px-2 py-0.5 bg-orange-500/15 text-orange-300 rounded-full text-xs">{tag}</span>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div className="flex items-center gap-2 shrink-0">
                                                     <button
@@ -535,6 +547,32 @@ export default function CategoryPage() {
                                     placeholder="Share details, context, or your thoughts... (markdown supported)"
                                 />
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">Tags</label>
+                                <div className="flex flex-wrap gap-1.5 mb-2">
+                                    {form.tags.map(tag => (
+                                        <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-orange-500/20 text-orange-300 rounded-full text-xs">
+                                            {tag}
+                                            <button type="button" onClick={() => setForm(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }))} className="hover:text-white">×</button>
+                                        </span>
+                                    ))}
+                                </div>
+                                <input
+                                    type="text"
+                                    value={formTagInput}
+                                    onChange={e => setFormTagInput(e.target.value)}
+                                    onKeyDown={e => {
+                                        if ((e.key === 'Enter' || e.key === ',') && formTagInput.trim()) {
+                                            e.preventDefault();
+                                            const tag = formTagInput.trim().toLowerCase();
+                                            if (!form.tags.includes(tag)) setForm(p => ({ ...p, tags: [...p.tags, tag] }));
+                                            setFormTagInput('');
+                                        }
+                                    }}
+                                    placeholder="Type a tag and press Enter"
+                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                />
+                            </div>
                             {error && <p className="text-sm text-red-500">{error}</p>}
                             <div className="flex justify-end gap-3 pt-2">
                                 <button
@@ -583,6 +621,32 @@ export default function CategoryPage() {
                                     onChange={v => setEditForm(p => ({ ...p, body: v }))}
                                     rows={5}
                                     placeholder="Edit your post..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">Tags</label>
+                                <div className="flex flex-wrap gap-1.5 mb-2">
+                                    {editForm.tags.map(tag => (
+                                        <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-orange-500/20 text-orange-300 rounded-full text-xs">
+                                            {tag}
+                                            <button type="button" onClick={() => setEditForm(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }))} className="hover:text-white">×</button>
+                                        </span>
+                                    ))}
+                                </div>
+                                <input
+                                    type="text"
+                                    value={editTagInput}
+                                    onChange={e => setEditTagInput(e.target.value)}
+                                    onKeyDown={e => {
+                                        if ((e.key === 'Enter' || e.key === ',') && editTagInput.trim()) {
+                                            e.preventDefault();
+                                            const tag = editTagInput.trim().toLowerCase();
+                                            if (!editForm.tags.includes(tag)) setEditForm(p => ({ ...p, tags: [...p.tags, tag] }));
+                                            setEditTagInput('');
+                                        }
+                                    }}
+                                    placeholder="Type a tag and press Enter"
+                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                                 />
                             </div>
                             {error && <p className="text-sm text-red-500">{error}</p>}

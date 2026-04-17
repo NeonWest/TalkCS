@@ -509,6 +509,13 @@ export default function PostPage() {
                                         {post.body}
                                     </ReactMarkdown>
                                 </div>
+                                {post.tags && post.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5 mt-4">
+                                        {post.tags.map(tag => (
+                                            <span key={tag} className="px-2.5 py-0.5 bg-orange-500/15 text-orange-300 rounded-full text-xs">{tag}</span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             {postError && <p className="text-xs text-red-500 mt-3">{postError}</p>}
                         </div>
