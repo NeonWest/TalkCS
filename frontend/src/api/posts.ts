@@ -1,5 +1,7 @@
 import api from './api';
 
+export type PostStatus = 'OPEN' | 'SOLVED' | 'CLOSED';
+
 export interface Post {
     id: number;
     title: string;
@@ -10,6 +12,8 @@ export interface Post {
     voteScore: number;
     userVote: number;
     tags?: string[];
+    status?: PostStatus;
+    acceptedAnswerId?: number | null;
 }
 
 export interface PostRequest {
@@ -51,4 +55,12 @@ export const updatePost = async (id: number, data: PostRequest): Promise<Post> =
 
 export const deletePost = async (id: number): Promise<void> => {
     await api.delete(`/api/posts/${id}`);
+};
+
+export const setPostStatus = async (id: number, status: PostStatus): Promise<Post> => {
+    return (await api.put<Post>(`/api/posts/${id}/status`, { status })).data;
+};
+
+export const acceptAnswer = async (postId: number, commentId: number): Promise<Post> => {
+    return (await api.put<Post>(`/api/posts/${postId}/accept/${commentId}`)).data;
 };
