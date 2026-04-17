@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getPostById, updatePost, deletePost } from '../api/posts';
+import { getPostById, updatePost, deletePost, setPostStatus, acceptAnswer } from '../api/posts';
 import { getComments, createComment, updateComment, deleteComment } from '../api/comments';
 import { voteOnPost, voteOnComment, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
@@ -18,25 +18,32 @@ function CommentItem({
     currentUsername,
     isAdmin,
     depth = 0,
+    isPostAuthor,
+    acceptedAnswerId,
     onCommentsChanged,
     onEditComment,
     onDeleteComment,
     onVoteComment,
     onAuthorClick,
+    onAcceptAnswer,
 }: {
     comment: CommentResponse;
     postId: number;
     currentUsername?: string;
     isAdmin: boolean;
     depth?: number;
+    isPostAuthor: boolean;
+    acceptedAnswerId?: number | null;
     onCommentsChanged: () => Promise<void>;
     onEditComment: (commentId: number, body: string) => Promise<void>;
     onDeleteComment: (commentId: number) => Promise<void>;
     onVoteComment: (commentId: number, value: 1 | -1) => Promise<void>;
     onAuthorClick: (username: string) => void;
+    onAcceptAnswer: (commentId: number) => Promise<void>;
 }) {
     const canEdit = currentUsername === comment.authorUsername;
     const canDelete = canEdit || isAdmin;
+    const isAccepted = acceptedAnswerId === comment.id;
 
     const [replying, setReplying] = useState(false);
     const [editing, setEditing] = useState(false);
@@ -106,8 +113,13 @@ function CommentItem({
     };
 
     return (
-        <div className={`mt-3 ${depth > 0 ? 'ml-6 border-l border-white/20 pl-3' : 'border-l-4 border-orange-500 pl-3'}`}>
+        <div className={`mt-3 ${depth > 0 ? 'ml-6 border-l border-white/20 pl-3' : `border-l-4 pl-3 ${isAccepted ? 'border-green-500 bg-green-500/5 rounded-r-lg' : 'border-orange-500'}`}`}>
             <div className="px-2 py-1">
+                {isAccepted && (
+                    <div className="flex items-center gap-1.5 text-green-400 text-xs font-semibold mb-1">
+                        <span>✓</span><span>Accepted Answer</span>
+                    </div>
+                )}
                 <div className="flex items-center justify-between gap-2 mb-1">
                     <div className="flex items-center gap-2">
                         <button
@@ -135,8 +147,17 @@ function CommentItem({
                             </button>
                         </div>
                     </div>
+                    <div className="flex items-center gap-2">
+                        {isPostAuthor && depth === 0 && !isAccepted && (
+                            <button
+                                onClick={() => void onAcceptAnswer(comment.id)}
+                                className="text-sm text-green-400 hover:text-green-300 transition"
+                            >
+                                ✓ Accept
+                            </button>
+                        )}
                     {(canEdit || canDelete) && (
-                        <div className="flex items-center gap-2">
+                        <>
                             {canEdit && (
                                 <button
                                     onClick={() => {
@@ -158,8 +179,9 @@ function CommentItem({
                                     {deleting ? 'Deleting...' : 'Delete'}
                                 </button>
                             )}
-                        </div>
+                        </>
                     )}
+                    </div>
                 </div>
 
                 {editing ? (
@@ -236,11 +258,14 @@ function CommentItem({
                     currentUsername={currentUsername}
                     isAdmin={isAdmin}
                     depth={depth + 1}
+                    isPostAuthor={isPostAuthor}
+                    acceptedAnswerId={acceptedAnswerId}
                     onCommentsChanged={onCommentsChanged}
                     onEditComment={onEditComment}
                     onDeleteComment={onDeleteComment}
                     onVoteComment={onVoteComment}
                     onAuthorClick={onAuthorClick}
+                    onAcceptAnswer={onAcceptAnswer}
                 />
             ))}
         </div>
@@ -324,6 +349,12 @@ export default function PostPage() {
     const handleVoteComment = async (commentId: number, value: 1 | -1) => {
         await voteOnComment(commentId, value);
         await refreshComments();
+    };
+
+    const handleAcceptAnswer = async (commentId: number) => {
+        if (!post) return;
+        const updated = await acceptAnswer(post.id, commentId);
+        setPost(updated);
     };
 
     const canEditPost = !!post && user?.username === post.authorUsername;
@@ -446,7 +477,14 @@ export default function PostPage() {
                         <div className="bg-[#343434] border border-white/10 rounded-xl p-5 mb-6 shadow-sm">
                             <div className="flex items-start justify-between gap-4 mb-2">
                                 <div>
-                                    <h1 className="text-2xl font-semibold text-gray-100 mb-2 leading-tight">{post.title}</h1>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <h1 className="text-2xl font-semibold text-gray-100 leading-tight">{post.title}</h1>
+                                        {post.status && post.status !== 'OPEN' && (
+                                            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${post.status === 'SOLVED' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
+                                                {post.status}
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-sm text-gray-300 mb-2 flex items-center gap-2.5 flex-wrap">
                                         by{' '}
                                         <button
@@ -529,11 +567,14 @@ export default function PostPage() {
                                         postId={postId}
                                         currentUsername={user?.username}
                                         isAdmin={!!isAdmin}
+                                        isPostAuthor={user?.username === post.authorUsername}
+                                        acceptedAnswerId={post.acceptedAnswerId}
                                         onCommentsChanged={refreshComments}
                                         onEditComment={handleEditComment}
                                         onDeleteComment={handleDeleteComment}
                                         onVoteComment={handleVoteComment}
                                         onAuthorClick={navigateToProfile}
+                                        onAcceptAnswer={handleAcceptAnswer}
                                     />
                                 ))
                             )}

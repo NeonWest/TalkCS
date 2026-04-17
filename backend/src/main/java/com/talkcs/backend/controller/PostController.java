@@ -45,4 +45,14 @@ public class PostController{
         postservice.deletePost(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<PostResponse> setStatus(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
+        return ResponseEntity.ok(postservice.setStatus(id, body.get("status")));
+    }
+
+    @PutMapping("/{id}/accept/{commentId}")
+    public ResponseEntity<PostResponse> acceptAnswer(@PathVariable Long id, @PathVariable Long commentId) {
+        return ResponseEntity.ok(postservice.acceptAnswer(id, commentId));
+    }
 }

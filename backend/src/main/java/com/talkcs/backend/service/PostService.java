@@ -80,33 +80,13 @@ public class PostService{
             .tags(tags)
             .build()
         );
-        return PostResponse.builder()
-        .id(saved.getId())
-        .title(saved.getTitle())
-        .body(saved.getBody())
-        .authorUsername(saved.getAuthor().getUsername())
-        .commentCount(0)
-        .createdAt(saved.getCreatedAt())
-        .voteScore(getVoteScore(saved.getId()))
-        .userVote(getUserVote(saved.getId()))
-        .tags(saved.getTags().stream().map(Tag::getName).collect(Collectors.toList()))
-        .build();
+        return toResponse(saved);
 
     }
     public PostResponse getPostById(Long id) {
         Post post = postrepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Post not found"));
-        return PostResponse.builder()
-            .id(post.getId())
-            .title(post.getTitle())
-            .body(post.getBody())
-            .authorUsername(post.getAuthor().getUsername())
-            .createdAt(post.getCreatedAt())
-            .commentCount(commentrepository.countByPostId(post.getId()))
-            .voteScore(getVoteScore(post.getId()))
-            .userVote(getUserVote(post.getId()))
-            .tags(post.getTags().stream().map(Tag::getName).collect(Collectors.toList()))
-            .build();
+        return toResponse(post);
     }
 
     public PostResponse editPost(Long id, PostRequest request) {
@@ -119,17 +99,7 @@ public class PostService{
     post.setBody(request.getBody());
     post.setTags(resolveTags(request.getTags()));
     Post saved = postrepository.save(post);
-    return PostResponse.builder()
-        .id(saved.getId())
-        .title(saved.getTitle())
-        .body(saved.getBody())
-        .authorUsername(saved.getAuthor().getUsername())
-        .createdAt(saved.getCreatedAt())
-        .commentCount(commentrepository.countByPostId(saved.getId()))
-        .voteScore(getVoteScore(saved.getId()))
-        .userVote(getUserVote(saved.getId()))
-        .tags(saved.getTags().stream().map(Tag::getName).collect(Collectors.toList()))
-        .build();
+    return toResponse(saved);
     }
 
     public void deletePost(Long id) {
@@ -159,6 +129,40 @@ public class PostService{
             .map(Vote::getValue).orElse(0);
     }
 
+    public PostResponse setStatus(Long id, String status) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        Post post = postrepository.findById(id).orElseThrow(() -> new RuntimeException("Post not found"));
+        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!post.getAuthor().getEmail().equals(email) && !isAdmin)
+            throw new RuntimeException("Unauthorized");
+        post.setStatus(PostStatus.valueOf(status.toUpperCase()));
+        return toResponse(postrepository.save(post));
+    }
+
+    public PostResponse acceptAnswer(Long postId, Long commentId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Post post = postrepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
+        if (!post.getAuthor().getEmail().equals(email))
+            throw new RuntimeException("Only post author can accept answers");
+        Comment comment = commentrepository.findById(commentId).orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        post.setAcceptedAnswer(comment);
+        post.setStatus(PostStatus.SOLVED);
+        postrepository.save(post);
+
+        // +15 rep to commenter, +2 rep to post author
+        User commenter = comment.getAuthor();
+        commenter.setReputation(commenter.getReputation() + 15);
+        userrepository.save(commenter);
+
+        User poster = post.getAuthor();
+        poster.setReputation(poster.getReputation() + 2);
+        userrepository.save(poster);
+
+        return toResponse(post);
+    }
+
     private PostResponse toResponse(Post post) {
         return PostResponse.builder()
             .id(post.getId())
@@ -170,6 +174,8 @@ public class PostService{
             .voteScore(getVoteScore(post.getId()))
             .userVote(getUserVote(post.getId()))
             .tags(post.getTags().stream().map(Tag::getName).collect(Collectors.toList()))
+            .status(post.getStatus() != null ? post.getStatus() : PostStatus.OPEN)
+            .acceptedAnswerId(post.getAcceptedAnswer() != null ? post.getAcceptedAnswer().getId() : null)
             .build();
     }
 

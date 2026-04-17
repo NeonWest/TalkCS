@@ -1,5 +1,6 @@
 package com.talkcs.backend.dto;
 
+import com.talkcs.backend.model.PostStatus;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,4 +19,6 @@ public class PostResponse{
     private int voteScore;
     private int userVote;
     private List<String> tags;
+    private PostStatus status;
+    private Long acceptedAnswerId;
 }
