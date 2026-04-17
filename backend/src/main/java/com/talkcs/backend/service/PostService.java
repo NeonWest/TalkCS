@@ -12,8 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.core.context.*;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
 
 
@@ -25,6 +28,7 @@ public class PostService{
     private final UserRepository userrepository;
     private final CategoryRepository categoryrepository;
     private final VoteRepository voteRepository;
+    private final TagService tagService;
 
     public Map<String, Object> getAllPostsByCategoryId(Long categoryId, int page, int size, String sortBy) {
         Sort sort = switch (sortBy) {
@@ -65,6 +69,7 @@ public class PostService{
         Category category = categoryrepository.findById(request.getCategoryId()).orElseThrow(() -> new RuntimeException("Category Not Found"));
 
 
+        Set<Tag> tags = resolveTags(request.getTags());
         Post saved = postrepository.save(
             Post.builder()
             .title(request.getTitle())
@@ -72,6 +77,7 @@ public class PostService{
             .author(user)
             .category(category)
             .createdAt(LocalDateTime.now())
+            .tags(tags)
             .build()
         );
         return PostResponse.builder()
@@ -83,6 +89,7 @@ public class PostService{
         .createdAt(saved.getCreatedAt())
         .voteScore(getVoteScore(saved.getId()))
         .userVote(getUserVote(saved.getId()))
+        .tags(saved.getTags().stream().map(Tag::getName).collect(Collectors.toList()))
         .build();
 
     }
@@ -98,6 +105,7 @@ public class PostService{
             .commentCount(commentrepository.countByPostId(post.getId()))
             .voteScore(getVoteScore(post.getId()))
             .userVote(getUserVote(post.getId()))
+            .tags(post.getTags().stream().map(Tag::getName).collect(Collectors.toList()))
             .build();
     }
 
@@ -109,6 +117,7 @@ public class PostService{
         throw new RuntimeException("Unauthorized");
     post.setTitle(request.getTitle());
     post.setBody(request.getBody());
+    post.setTags(resolveTags(request.getTags()));
     Post saved = postrepository.save(post);
     return PostResponse.builder()
         .id(saved.getId())
@@ -119,6 +128,7 @@ public class PostService{
         .commentCount(commentrepository.countByPostId(saved.getId()))
         .voteScore(getVoteScore(saved.getId()))
         .userVote(getUserVote(saved.getId()))
+        .tags(saved.getTags().stream().map(Tag::getName).collect(Collectors.toList()))
         .build();
     }
 
@@ -159,6 +169,15 @@ public class PostService{
             .commentCount(commentrepository.countByPostId(post.getId()))
             .voteScore(getVoteScore(post.getId()))
             .userVote(getUserVote(post.getId()))
+            .tags(post.getTags().stream().map(Tag::getName).collect(Collectors.toList()))
             .build();
+    }
+
+    private Set<Tag> resolveTags(List<String> tagNames) {
+        if (tagNames == null || tagNames.isEmpty()) return new HashSet<>();
+        return tagNames.stream()
+            .filter(n -> n != null && !n.isBlank())
+            .map(tagService::getOrCreateTag)
+            .collect(Collectors.toSet());
     }
 }

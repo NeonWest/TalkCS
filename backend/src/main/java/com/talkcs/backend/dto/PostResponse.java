@@ -2,6 +2,7 @@ package com.talkcs.backend.dto;
 
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -16,4 +17,5 @@ public class PostResponse{
     private int commentCount;
     private int voteScore;
     private int userVote;
+    private List<String> tags;
 }

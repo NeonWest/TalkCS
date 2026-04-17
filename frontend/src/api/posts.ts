@@ -9,12 +9,14 @@ export interface Post {
     commentCount: number;
     voteScore: number;
     userVote: number;
+    tags?: string[];
 }
 
 export interface PostRequest {
     title: string;
     body: string;
     categoryId: number;
+    tags?: string[];
 }
 
 export interface PaginatedPosts {
