@@ -382,6 +382,9 @@ export default function CategoryPage() {
                                                         >
                                                             {post.authorUsername}
                                                         </button>
+                                                        {post.authorLevel && (
+                                                            <span className="px-1.5 py-0.5 bg-orange-500/15 text-orange-400 rounded text-xs">{post.authorLevel}</span>
+                                                        )}
                                                         <span>•</span>
                                                         <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                                                         <span>•</span>

@@ -128,6 +128,9 @@ function CommentItem({
                         >
                             {comment.authorUsername}
                         </button>
+                        {comment.authorLevel && (
+                            <span className="px-1.5 py-0.5 bg-orange-500/15 text-orange-400 rounded text-xs">{comment.authorLevel}</span>
+                        )}
                         <span className="text-xs text-gray-400">· {new Date(comment.createdAt).toLocaleDateString()}</span>
                         <div className="ml-2 flex items-center gap-1">
                             <button
@@ -496,6 +499,9 @@ export default function PostPage() {
                                         >
                                             {post.authorUsername}
                                         </button>
+                                        {post.authorLevel && (
+                                            <span className="px-1.5 py-0.5 bg-orange-500/15 text-orange-400 rounded text-xs">{post.authorLevel}</span>
+                                        )}
                                         <span>•</span>
                                         <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                                         <span className="px-2 py-0.5 rounded-full bg-black/20 text-gray-200 text-xs">General</span>

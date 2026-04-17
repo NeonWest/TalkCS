@@ -14,6 +14,7 @@ export interface Post {
     tags?: string[];
     status?: PostStatus;
     acceptedAnswerId?: number | null;
+    authorLevel?: string;
 }
 
 export interface PostRequest {

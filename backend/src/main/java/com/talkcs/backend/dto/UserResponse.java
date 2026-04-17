@@ -14,4 +14,7 @@ public class UserResponse {
     private long postCount;
     private long commentCount;
     private int reputation;
+    private int level;
+    private String levelTitle;
+    private Integer nextLevelRepRequired;
 }

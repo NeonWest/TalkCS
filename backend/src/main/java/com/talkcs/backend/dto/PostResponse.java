@@ -21,4 +21,5 @@ public class PostResponse{
     private List<String> tags;
     private PostStatus status;
     private Long acceptedAnswerId;
+    private String authorLevel;
 }

@@ -118,8 +118,24 @@ export default function ProfilePage() {
                                     <h1 className="text-2xl font-bold text-gray-100">{profile.username}</h1>
                                     <div className="mt-2 flex items-center gap-3 flex-wrap">
                                         <span className="inline-block text-xs bg-orange-100 text-orange-700 px-3 py-1 rounded-full font-semibold">{profile.role}</span>
+                                        <span className="inline-block text-xs bg-orange-500/20 text-orange-300 px-3 py-1 rounded-full font-semibold">Lv.{profile.level} {profile.levelTitle}</span>
                                         <span className="text-gray-300 text-sm">Joined {new Date(profile.createdAt).toLocaleDateString()}</span>
                                     </div>
+                                    {/* Progress bar toward next level */}
+                                    {profile.nextLevelRepRequired !== null && (
+                                        <div className="mt-3">
+                                            <div className="flex justify-between text-xs text-gray-400 mb-1">
+                                                <span>{profile.reputation} rep</span>
+                                                <span>{profile.nextLevelRepRequired} for next level</span>
+                                            </div>
+                                            <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-orange-500 rounded-full transition-all"
+                                                    style={{ width: `${Math.min(100, (profile.reputation / profile.nextLevelRepRequired) * 100)}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             {/* Stats Row */}

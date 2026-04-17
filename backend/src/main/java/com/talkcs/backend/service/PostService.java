@@ -176,6 +176,7 @@ public class PostService{
             .tags(post.getTags().stream().map(Tag::getName).collect(Collectors.toList()))
             .status(post.getStatus() != null ? post.getStatus() : PostStatus.OPEN)
             .acceptedAnswerId(post.getAcceptedAnswer() != null ? post.getAcceptedAnswer().getId() : null)
+            .authorLevel(UserService.getLevelTitle(post.getAuthor().getReputation()))
             .build();
     }
 

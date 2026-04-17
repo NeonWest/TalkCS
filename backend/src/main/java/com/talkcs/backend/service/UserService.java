@@ -16,6 +16,7 @@ public class UserService {
     public UserResponse getUserProfile(String username) {
         User user = userrepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
+        int rep = user.getReputation();
         return UserResponse.builder()
             .id(user.getId())
             .username(user.getUsername())
@@ -23,8 +24,35 @@ public class UserService {
             .role(user.getRole())
             .postCount(postrepository.countByAuthorId(user.getId()))
             .commentCount(commentrepository.countByAuthorId(user.getId()))
-            .reputation(user.getReputation())
+            .reputation(rep)
+            .level(getLevelNumber(rep))
+            .levelTitle(getLevelTitle(rep))
+            .nextLevelRepRequired(getNextLevelRep(rep))
             .build();
+    }
+
+    public static int getLevelNumber(int rep) {
+        if (rep >= 1000) return 5;
+        if (rep >= 500)  return 4;
+        if (rep >= 200)  return 3;
+        if (rep >= 50)   return 2;
+        return 1;
+    }
+
+    public static String getLevelTitle(int rep) {
+        if (rep >= 1000) return "Expert";
+        if (rep >= 500)  return "Trusted";
+        if (rep >= 200)  return "Regular";
+        if (rep >= 50)   return "Contributor";
+        return "Newcomer";
+    }
+
+    public static Integer getNextLevelRep(int rep) {
+        if (rep >= 1000) return null;
+        if (rep >= 500)  return 1000;
+        if (rep >= 200)  return 500;
+        if (rep >= 50)   return 200;
+        return 50;
     }
 
     public List<PostResponse> getUserPosts(String username) {
