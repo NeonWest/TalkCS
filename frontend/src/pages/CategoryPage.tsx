@@ -8,6 +8,23 @@ import { voteOnPost, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
 import type { ResourceItem } from '../api/resources';
 import NavbarSearch from '../components/NavbarSearch';
+import MarkdownEditor from '../components/MarkdownEditor';
+
+function stripMarkdown(text: string, maxLen = 150): string {
+    const stripped = text
+        .replace(/```[\s\S]*?```/g, '')
+        .replace(/`[^`]*`/g, '')
+        .replace(/!\[.*?\]\(.*?\)/g, '')
+        .replace(/\[([^\]]+)\]\(.*?\)/g, '$1')
+        .replace(/^#+\s+/gm, '')
+        .replace(/(\*\*|__)(.*?)\1/g, '$2')
+        .replace(/(\*|_)(.*?)\1/g, '$2')
+        .replace(/~~(.*?)~~/g, '$1')
+        .replace(/^\s*[-*+>]\s+/gm, '')
+        .replace(/\n+/g, ' ')
+        .trim();
+    return stripped.length > maxLen ? stripped.slice(0, maxLen) + '…' : stripped;
+}
 
 export default function CategoryPage() {
     const { id } = useParams<{ id: string }>();
@@ -344,6 +361,9 @@ export default function CategoryPage() {
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-lg font-semibold text-orange-500 truncate">{post.title}</p>
+                                                    {post.body && (
+                                                        <p className="text-sm text-gray-400 mt-1 line-clamp-2">{stripMarkdown(post.body)}</p>
+                                                    )}
                                                     <div className="text-sm text-gray-300 mt-2 flex items-center gap-2.5 flex-wrap">
                                                         <span className="h-8 w-8 rounded-full bg-orange-500 text-white text-xs flex items-center justify-center font-semibold">
                                                             {post.authorUsername.charAt(0).toUpperCase()}
@@ -508,14 +528,11 @@ export default function CategoryPage() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-300 mb-2">Body</label>
-                                <textarea
-                                    id="post-body"
+                                <MarkdownEditor
                                     value={form.body}
-                                    onChange={e => setForm(p => ({ ...p, body: e.target.value }))}
-                                    required
+                                    onChange={v => setForm(p => ({ ...p, body: v }))}
                                     rows={5}
-                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
-                                    placeholder="Share details, context, or your thoughts..."
+                                    placeholder="Share details, context, or your thoughts... (markdown supported)"
                                 />
                             </div>
                             {error && <p className="text-sm text-red-500">{error}</p>}
@@ -561,13 +578,11 @@ export default function CategoryPage() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-300 mb-2">Body</label>
-                                <textarea
-                                    id="edit-post-body"
+                                <MarkdownEditor
                                     value={editForm.body}
-                                    onChange={e => setEditForm(p => ({ ...p, body: e.target.value }))}
-                                    required
+                                    onChange={v => setEditForm(p => ({ ...p, body: v }))}
                                     rows={5}
-                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                                    placeholder="Edit your post..."
                                 />
                             </div>
                             {error && <p className="text-sm text-red-500">{error}</p>}
