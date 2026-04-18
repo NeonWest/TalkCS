@@ -21,3 +21,16 @@ export const getUserProfile = async (username: string): Promise<UserProfile> => 
 export const getUserPosts = async (username: string): Promise<Post[]> => {
     return (await api.get<Post[]>(`/api/users/${username}/posts`)).data;
 };
+
+export interface LeaderboardUser {
+    id: number;
+    username: string;
+    reputation: number;
+    level: number;
+    levelTitle: string;
+    role: string;
+}
+
+export const getLeaderboard = async (): Promise<LeaderboardUser[]> => {
+    return (await api.get<LeaderboardUser[]>('/api/users/leaderboard')).data;
+};

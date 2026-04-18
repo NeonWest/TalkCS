@@ -21,4 +21,9 @@ public class UserController {
     public ResponseEntity<List<PostResponse>> getUserPosts(@PathVariable String username) {
         return ResponseEntity.ok(userservice.getUserPosts(username));
     }
+
+    @GetMapping("/leaderboard")
+    public ResponseEntity<List<UserResponse>> getLeaderboard() {
+        return ResponseEntity.ok(userservice.getLeaderboard());
+    }
 }

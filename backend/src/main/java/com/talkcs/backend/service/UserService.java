@@ -55,6 +55,19 @@ public class UserService {
         return 50;
     }
 
+    public List<UserResponse> getLeaderboard() {
+        return userrepository.findTop20ByOrderByReputationDesc().stream()
+            .map(u -> UserResponse.builder()
+                .id(u.getId())
+                .username(u.getUsername())
+                .reputation(u.getReputation())
+                .level(getLevelNumber(u.getReputation()))
+                .levelTitle(getLevelTitle(u.getReputation()))
+                .role(u.getRole())
+                .build())
+            .toList();
+    }
+
     public List<PostResponse> getUserPosts(String username) {
         User user = userrepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
