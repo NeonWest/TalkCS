@@ -11,6 +11,10 @@ import MDEditor from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
 import MarkdownEditor from '../components/MarkdownEditor';
 
+function linkMentions(text: string): string {
+    return text.replace(/@(\w+)/g, '[@$1](/profile/$1)');
+}
+
 // --- Recursive comment component ---
 function CommentItem({
     comment,
@@ -215,7 +219,7 @@ function CommentItem({
                 ) : (
                     <>
                         <div className="text-sm text-gray-200" data-color-mode="dark">
-                        <MDEditor.Markdown source={comment.body} style={{ background: 'transparent', color: 'inherit' }} />
+                        <MDEditor.Markdown source={linkMentions(comment.body)} style={{ background: 'transparent', color: 'inherit' }} />
                     </div>
                         <button
                             onClick={() => {
@@ -566,7 +570,7 @@ export default function PostPage() {
                             </div>
                             <div className="border-t border-white/10 pt-3">
                                 <div className="text-base leading-relaxed text-gray-200" data-color-mode="dark">
-                                    <MDEditor.Markdown source={post.body} style={{ background: 'transparent', color: 'inherit' }} />
+                                    <MDEditor.Markdown source={linkMentions(post.body)} style={{ background: 'transparent', color: 'inherit' }} />
                                 </div>
                                 {post.tags && post.tags.length > 0 && (
                                     <div className="flex flex-wrap gap-1.5 mt-4">

@@ -19,6 +19,7 @@ public class CommentService{
     private final UserRepository userrepository;
     private final VoteRepository voteRepository;
     private final BadgeService badgeService;
+    private final MentionService mentionService;
 
     public List<CommentResponse> getCommentsByPostId(Long Id){
         return commentrepository.findByPostIdAndParentIsNull(Id)
@@ -70,6 +71,7 @@ public class CommentService{
             .build()
         );
 
+        mentionService.extractMentions(request.getBody()); // Phase 5 will consume this for notifications
         badgeService.checkAndAwardBadges(user);
 
         return CommentResponse.builder()
