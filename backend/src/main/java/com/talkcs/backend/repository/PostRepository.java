@@ -12,4 +12,8 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     List<Post> findByAuthorId(Long authorId);
     List<Post> findByTitleContainingIgnoreCaseOrBodyContainingIgnoreCase(String title, String body);
     List<Post> findByCategoryId(Long categoryId);
+
+    @org.springframework.data.jpa.repository.Query(
+        value = "SELECT p FROM Post p WHERE p.createdAt >= :since ORDER BY (SELECT COUNT(v) FROM Vote v WHERE v.post = p AND v.value = 1) * 2 + (SELECT COUNT(c) FROM Comment c WHERE c.post = p) DESC")
+    List<Post> findTrendingPosts(@org.springframework.data.repository.query.Param("since") java.time.LocalDateTime since, org.springframework.data.domain.Pageable pageable);
 }
