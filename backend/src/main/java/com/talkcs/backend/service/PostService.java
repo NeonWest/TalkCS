@@ -32,6 +32,7 @@ public class PostService{
     private final BadgeService badgeService;
     private final CategoryReputationRepository categoryReputationRepository;
     private final BookmarkRepository bookmarkRepository;
+    private final MentionService mentionService;
 
     public Map<String, Object> getAllPostsByCategoryId(Long categoryId, int page, int size, String sortBy) {
         Sort sort = switch (sortBy) {
@@ -83,6 +84,7 @@ public class PostService{
             .tags(tags)
             .build()
         );
+        mentionService.extractMentions(request.getBody()); // Phase 5 will consume this for notifications
         badgeService.checkAndAwardBadges(user);
         return toResponse(saved);
 
