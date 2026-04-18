@@ -27,3 +27,13 @@ export const login = async (data: LoginRequest): Promise<AuthResponse> => {
     const response = await api.post<AuthResponse>('/api/auth/login', data);
     return response.data;
 };
+
+export const forgotPassword = async (email: string): Promise<string> => {
+    const response = await api.post<string>('/api/auth/forgot-password', { email });
+    return response.data;
+};
+
+export const resetPassword = async (token: string, newPassword: string): Promise<string> => {
+    const response = await api.post<string>('/api/auth/reset-password', { token, newPassword });
+    return response.data;
+};
