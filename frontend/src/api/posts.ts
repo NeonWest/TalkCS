@@ -15,6 +15,7 @@ export interface Post {
     status?: PostStatus;
     acceptedAnswerId?: number | null;
     authorLevel?: string;
+    bookmarkedByCurrentUser?: boolean;
 }
 
 export interface PostRequest {
@@ -65,6 +66,11 @@ export const setPostStatus = async (id: number, status: PostStatus): Promise<Pos
 export const acceptAnswer = async (postId: number, commentId: number): Promise<Post> => {
     return (await api.put<Post>(`/api/posts/${postId}/accept/${commentId}`)).data;
 };
+
+export const bookmarkPost = async (id: number): Promise<void> => { await api.post(`/api/posts/${id}/bookmark`); };
+export const unbookmarkPost = async (id: number): Promise<void> => { await api.delete(`/api/posts/${id}/bookmark`); };
+export const getUserBookmarks = async (username: string): Promise<Post[]> =>
+    (await api.get<Post[]>(`/api/users/${username}/bookmarks`)).data;
 
 export interface SimilarPost { id: number; title: string; score: number; }
 

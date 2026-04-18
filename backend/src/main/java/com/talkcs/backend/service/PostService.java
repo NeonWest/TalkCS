@@ -31,6 +31,7 @@ public class PostService{
     private final TagService tagService;
     private final BadgeService badgeService;
     private final CategoryReputationRepository categoryReputationRepository;
+    private final BookmarkRepository bookmarkRepository;
 
     public Map<String, Object> getAllPostsByCategoryId(Long categoryId, int page, int size, String sortBy) {
         Sort sort = switch (sortBy) {
@@ -192,7 +193,38 @@ public class PostService{
             .status(post.getStatus() != null ? post.getStatus() : PostStatus.OPEN)
             .acceptedAnswerId(post.getAcceptedAnswer() != null ? post.getAcceptedAnswer().getId() : null)
             .authorLevel(UserService.getLevelTitle(post.getAuthor().getReputation()))
+            .bookmarkedByCurrentUser(isBookmarked(post.getId()))
             .build();
+    }
+
+    private boolean isBookmarked(Long postId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getName().equals("anonymousUser")) return false;
+        User currentUser = userrepository.findByEmail(auth.getName()).orElse(null);
+        if (currentUser == null) return false;
+        return bookmarkRepository.existsByUserIdAndPostId(currentUser.getId(), postId);
+    }
+
+    public void bookmarkPost(Long postId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userrepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        Post post = postrepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
+        if (!bookmarkRepository.existsByUserIdAndPostId(user.getId(), postId)) {
+            bookmarkRepository.save(Bookmark.builder().user(user).post(post).createdAt(java.time.LocalDateTime.now()).build());
+        }
+    }
+
+    public void unbookmarkPost(Long postId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userrepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        bookmarkRepository.findByUserIdAndPostId(user.getId(), postId).ifPresent(bookmarkRepository::delete);
+    }
+
+    public List<PostResponse> getUserBookmarks(String username) {
+        User user = userrepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        return bookmarkRepository.findByUserId(user.getId()).stream()
+            .map(b -> toResponse(b.getPost()))
+            .toList();
     }
 
     private Set<Tag> resolveTags(List<String> tagNames) {

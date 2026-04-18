@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getUserPosts, followUser, unfollowUser } from '../api/users';
+import { getUserBookmarks } from '../api/posts';
+import type { Post } from '../api/posts';
 import { voteOnPost } from '../api/votes';
 import { getUserBadges } from '../api/badges';
 import type { UserProfile } from '../api/users';
-import type { Post } from '../api/posts';
 import type { Badge } from '../api/badges';
 import NavbarSearch from '../components/NavbarSearch';
 
@@ -28,6 +29,8 @@ export default function ProfilePage() {
     const [error, setError] = useState('');
     const [votingPostId, setVotingPostId] = useState<number | null>(null);
     const [badges, setBadges] = useState<Badge[]>([]);
+    const [bookmarks, setBookmarks] = useState<Post[]>([]);
+    const [activeTab, setActiveTab] = useState<'posts' | 'saved'>('posts');
     const [following, setFollowing] = useState(false);
     const [followerCount, setFollowerCount] = useState(0);
     const [followLoading, setFollowLoading] = useState(false);
@@ -54,6 +57,7 @@ export default function ProfilePage() {
             }),
             getUserPosts(username).then(setPosts),
             getUserBadges(username).then(setBadges),
+            getUserBookmarks(username).then(setBookmarks),
         ])
             .catch(() => setError('Failed to load profile.'))
             .finally(() => setLoading(false));
@@ -249,76 +253,54 @@ export default function ProfilePage() {
                             </div>
                         )}
 
-                        {/* Posts Section */}
+                        {/* Posts / Saved Tabs */}
                         <div>
-                            <h2 className="text-xl font-bold text-gray-200 mb-3 tracking-wide">
-                                Recent posts
-                            </h2>
-                            {posts.length === 0 ? (
-                                <div className="bg-[#101010] rounded-xl shadow-sm p-12 text-center text-gray-400 border border-white/10">
-                                    No posts yet.
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {posts.map(post => (
-                                        <div
-                                            key={post.id}
-                                            onClick={() => navigate(`/post/${post.id}`)}
-                                            className="bg-[#343434] rounded-xl shadow-sm border border-white/10 px-4 py-3 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer"
-                                        >
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-lg font-semibold text-orange-500 truncate">{post.title}</p>
-                                                    <p className="text-sm text-gray-300 mt-1">
-                                                        General
-                                                        <span className="mx-3">•</span>
-                                                        {new Date(post.createdAt).toLocaleDateString()}
-                                                        <span className="mx-3">•</span>
-                                                        {post.commentCount} comment{post.commentCount !== 1 ? 's' : ''}
-                                                    </p>
-                                                </div>
-                                                {isAuthenticated && (
-                                                    <div className="flex items-center gap-1 shrink-0">
-                                                        <button
-                                                            onClick={async (e) => {
-                                                                e.stopPropagation();
-                                                                setVotingPostId(post.id);
-                                                                try {
-                                                                    await voteOnPost(post.id, 1);
-                                                                    if (username) await refreshUserPosts(username);
-                                                                } finally {
-                                                                    setVotingPostId(null);
-                                                                }
-                                                            }}
-                                                            disabled={votingPostId === post.id}
-                                                            className={`text-sm transition ${post.userVote === 1 ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
-                                                        >
-                                                            ▲
-                                                        </button>
-                                                        <span className="text-sm font-semibold text-gray-200 w-6 text-center">{post.voteScore ?? 0}</span>
-                                                        <button
-                                                            onClick={async (e) => {
-                                                                e.stopPropagation();
-                                                                setVotingPostId(post.id);
-                                                                try {
-                                                                    await voteOnPost(post.id, -1);
-                                                                    if (username) await refreshUserPosts(username);
-                                                                } finally {
-                                                                    setVotingPostId(null);
-                                                                }
-                                                            }}
-                                                            disabled={votingPostId === post.id}
-                                                            className={`text-sm transition ${post.userVote === -1 ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
-                                                        >
-                                                            ▼
-                                                        </button>
+                            <div className="flex gap-2 mb-3">
+                                {(['posts', 'saved'] as const).map(tab => (
+                                    <button key={tab} onClick={() => setActiveTab(tab)}
+                                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === tab ? 'bg-orange-500 text-white' : 'border border-white/20 text-gray-300 hover:bg-white/10'}`}>
+                                        {tab === 'posts' ? 'Recent Posts' : 'Saved Posts'}
+                                    </button>
+                                ))}
+                            </div>
+                            {(() => {
+                                const list = activeTab === 'posts' ? posts : bookmarks;
+                                if (list.length === 0) return (
+                                    <div className="bg-[#101010] rounded-xl shadow-sm p-12 text-center text-gray-400 border border-white/10">
+                                        {activeTab === 'posts' ? 'No posts yet.' : 'No saved posts.'}
+                                    </div>
+                                );
+                                return (
+                                    <div className="space-y-3">
+                                        {list.map(post => (
+                                            <div key={post.id} onClick={() => navigate(`/post/${post.id}`)}
+                                                className="bg-[#343434] rounded-xl shadow-sm border border-white/10 px-4 py-3 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer">
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-lg font-semibold text-orange-500 truncate">{post.title}</p>
+                                                        <p className="text-sm text-gray-300 mt-1">
+                                                            {new Date(post.createdAt).toLocaleDateString()}
+                                                            <span className="mx-3">•</span>
+                                                            {post.commentCount} comment{post.commentCount !== 1 ? 's' : ''}
+                                                        </p>
                                                     </div>
-                                                )}
+                                                    {isAuthenticated && activeTab === 'posts' && (
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            <button onClick={async (e) => { e.stopPropagation(); setVotingPostId(post.id); try { await voteOnPost(post.id, 1); if (username) await refreshUserPosts(username); } finally { setVotingPostId(null); } }}
+                                                                disabled={votingPostId === post.id}
+                                                                className={`text-sm transition ${post.userVote === 1 ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}>▲</button>
+                                                            <span className="text-sm font-semibold text-gray-200 w-6 text-center">{post.voteScore ?? 0}</span>
+                                                            <button onClick={async (e) => { e.stopPropagation(); setVotingPostId(post.id); try { await voteOnPost(post.id, -1); if (username) await refreshUserPosts(username); } finally { setVotingPostId(null); } }}
+                                                                disabled={votingPostId === post.id}
+                                                                className={`text-sm transition ${post.userVote === -1 ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}>▼</button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                                        ))}
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </>
                 )}
