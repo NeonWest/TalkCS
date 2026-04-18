@@ -11,4 +11,5 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     long countByAuthorId(Long authorId);
     List<Post> findByAuthorId(Long authorId);
     List<Post> findByTitleContainingIgnoreCaseOrBodyContainingIgnoreCase(String title, String body);
+    List<Post> findByCategoryId(Long categoryId);
 }

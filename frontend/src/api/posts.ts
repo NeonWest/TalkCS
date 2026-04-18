@@ -65,3 +65,13 @@ export const setPostStatus = async (id: number, status: PostStatus): Promise<Pos
 export const acceptAnswer = async (postId: number, commentId: number): Promise<Post> => {
     return (await api.put<Post>(`/api/posts/${postId}/accept/${commentId}`)).data;
 };
+
+export interface SimilarPost { id: number; title: string; score: number; }
+
+export const getSimilarPosts = async (
+    title: string, body: string, categoryId: number, tags: string[]
+): Promise<SimilarPost[]> => {
+    const params = new URLSearchParams({ title, body, categoryId: String(categoryId) });
+    tags.forEach(t => params.append('tags', t));
+    return (await api.get<SimilarPost[]>(`/api/posts/similar?${params}`)).data;
+};
