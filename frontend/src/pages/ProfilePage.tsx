@@ -3,9 +3,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getUserPosts } from '../api/users';
 import { voteOnPost } from '../api/votes';
+import { getUserBadges } from '../api/badges';
 import type { UserProfile } from '../api/users';
 import type { Post } from '../api/posts';
+import type { Badge } from '../api/badges';
 import NavbarSearch from '../components/NavbarSearch';
+
+const BADGE_ICONS: Record<string, string> = {
+    post1: '📝', post10: '✍️', post50: '🖊️', post100: '📚',
+    cmt1: '💬', cmt10: '🗣️', cmt50: '💭', cmt100: '🎙️',
+    rep50: '⭐', rep200: '🌟', rep500: '🏅', rep1000: '🏆',
+    accepted1: '✅',
+};
+function badgeIcon(key: string) { return BADGE_ICONS[key] ?? '🎖️'; }
 
 export default function ProfilePage() {
     const { username } = useParams<{ username: string }>();
@@ -17,6 +27,7 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [votingPostId, setVotingPostId] = useState<number | null>(null);
+    const [badges, setBadges] = useState<Badge[]>([]);
 
     const refreshUserPosts = async (targetUsername: string) => {
         const updated = await getUserPosts(targetUsername);
@@ -35,6 +46,7 @@ export default function ProfilePage() {
         Promise.all([
             getUserProfile(username).then(setProfile),
             getUserPosts(username).then(setPosts),
+            getUserBadges(username).then(setBadges),
         ])
             .catch(() => setError('Failed to load profile.'))
             .finally(() => setLoading(false));
@@ -154,6 +166,28 @@ export default function ProfilePage() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Badges Section */}
+                        {badges.length > 0 && (
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-200 mb-3 tracking-wide">Badges</h2>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {badges.map(badge => (
+                                        <div
+                                            key={badge.id}
+                                            className="bg-[#2b2b2b] rounded-xl border border-white/10 px-4 py-3 flex items-start gap-3"
+                                            title={badge.description}
+                                        >
+                                            <span className="text-2xl">{badgeIcon(badge.iconKey)}</span>
+                                            <div>
+                                                <p className="text-sm font-semibold text-gray-100">{badge.name}</p>
+                                                <p className="text-xs text-gray-400">{badge.description}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Posts Section */}
                         <div>

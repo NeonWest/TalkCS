@@ -29,6 +29,7 @@ public class PostService{
     private final CategoryRepository categoryrepository;
     private final VoteRepository voteRepository;
     private final TagService tagService;
+    private final BadgeService badgeService;
 
     public Map<String, Object> getAllPostsByCategoryId(Long categoryId, int page, int size, String sortBy) {
         Sort sort = switch (sortBy) {
@@ -80,6 +81,7 @@ public class PostService{
             .tags(tags)
             .build()
         );
+        badgeService.checkAndAwardBadges(user);
         return toResponse(saved);
 
     }
@@ -159,6 +161,10 @@ public class PostService{
         User poster = post.getAuthor();
         poster.setReputation(poster.getReputation() + 2);
         userrepository.save(poster);
+
+        badgeService.awardAnswerAcceptedBadge(commenter);
+        badgeService.checkAndAwardBadges(commenter);
+        badgeService.checkAndAwardBadges(poster);
 
         return toResponse(post);
     }

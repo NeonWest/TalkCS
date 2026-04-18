@@ -18,6 +18,7 @@ public class CommentService{
     private final CommentRepository commentrepository;
     private final UserRepository userrepository;
     private final VoteRepository voteRepository;
+    private final BadgeService badgeService;
 
     public List<CommentResponse> getCommentsByPostId(Long Id){
         return commentrepository.findByPostIdAndParentIsNull(Id)
@@ -68,6 +69,8 @@ public class CommentService{
             .parent(parent)
             .build()
         );
+
+        badgeService.checkAndAwardBadges(user);
 
         return CommentResponse.builder()
         .id(saved.getId())
