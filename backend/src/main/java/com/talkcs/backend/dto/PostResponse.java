@@ -11,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 public class PostResponse{
     private Long id;
+    private Long categoryId;
     private String title;
     private String body;
     private LocalDateTime createdAt;

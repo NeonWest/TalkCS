@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getUserProfile, getUserPosts, followUser, unfollowUser } from '../api/users';
+import { getUserProfile, getUserPosts, followUser, unfollowUser, updateProfile, uploadAvatar } from '../api/users';
 import { getUserBookmarks } from '../api/posts';
 import type { Post } from '../api/posts';
 import { voteOnPost } from '../api/votes';
@@ -36,6 +36,10 @@ export default function ProfilePage() {
     const [following, setFollowing] = useState(false);
     const [followerCount, setFollowerCount] = useState(0);
     const [followLoading, setFollowLoading] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editBio, setEditBio] = useState('');
+    const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null);
+    const [editSaving, setEditSaving] = useState(false);
 
     const refreshUserPosts = async (targetUsername: string) => {
         const updated = await getUserPosts(targetUsername);
@@ -134,15 +138,36 @@ export default function ProfilePage() {
                         {/* Profile Header */}
                         <div className="bg-[#343434] rounded-xl shadow-sm p-5 space-y-4 border border-white/10">
                             <div className="flex items-start gap-6">
-                                {/* Avatar Circle */}
+                                {/* Avatar */}
                                 <div className="flex-shrink-0">
-                                    <div className="w-14 h-14 rounded-full bg-orange-500 flex items-center justify-center">
-                                        <span className="text-white text-lg font-bold">{profile.username.charAt(0).toUpperCase()}</span>
-                                    </div>
+                                    {profile.avatarUrl ? (
+                                        <img
+                                            src={`http://localhost:8080${profile.avatarUrl}`}
+                                            alt={profile.username}
+                                            className="w-14 h-14 rounded-full object-cover border-2 border-orange-500/30"
+                                        />
+                                    ) : (
+                                        <div className="w-14 h-14 rounded-full bg-orange-500 flex items-center justify-center">
+                                            <span className="text-white text-lg font-bold">{profile.username.charAt(0).toUpperCase()}</span>
+                                        </div>
+                                    )}
                                 </div>
                                 {/* Profile Info */}
                                 <div className="flex-1">
-                                    <h1 className="text-2xl font-bold text-gray-100">{profile.username}</h1>
+                                    <div className="flex items-center gap-3">
+                                        <h1 className="text-2xl font-bold text-gray-100">{profile.username}</h1>
+                                        {user?.username === profile.username && (
+                                            <button
+                                                onClick={() => { setEditBio(profile.bio ?? ''); setEditAvatarFile(null); setShowEditModal(true); }}
+                                                className="text-xs text-orange-400 hover:text-orange-300 border border-orange-500/30 px-2 py-0.5 rounded-lg transition"
+                                            >
+                                                Edit Profile
+                                            </button>
+                                        )}
+                                    </div>
+                                    {profile.bio && (
+                                        <p className="text-sm text-gray-400 mt-1">{profile.bio}</p>
+                                    )}
                                     <div className="mt-2 flex items-center gap-3 flex-wrap">
                                         <span className="inline-block text-xs bg-orange-100 text-orange-700 px-3 py-1 rounded-full font-semibold">{profile.role}</span>
                                         <span className="inline-block text-xs bg-orange-500/20 text-orange-300 px-3 py-1 rounded-full font-semibold">Lv.{profile.level} {profile.levelTitle}</span>
@@ -309,6 +334,63 @@ export default function ProfilePage() {
                     </>
                 )}
             </main>
+
+            {/* Edit Profile Modal */}
+            {showEditModal && (
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#2d2d2d] rounded-xl border border-white/10 shadow-xl w-full max-w-md p-6 space-y-4">
+                        <h2 className="text-lg font-semibold text-gray-100">Edit Profile</h2>
+
+                        <div>
+                            <label className="block text-sm text-gray-400 mb-1">Bio</label>
+                            <textarea
+                                value={editBio}
+                                onChange={e => setEditBio(e.target.value)}
+                                rows={3}
+                                placeholder="Tell others about yourself…"
+                                className="w-full bg-[#1a1a1a] text-white placeholder-gray-500 rounded-lg px-3 py-2 text-sm border border-white/10 focus:outline-none focus:border-orange-500/50 resize-none"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm text-gray-400 mb-1">Avatar</label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={e => setEditAvatarFile(e.target.files?.[0] ?? null)}
+                                className="text-sm text-gray-400 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-orange-500 file:text-white hover:file:bg-orange-600 cursor-pointer"
+                            />
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                onClick={async () => {
+                                    setEditSaving(true);
+                                    try {
+                                        let updated = await updateProfile(editBio);
+                                        if (editAvatarFile) await uploadAvatar(editAvatarFile);
+                                        if (username) {
+                                            updated = await import('../api/users').then(m => m.getUserProfile(username));
+                                        }
+                                        setProfile(updated);
+                                        setShowEditModal(false);
+                                    } finally { setEditSaving(false); }
+                                }}
+                                disabled={editSaving}
+                                className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white py-2 rounded-lg text-sm font-medium transition"
+                            >
+                                {editSaving ? 'Saving…' : 'Save'}
+                            </button>
+                            <button
+                                onClick={() => setShowEditModal(false)}
+                                className="px-4 py-2 text-sm text-gray-400 hover:text-white transition"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

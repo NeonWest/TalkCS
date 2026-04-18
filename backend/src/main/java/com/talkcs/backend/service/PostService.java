@@ -197,6 +197,7 @@ public class PostService{
     private PostResponse toResponse(Post post) {
         return PostResponse.builder()
             .id(post.getId())
+            .categoryId(post.getCategory().getId())
             .title(post.getTitle())
             .body(post.getBody())
             .authorUsername(post.getAuthor().getUsername())

@@ -5,6 +5,7 @@ import com.talkcs.backend.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.talkcs.backend.dto.SimilarPostResponse;
@@ -17,6 +18,7 @@ import java.util.Map;
 public class PostController{
     private final PostService postservice;
     private final SimilarityService similarityService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllPostsByCategoryId(
@@ -29,7 +31,10 @@ public class PostController{
     
     @PostMapping
     public ResponseEntity<PostResponse> createPost(@Valid @RequestBody PostRequest request){
-        return ResponseEntity.ok(postservice.createPost(request));
+        PostResponse response = postservice.createPost(request);
+        messagingTemplate.convertAndSend("/topic/category/" + request.getCategoryId(),
+                (Object) Map.of("action", "created", "post", response));
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
@@ -39,12 +44,18 @@ public class PostController{
 
     @PutMapping("/{id}")
     public ResponseEntity<PostResponse> editPost(@PathVariable Long id, @Valid @RequestBody PostRequest request) {
-        return ResponseEntity.ok(postservice.editPost(id, request));
+        PostResponse response = postservice.editPost(id, request);
+        messagingTemplate.convertAndSend("/topic/category/" + request.getCategoryId(),
+                (Object) Map.of("action", "updated", "post", response));
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+        PostResponse post = postservice.getPostById(id);
         postservice.deletePost(id);
+        messagingTemplate.convertAndSend("/topic/category/" + post.getCategoryId(),
+                (Object) Map.of("action", "deleted", "postId", id));
         return ResponseEntity.noContent().build();
     }
 

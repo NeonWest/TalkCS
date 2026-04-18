@@ -5,15 +5,18 @@ import com.talkcs.backend.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/comments")
 @RequiredArgsConstructor
 public class CommentController{
     private final CommentService commentservice;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping
     public ResponseEntity<List<CommentResponse>> getCommentsByPostId(@RequestParam Long postId) {
@@ -22,17 +25,25 @@ public class CommentController{
     
     @PostMapping
     public ResponseEntity<CommentResponse> createComment(@Valid @RequestBody CommentRequest request){
-        return ResponseEntity.ok(commentservice.createComment(request));
+        CommentResponse response = commentservice.createComment(request);
+        messagingTemplate.convertAndSend("/topic/post/" + request.getPostId(),
+                (Object) Map.of("action", "created", "comment", response));
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<CommentResponse> editComment(@PathVariable Long id, @Valid @RequestBody CommentRequest request) {
-        return ResponseEntity.ok(commentservice.editComment(id, request));
+        CommentResponse response = commentservice.editComment(id, request);
+        messagingTemplate.convertAndSend("/topic/post/" + request.getPostId(),
+                (Object) Map.of("action", "updated", "comment", response));
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteComment(@PathVariable Long id) {
-        commentservice.deleteComment(id);
+        Long postId = commentservice.deleteComment(id);
+        messagingTemplate.convertAndSend("/topic/post/" + postId,
+                (Object) Map.of("action", "deleted", "commentId", id));
         return ResponseEntity.noContent().build();
     }
 }

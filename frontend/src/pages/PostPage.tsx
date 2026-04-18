@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCommentUpdates } from '../hooks/useCommentUpdates';
 import { getPostById, updatePost, deletePost, acceptAnswer, bookmarkPost, unbookmarkPost } from '../api/posts';
 import { getComments, createComment, updateComment, deleteComment } from '../api/comments';
 import { voteOnPost, voteOnComment, getVoteErrorMessage } from '../api/votes';
@@ -287,7 +288,7 @@ export default function PostPage() {
     const postId = Number(id);
     const navigate = useNavigate();
     const location = useLocation();
-    const { user, logout, isAuthenticated } = useAuth();
+    const { user, logout, isAuthenticated, token } = useAuth();
     const queryCategoryId = Number(new URLSearchParams(location.search).get('categoryId'));
     const stateCategoryId = (location.state as { categoryId?: number } | null)?.categoryId;
     const categoryId = Number.isFinite(queryCategoryId) && queryCategoryId > 0 ? queryCategoryId : stateCategoryId;
@@ -331,6 +332,8 @@ export default function PostPage() {
         const updated = await getComments(postId);
         setComments(updated);
     };
+
+    useCommentUpdates(id, token, refreshComments);
 
     // Add a new top-level comment to the list
     const handleComment = async (e: React.FormEvent) => {
