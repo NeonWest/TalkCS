@@ -126,6 +126,12 @@ export default function HomePage() {
                                 >
                                     Leaderboard
                                 </button>
+                                <button
+                                    onClick={() => navigate('/calendar')}
+                                    className="text-sm text-gray-300 hover:text-white transition"
+                                >
+                                    Calendar
+                                </button>
                                 {isAdmin && (
                                     <button onClick={() => navigate('/admin')} className="text-sm text-orange-400 hover:text-orange-300 transition font-medium">
                                         Admin
