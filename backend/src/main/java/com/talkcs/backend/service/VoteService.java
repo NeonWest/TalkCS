@@ -14,6 +14,8 @@ public class VoteService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final ResourceRepository resourceRepository;
+    private final CategoryReputationRepository categoryReputationRepository;
+    private final BadgeService badgeService;
 
     public void voteOnPost(Long postId, int value) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -29,10 +31,13 @@ public class VoteService {
                 if (existing.getValue() == value) {
                     author.setReputation(author.getReputation() - value);
                     userRepository.save(author);
+                    adjustCategoryRep(author, post.getCategory(), -value);
                     voteRepository.delete(existing);
                 } else {
-                    author.setReputation(author.getReputation() - existing.getValue() + value);
+                    int delta = value - existing.getValue();
+                    author.setReputation(author.getReputation() + delta);
                     userRepository.save(author);
+                    adjustCategoryRep(author, post.getCategory(), delta);
                     existing.setValue(value);
                     voteRepository.save(existing);
                 }
@@ -40,11 +45,13 @@ public class VoteService {
             () -> {
                 author.setReputation(author.getReputation() + value);
                 userRepository.save(author);
+                adjustCategoryRep(author, post.getCategory(), value);
                 voteRepository.save(Vote.builder()
                     .voter(voter).post(post).value(value)
                     .createdAt(LocalDateTime.now()).build());
             }
         );
+        badgeService.checkExpertiseBadges(author, post.getCategory());
     }
 
     public void voteOnComment(Long commentId, int value) {
@@ -56,15 +63,19 @@ public class VoteService {
             throw new RuntimeException("Cannot vote on your own comment");
 
         User author = comment.getAuthor();
+        Category category = comment.getPost().getCategory();
         voteRepository.findByVoterIdAndCommentId(voter.getId(), commentId).ifPresentOrElse(
             existing -> {
                 if (existing.getValue() == value) {
                     author.setReputation(author.getReputation() - value);
                     userRepository.save(author);
+                    adjustCategoryRep(author, category, -value);
                     voteRepository.delete(existing);
                 } else {
-                    author.setReputation(author.getReputation() - existing.getValue() + value);
+                    int delta = value - existing.getValue();
+                    author.setReputation(author.getReputation() + delta);
                     userRepository.save(author);
+                    adjustCategoryRep(author, category, delta);
                     existing.setValue(value);
                     voteRepository.save(existing);
                 }
@@ -72,11 +83,21 @@ public class VoteService {
             () -> {
                 author.setReputation(author.getReputation() + value);
                 userRepository.save(author);
+                adjustCategoryRep(author, category, value);
                 voteRepository.save(Vote.builder()
                     .voter(voter).comment(comment).value(value)
                     .createdAt(LocalDateTime.now()).build());
             }
         );
+        badgeService.checkExpertiseBadges(author, category);
+    }
+
+    private void adjustCategoryRep(User user, Category category, int delta) {
+        CategoryReputation cr = categoryReputationRepository
+            .findByUserIdAndCategoryId(user.getId(), category.getId())
+            .orElseGet(() -> CategoryReputation.builder().user(user).category(category).build());
+        cr.setReputation(cr.getReputation() + delta);
+        categoryReputationRepository.save(cr);
     }
 
     public void voteOnResource(Long resourceId, int value) {

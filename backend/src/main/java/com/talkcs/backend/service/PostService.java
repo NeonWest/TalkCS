@@ -30,6 +30,7 @@ public class PostService{
     private final VoteRepository voteRepository;
     private final TagService tagService;
     private final BadgeService badgeService;
+    private final CategoryReputationRepository categoryReputationRepository;
 
     public Map<String, Object> getAllPostsByCategoryId(Long categoryId, int page, int size, String sortBy) {
         Sort sort = switch (sortBy) {
@@ -162,9 +163,17 @@ public class PostService{
         poster.setReputation(poster.getReputation() + 2);
         userrepository.save(poster);
 
+        // +15 category rep to commenter for accepted answer
+        CategoryReputation cr = categoryReputationRepository
+            .findByUserIdAndCategoryId(commenter.getId(), post.getCategory().getId())
+            .orElseGet(() -> CategoryReputation.builder().user(commenter).category(post.getCategory()).build());
+        cr.setReputation(cr.getReputation() + 15);
+        categoryReputationRepository.save(cr);
+
         badgeService.awardAnswerAcceptedBadge(commenter);
         badgeService.checkAndAwardBadges(commenter);
         badgeService.checkAndAwardBadges(poster);
+        badgeService.checkExpertiseBadges(commenter, post.getCategory());
 
         return toResponse(post);
     }

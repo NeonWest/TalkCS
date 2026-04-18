@@ -167,17 +167,13 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-                        {/* Badges Section */}
-                        {badges.length > 0 && (
+                        {/* Milestone Badges */}
+                        {badges.filter(b => b.type === 'MILESTONE').length > 0 && (
                             <div>
                                 <h2 className="text-xl font-bold text-gray-200 mb-3 tracking-wide">Badges</h2>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                    {badges.map(badge => (
-                                        <div
-                                            key={badge.id}
-                                            className="bg-[#2b2b2b] rounded-xl border border-white/10 px-4 py-3 flex items-start gap-3"
-                                            title={badge.description}
-                                        >
+                                    {badges.filter(b => b.type === 'MILESTONE').map(badge => (
+                                        <div key={badge.id} className="bg-[#2b2b2b] rounded-xl border border-white/10 px-4 py-3 flex items-start gap-3">
                                             <span className="text-2xl">{badgeIcon(badge.iconKey)}</span>
                                             <div>
                                                 <p className="text-sm font-semibold text-gray-100">{badge.name}</p>
@@ -185,6 +181,30 @@ export default function ProfilePage() {
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Expertise Badges */}
+                        {badges.filter(b => b.type === 'SPECIAL').length > 0 && (
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-200 mb-3 tracking-wide">Expertise</h2>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {badges.filter(b => b.type === 'SPECIAL').map(badge => {
+                                        const tier = badge.name.includes('Gold') ? 'Gold'
+                                            : badge.name.includes('Silver') ? 'Silver' : 'Bronze';
+                                        const tierColor = tier === 'Gold' ? 'text-yellow-400'
+                                            : tier === 'Silver' ? 'text-gray-300' : 'text-orange-400';
+                                        return (
+                                            <div key={badge.id} className="bg-[#2b2b2b] rounded-xl border border-white/10 px-4 py-3 flex items-start gap-3">
+                                                <span className="text-2xl">{tier === 'Gold' ? '🥇' : tier === 'Silver' ? '🥈' : '🥉'}</span>
+                                                <div>
+                                                    <p className={`text-sm font-semibold ${tierColor}`}>{badge.name}</p>
+                                                    <p className="text-xs text-gray-400">{badge.description}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
