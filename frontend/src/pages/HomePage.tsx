@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { getCategories, createCategory } from '../api/categories';
+import { getCategories, createCategory, updateCategory, deleteCategory } from '../api/categories';
 import { getPosts, getTrendingPosts } from '../api/posts';
 import type { Post } from '../api/posts';
 import type { Category } from '../api/categories';
@@ -21,6 +21,9 @@ export default function HomePage() {
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState('');
     const [trending, setTrending] = useState<Post[]>([]);
+    const [editCat, setEditCat] = useState<Category | null>(null);
+    const [editName, setEditName] = useState('');
+    const [editDesc, setEditDesc] = useState('');
 
     const isAdmin = user?.role === 'ADMIN';
 
@@ -59,6 +62,27 @@ export default function HomePage() {
     const handleMyProfile = () => {
         if (!user?.username) return;
         navigate(`/profile/${user.username}`);
+    };
+
+    const openEditCat = (e: React.MouseEvent, cat: Category) => {
+        e.stopPropagation();
+        setEditCat(cat);
+        setEditName(cat.name);
+        setEditDesc(cat.description);
+    };
+
+    const saveEditCat = async () => {
+        if (!editCat) return;
+        const updated = await updateCategory(editCat.id, { name: editName, description: editDesc });
+        setCategories(prev => prev.map(c => c.id === editCat.id ? updated : c));
+        setEditCat(null);
+    };
+
+    const handleArchiveCat = async (e: React.MouseEvent, id: number) => {
+        e.stopPropagation();
+        if (!confirm('Archive this category?')) return;
+        await deleteCategory(id);
+        setCategories(prev => prev.filter(c => c.id !== id));
     };
 
     const handleCreate = async (e: React.FormEvent) => {
@@ -102,6 +126,11 @@ export default function HomePage() {
                                 >
                                     Leaderboard
                                 </button>
+                                {isAdmin && (
+                                    <button onClick={() => navigate('/admin')} className="text-sm text-orange-400 hover:text-orange-300 transition font-medium">
+                                        Admin
+                                    </button>
+                                )}
                                 <ChatIcon />
                                 <NotificationBell />
                                 <button
@@ -174,9 +203,23 @@ export default function HomePage() {
                                         <p className="text-sm text-gray-300 mt-0.5">{cat.description}</p>
                                     </div>
                                 </div>
-                                <div className="w-14 text-center shrink-0">
-                                    <p className="text-lg text-orange-500 font-semibold leading-none">{postCounts[cat.id] ?? 0}</p>
-                                    <p className="text-xs text-gray-300 mt-0.5">posts</p>
+                                <div className="flex items-center gap-3 shrink-0">
+                                    <div className="w-14 text-center">
+                                        <p className="text-lg text-orange-500 font-semibold leading-none">{postCounts[cat.id] ?? 0}</p>
+                                        <p className="text-xs text-gray-300 mt-0.5">posts</p>
+                                    </div>
+                                    {isAdmin && (
+                                        <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                                            <button onClick={e => openEditCat(e, cat)}
+                                                className="text-xs px-2 py-1 bg-[#2a2a2a] hover:bg-orange-500 rounded transition text-gray-400 hover:text-white">
+                                                Edit
+                                            </button>
+                                            <button onClick={e => handleArchiveCat(e, cat.id)}
+                                                className="text-xs px-2 py-1 bg-red-900/30 hover:bg-red-700 rounded transition text-red-400 hover:text-white">
+                                                Archive
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -255,6 +298,23 @@ export default function HomePage() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {editCat && (
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+                    <div className="bg-[#2d2d2d] text-gray-100 rounded-xl shadow-xl w-full max-w-md p-6 mx-4 border border-white/10">
+                        <h3 className="text-lg font-semibold mb-4">Edit Category</h3>
+                        <div className="space-y-3">
+                            <input value={editName} onChange={e => setEditName(e.target.value)}
+                                className="w-full bg-[#1a1a1a] border border-white/15 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-orange-500" />
+                            <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={3}
+                                className="w-full bg-[#1a1a1a] border border-white/15 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-orange-500 resize-none" />
+                        </div>
+                        <div className="flex gap-3 mt-4">
+                            <button onClick={saveEditCat} className="flex-1 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-sm font-semibold transition">Save</button>
+                            <button onClick={() => setEditCat(null)} className="flex-1 py-2 bg-[#3a3a3a] hover:bg-[#444] rounded-lg text-sm font-semibold transition">Cancel</button>
+                        </div>
                     </div>
                 </div>
             )}

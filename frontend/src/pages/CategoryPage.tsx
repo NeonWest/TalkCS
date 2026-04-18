@@ -306,6 +306,9 @@ export default function CategoryPage() {
                             <>
                                 <span className="text-sm text-gray-300 hidden sm:inline">{user?.email}</span>
                                 <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">{user?.role}</span>
+                                {user?.role === 'ADMIN' && (
+                                    <button onClick={() => navigate('/admin')} className="text-sm text-orange-400 hover:text-orange-300 transition font-medium">Admin</button>
+                                )}
                                 <ChatIcon />
                                 <NotificationBell />
                                 <button

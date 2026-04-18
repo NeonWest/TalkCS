@@ -8,4 +8,5 @@ import java.util.List;
 public interface CategoryRepository extends JpaRepository<Category,Long> {
     boolean existsByName(String name);
     List<Category> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description);
+    List<Category> findByArchivedFalse();
 }

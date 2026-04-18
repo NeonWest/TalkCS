@@ -17,11 +17,11 @@ public class Category{
 
     @Column(unique = true, nullable = false)
     private String name;
-    
+
     private String description;
     private LocalDateTime createdAt;
 
-
-
-
+    @Builder.Default
+    @Column(columnDefinition = "boolean default false")
+    private boolean archived = false;
 }
