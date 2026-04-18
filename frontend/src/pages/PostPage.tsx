@@ -7,6 +7,7 @@ import { voteOnPost, voteOnComment, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
 import type { CommentResponse } from '../api/comments';
 import NavbarSearch from '../components/NavbarSearch';
+import NotificationBell from '../components/NotificationBell';
 import MDEditor from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
 import MarkdownEditor from '../components/MarkdownEditor';
@@ -457,6 +458,7 @@ export default function PostPage() {
                             <>
                                 <span className="text-sm text-gray-300 hidden sm:inline">{user?.email}</span>
                                 <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">{user?.role}</span>
+                                <NotificationBell />
                                 <button
                                     onClick={handleMyProfile}
                                     disabled={!user?.username}

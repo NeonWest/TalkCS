@@ -6,6 +6,7 @@ import { getPosts, getTrendingPosts } from '../api/posts';
 import type { Post } from '../api/posts';
 import type { Category } from '../api/categories';
 import NavbarSearch from '../components/NavbarSearch';
+import NotificationBell from '../components/NotificationBell';
 
 export default function HomePage() {
     const { user, logout, isAuthenticated } = useAuth();
@@ -100,6 +101,7 @@ export default function HomePage() {
                                 >
                                     Leaderboard
                                 </button>
+                                <NotificationBell />
                                 <button
                                     onClick={handleMyProfile}
                                     disabled={!user?.username}

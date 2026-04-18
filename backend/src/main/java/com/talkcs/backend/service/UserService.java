@@ -15,6 +15,7 @@ public class UserService {
     private final PostRepository postrepository;
     private final CommentRepository commentrepository;
     private final FollowRepository followRepository;
+    private final NotificationService notificationService;
 
     public UserResponse getUserProfile(String username) {
         User user = userrepository.findByUsername(username)
@@ -85,6 +86,10 @@ public class UserService {
         if (follower.getId().equals(following.getId())) throw new RuntimeException("Cannot follow yourself");
         if (!followRepository.existsByFollowerIdAndFollowingId(follower.getId(), following.getId())) {
             followRepository.save(Follow.builder().follower(follower).following(following).createdAt(LocalDateTime.now()).build());
+            notificationService.notify(following,
+                com.talkcs.backend.model.Notification.NotificationType.FOLLOW,
+                follower.getUsername() + " started following you",
+                "/profile/" + follower.getUsername());
         }
     }
 

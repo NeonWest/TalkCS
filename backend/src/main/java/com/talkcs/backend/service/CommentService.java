@@ -20,6 +20,7 @@ public class CommentService{
     private final VoteRepository voteRepository;
     private final BadgeService badgeService;
     private final MentionService mentionService;
+    private final NotificationService notificationService;
 
     public List<CommentResponse> getCommentsByPostId(Long Id){
         return commentrepository.findByPostIdAndParentIsNull(Id)
@@ -71,7 +72,22 @@ public class CommentService{
             .build()
         );
 
-        mentionService.extractMentions(request.getBody()); // Phase 5 will consume this for notifications
+        // Notify post author of new reply (if not self)
+        if (!post.getAuthor().getId().equals(user.getId())) {
+            notificationService.notify(post.getAuthor(),
+                com.talkcs.backend.model.Notification.NotificationType.REPLY,
+                user.getUsername() + " replied to your post: " + post.getTitle(),
+                "/post/" + post.getId());
+        }
+        // Notify mentioned users
+        mentionService.extractMentions(request.getBody()).forEach(mentioned -> {
+            if (!mentioned.getId().equals(user.getId())) {
+                notificationService.notify(mentioned,
+                    com.talkcs.backend.model.Notification.NotificationType.MENTION,
+                    user.getUsername() + " mentioned you in a comment",
+                    "/post/" + post.getId());
+            }
+        });
         badgeService.checkAndAwardBadges(user);
 
         return CommentResponse.builder()
