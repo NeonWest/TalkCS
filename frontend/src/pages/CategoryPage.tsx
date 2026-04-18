@@ -9,6 +9,7 @@ import { voteOnPost, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
 import type { ResourceItem } from '../api/resources';
 import NavbarSearch from '../components/NavbarSearch';
+import NotificationBell from '../components/NotificationBell';
 import MarkdownEditor from '../components/MarkdownEditor';
 import { suggestTags } from '../api/tags';
 
@@ -295,6 +296,7 @@ export default function CategoryPage() {
                             <>
                                 <span className="text-sm text-gray-300 hidden sm:inline">{user?.email}</span>
                                 <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">{user?.role}</span>
+                                <NotificationBell />
                                 <button
                                     onClick={handleMyProfile}
                                     disabled={!user?.username}

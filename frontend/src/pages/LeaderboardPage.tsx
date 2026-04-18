@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getLeaderboard } from '../api/users';
 import type { LeaderboardUser } from '../api/users';
 import NavbarSearch from '../components/NavbarSearch';
+import NotificationBell from '../components/NotificationBell';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
@@ -33,6 +34,7 @@ export default function LeaderboardPage() {
                         {isAuthenticated ? (
                             <>
                                 <span className="text-sm text-gray-300 hidden sm:inline">{user?.email}</span>
+                                <NotificationBell />
                                 <button
                                     onClick={() => user?.username && navigate(`/profile/${user.username}`)}
                                     className="text-sm text-orange-500 hover:text-orange-400 transition"

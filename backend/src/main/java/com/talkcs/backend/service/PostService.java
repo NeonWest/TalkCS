@@ -33,6 +33,7 @@ public class PostService{
     private final CategoryReputationRepository categoryReputationRepository;
     private final BookmarkRepository bookmarkRepository;
     private final MentionService mentionService;
+    private final NotificationService notificationService;
 
     public Map<String, Object> getAllPostsByCategoryId(Long categoryId, int page, int size, String sortBy) {
         Sort sort = switch (sortBy) {
@@ -84,7 +85,14 @@ public class PostService{
             .tags(tags)
             .build()
         );
-        mentionService.extractMentions(request.getBody()); // Phase 5 will consume this for notifications
+        mentionService.extractMentions(request.getBody()).forEach(mentioned -> {
+            if (!mentioned.getId().equals(user.getId())) {
+                notificationService.notify(mentioned,
+                    Notification.NotificationType.MENTION,
+                    user.getUsername() + " mentioned you in a post: " + request.getTitle(),
+                    "/post/" + saved.getId());
+            }
+        });
         badgeService.checkAndAwardBadges(user);
         return toResponse(saved);
 
@@ -172,6 +180,11 @@ public class PostService{
             .orElseGet(() -> CategoryReputation.builder().user(commenter).category(post.getCategory()).build());
         cr.setReputation(cr.getReputation() + 15);
         categoryReputationRepository.save(cr);
+
+        notificationService.notify(commenter,
+            Notification.NotificationType.ACCEPTED_ANSWER,
+            poster.getUsername() + " accepted your answer on: " + post.getTitle(),
+            "/post/" + post.getId());
 
         badgeService.awardAnswerAcceptedBadge(commenter);
         badgeService.checkAndAwardBadges(commenter);

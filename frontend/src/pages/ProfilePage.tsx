@@ -9,6 +9,7 @@ import { getUserBadges } from '../api/badges';
 import type { UserProfile } from '../api/users';
 import type { Badge } from '../api/badges';
 import NavbarSearch from '../components/NavbarSearch';
+import NotificationBell from '../components/NotificationBell';
 
 const BADGE_ICONS: Record<string, string> = {
     post1: '📝', post10: '✍️', post50: '🖊️', post100: '📚',
@@ -92,6 +93,7 @@ export default function ProfilePage() {
                             <>
                                 <span className="text-sm text-gray-300 hidden sm:inline">{user?.email}</span>
                                 <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">{user?.role}</span>
+                                <NotificationBell />
                                 <button
                                     onClick={handleMyProfile}
                                     disabled={!user?.username}
