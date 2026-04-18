@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { usePostUpdates } from '../hooks/usePostUpdates';
 import { getCategoryById } from '../api/categories';
 import { getPosts, createPost, updatePost, deletePost, getSimilarPosts } from '../api/posts';
 import type { SimilarPost } from '../api/posts';
@@ -34,7 +35,15 @@ export default function CategoryPage() {
     const { id } = useParams<{ id: string }>();
     const categoryId = Number(id);
     const navigate = useNavigate();
-    const { user, logout, isAuthenticated } = useAuth();
+    const { user, logout, isAuthenticated, token } = useAuth();
+
+    usePostUpdates(
+        id,
+        token,
+        (post) => setPosts(prev => [post, ...prev]),
+        (post) => setPosts(prev => prev.map(p => p.id === post.id ? post : p)),
+        (postId) => setPosts(prev => prev.filter(p => p.id !== postId))
+    );
 
     const [categoryName, setCategoryName] = useState('');
     const [categoryDescription, setCategoryDescription] = useState('');

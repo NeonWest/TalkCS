@@ -125,7 +125,7 @@ public class CommentService{
         .build();
     }
 
-    public void deleteComment(Long id) {
+    public Long deleteComment(Long id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
         Comment comment = commentrepository.findById(id)
@@ -134,7 +134,9 @@ public class CommentService{
             .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if (!comment.getAuthor().getEmail().equals(email) && !isAdmin)
             throw new RuntimeException("Unauthorized");
+        Long postId = comment.getPost().getId();
         commentrepository.delete(comment);
+        return postId;
     }
 
     private int getCommentVoteScore(Long commentId) {

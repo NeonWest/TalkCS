@@ -29,4 +29,9 @@ public class User{
     @Builder.Default
     @Column(columnDefinition = "boolean default true")
     private boolean emailNotificationsEnabled = true;
+
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    private String avatarUrl;
 }

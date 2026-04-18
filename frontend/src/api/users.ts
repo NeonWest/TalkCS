@@ -15,6 +15,8 @@ export interface UserProfile {
     followerCount: number;
     followingCount: number;
     followedByCurrentUser: boolean;
+    bio: string | null;
+    avatarUrl: string | null;
 }
 
 export const getUserProfile = async (username: string): Promise<UserProfile> => {
@@ -44,4 +46,17 @@ export const followUser = async (username: string): Promise<void> => {
 
 export const unfollowUser = async (username: string): Promise<void> => {
     await api.delete(`/api/users/${username}/follow`);
+};
+
+export const updateProfile = async (bio: string): Promise<UserProfile> => {
+    return (await api.put<UserProfile>('/api/users/me', { bio })).data;
+};
+
+export const uploadAvatar = async (file: File): Promise<string> => {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await api.put<{ avatarUrl: string }>('/api/users/me/avatar', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data.avatarUrl;
 };

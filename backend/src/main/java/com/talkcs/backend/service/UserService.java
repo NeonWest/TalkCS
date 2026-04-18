@@ -5,8 +5,15 @@ import com.talkcs.backend.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +46,36 @@ public class UserService {
             .followerCount(followRepository.countByFollowingId(user.getId()))
             .followingCount(followRepository.countByFollowerId(user.getId()))
             .followedByCurrentUser(followed)
+            .bio(user.getBio())
+            .avatarUrl(user.getAvatarUrl() != null ? "/api/users/" + user.getUsername() + "/avatar" : null)
             .build();
+    }
+
+    public UserResponse updateProfile(String bio) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userrepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setBio(bio);
+        userrepository.save(user);
+        return getUserProfile(user.getUsername());
+    }
+
+    public String uploadAvatar(MultipartFile file) throws IOException {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userrepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        Path dir = Paths.get("backend/uploads/avatars/");
+        Files.createDirectories(dir);
+        String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        Files.copy(file.getInputStream(), dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+        user.setAvatarUrl(filename);
+        userrepository.save(user);
+        return "/api/users/" + user.getUsername() + "/avatar";
+    }
+
+    public Path getAvatarPath(String username) {
+        User user = userrepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.getAvatarUrl() == null) throw new RuntimeException("No avatar");
+        return Paths.get("backend/uploads/avatars/" + user.getAvatarUrl());
     }
 
     public static int getLevelNumber(int rep) {
