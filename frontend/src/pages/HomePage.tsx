@@ -92,6 +92,12 @@ export default function HomePage() {
                                 <span className="text-sm text-gray-300 hidden sm:inline">{user?.email}</span>
                                 <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">{user?.role}</span>
                                 <button
+                                    onClick={() => navigate('/leaderboard')}
+                                    className="text-sm text-gray-300 hover:text-white transition"
+                                >
+                                    Leaderboard
+                                </button>
+                                <button
                                     onClick={handleMyProfile}
                                     disabled={!user?.username}
                                     className="text-sm text-orange-500 hover:text-orange-400 transition disabled:opacity-50"
