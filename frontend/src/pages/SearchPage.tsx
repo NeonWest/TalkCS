@@ -61,6 +61,9 @@ export default function SearchPage() {
                     <div className="flex items-center gap-3 shrink-0">
                         {isAuthenticated ? (
                             <>
+                                {user?.role === 'ADMIN' && (
+                                    <button onClick={() => navigate('/admin')} className="text-sm text-orange-400 hover:text-orange-300 transition font-medium">Admin</button>
+                                )}
                                 <ChatIcon />
                                 <NotificationBell />
                                 <button

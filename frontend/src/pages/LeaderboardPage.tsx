@@ -35,6 +35,9 @@ export default function LeaderboardPage() {
                         {isAuthenticated ? (
                             <>
                                 <span className="text-sm text-gray-300 hidden sm:inline">{user?.email}</span>
+                                {user?.role === 'ADMIN' && (
+                                    <button onClick={() => navigate('/admin')} className="text-sm text-orange-400 hover:text-orange-300 transition font-medium">Admin</button>
+                                )}
                                 <ChatIcon />
                                 <NotificationBell />
                                 <button

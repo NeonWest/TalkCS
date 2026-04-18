@@ -106,6 +106,9 @@ export default function ChatPage() {
             <nav className="bg-[#252525] border-b border-white/10 px-6 py-3 flex items-center justify-between shrink-0">
                 <button onClick={() => navigate('/')} className="text-xl font-bold text-orange-500">TalkCS</button>
                 <div className="flex items-center gap-3">
+                    {user?.role === 'ADMIN' && (
+                        <button onClick={() => navigate('/admin')} className="text-sm text-orange-400 hover:text-orange-300 transition font-medium">Admin</button>
+                    )}
                     <ChatIcon />
                     <NotificationBell />
                     <button onClick={() => navigate(`/profile/${user?.username}`)}
