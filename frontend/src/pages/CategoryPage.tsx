@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getCategoryById } from '../api/categories';
@@ -9,6 +9,7 @@ import type { Post } from '../api/posts';
 import type { ResourceItem } from '../api/resources';
 import NavbarSearch from '../components/NavbarSearch';
 import MarkdownEditor from '../components/MarkdownEditor';
+import { suggestTags } from '../api/tags';
 
 function stripMarkdown(text: string, maxLen = 150): string {
     const stripped = text
@@ -59,6 +60,8 @@ export default function CategoryPage() {
     const [hasNext, setHasNext] = useState(false);
     const [hasPrevious, setHasPrevious] = useState(false);
     const [sortBy, setSortBy] = useState<'newest' | 'votes' | 'comments'>('newest');
+    const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+    const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const PAGE_SIZE = 10;
 
@@ -100,6 +103,19 @@ export default function CategoryPage() {
 
         loader.finally(() => setLoading(false));
     }, [categoryId, currentPage, sortBy, activeTab]);
+
+    useEffect(() => {
+        if (!showModal) return;
+        if (suggestTimer.current) clearTimeout(suggestTimer.current);
+        suggestTimer.current = setTimeout(async () => {
+            if (!form.title && !form.body) { setTagSuggestions([]); return; }
+            try {
+                const suggestions = await suggestTags(form.title, form.body);
+                setTagSuggestions(suggestions.filter(s => !form.tags.includes(s)));
+            } catch { /* ignore */ }
+        }, 500);
+        return () => { if (suggestTimer.current) clearTimeout(suggestTimer.current); };
+    }, [form.title, form.body, showModal]);
 
     const handleLogout = () => {
         logout();
@@ -575,6 +591,21 @@ export default function CategoryPage() {
                                     placeholder="Type a tag and press Enter"
                                     className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                                 />
+                                {tagSuggestions.length > 0 && (
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                        <span className="text-xs text-gray-400 self-center">Suggestions:</span>
+                                        {tagSuggestions.map(s => (
+                                            <button
+                                                key={s} type="button"
+                                                onClick={() => {
+                                                    if (!form.tags.includes(s)) setForm(p => ({ ...p, tags: [...p.tags, s] }));
+                                                    setTagSuggestions(prev => prev.filter(t => t !== s));
+                                                }}
+                                                className="px-2 py-0.5 bg-white/10 hover:bg-orange-500/30 text-gray-300 hover:text-orange-300 rounded-full text-xs transition"
+                                            >+ {s}</button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             {error && <p className="text-sm text-red-500">{error}</p>}
                             <div className="flex justify-end gap-3 pt-2">
@@ -583,6 +614,7 @@ export default function CategoryPage() {
                                     onClick={() => {
                                         setShowModal(false);
                                         setError('');
+                                        setTagSuggestions([]);
                                     }}
                                     className="text-sm px-4 py-2 rounded-lg border border-white/20 text-gray-300 hover:bg-white/10 transition"
                                 >
