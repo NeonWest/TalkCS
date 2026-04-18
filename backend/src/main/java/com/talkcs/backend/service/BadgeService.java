@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +16,7 @@ public class BadgeService {
     private final UserBadgeRepository userBadgeRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final CategoryReputationRepository categoryReputationRepository;
 
     public void checkAndAwardBadges(User user) {
         int postCount = (int) postRepository.countByAuthorId(user.getId());
@@ -46,6 +48,16 @@ public class BadgeService {
 
     public List<UserBadge> getUserBadges(Long userId) {
         return userBadgeRepository.findByUserId(userId);
+    }
+
+    public void checkExpertiseBadges(User user, Category category) {
+        int rep = categoryReputationRepository
+            .findByUserIdAndCategoryId(user.getId(), category.getId())
+            .map(CategoryReputation::getReputation).orElse(0);
+        String cat = category.getName();
+        if (rep >= 500) tryAward(user, cat + " Expert (Gold)",   cat + " gold expertise",   "exp_gold_"   + category.getId(), BadgeType.SPECIAL);
+        if (rep >= 200) tryAward(user, cat + " Expert (Silver)", cat + " silver expertise", "exp_silver_" + category.getId(), BadgeType.SPECIAL);
+        if (rep >= 50)  tryAward(user, cat + " Expert (Bronze)", cat + " bronze expertise", "exp_bronze_" + category.getId(), BadgeType.SPECIAL);
     }
 
     private void tryAward(User user, String badgeName, String description, String iconKey, BadgeType type) {
