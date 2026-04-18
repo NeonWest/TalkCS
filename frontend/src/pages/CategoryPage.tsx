@@ -14,6 +14,7 @@ import NotificationBell from '../components/NotificationBell';
 import ChatIcon from '../components/ChatIcon';
 import MarkdownEditor from '../components/MarkdownEditor';
 import { suggestTags } from '../api/tags';
+import { getUpcomingEvents, type CalendarEvent } from '../api/calendar';
 
 function stripMarkdown(text: string, maxLen = 150): string {
     const stripped = text
@@ -44,6 +45,8 @@ export default function CategoryPage() {
         (post) => setPosts(prev => prev.map(p => p.id === post.id ? post : p)),
         (postId) => setPosts(prev => prev.filter(p => p.id !== postId))
     );
+
+    const [upcomingEvents, setUpcomingEvents] = useState<CalendarEvent[]>([]);
 
     const [categoryName, setCategoryName] = useState('');
     const [categoryDescription, setCategoryDescription] = useState('');
@@ -100,6 +103,12 @@ export default function CategoryPage() {
                 setCategoryDescription(c.description);
             })
             .finally(() => setLoading(false));
+    }, [categoryId]);
+
+    useEffect(() => {
+        getUpcomingEvents(categoryId, 5)
+            .then(data => setUpcomingEvents(data.events))
+            .catch(() => {});
     }, [categoryId]);
 
     useEffect(() => {
@@ -309,6 +318,7 @@ export default function CategoryPage() {
                                 {user?.role === 'ADMIN' && (
                                     <button onClick={() => navigate('/admin')} className="text-sm text-orange-400 hover:text-orange-300 transition font-medium">Admin</button>
                                 )}
+                                <button onClick={() => navigate('/calendar')} className="text-sm text-gray-300 hover:text-white transition">Calendar</button>
                                 <ChatIcon />
                                 <NotificationBell />
                                 <button
@@ -337,7 +347,8 @@ export default function CategoryPage() {
                 </div>
             </header>
 
-            <main className="max-w-4xl mx-auto px-4 py-6">
+            <main className="max-w-5xl mx-auto px-4 py-6 lg:flex lg:gap-6">
+                <div className="flex-1 min-w-0">
                 <div className="rounded-none md:rounded-xl shadow-sm border border-white/10 bg-[#343434] mb-6 overflow-hidden">
                     <div className="h-1 bg-gradient-to-r from-orange-500 via-orange-400 to-orange-500" />
                     <div className="p-5">
@@ -570,6 +581,36 @@ export default function CategoryPage() {
                         )}
                     </>
                 )}
+                </div>{/* end flex-1 */}
+
+                {/* Upcoming events sidebar */}
+                <aside className="hidden lg:block w-64 shrink-0 mt-0">
+                    <div className="bg-[#2d2d2d] rounded-xl border border-white/10 p-4 sticky top-20">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-sm font-semibold text-gray-100">Upcoming Events</h3>
+                            <button
+                                onClick={() => navigate('/calendar')}
+                                className="text-xs text-orange-400 hover:text-orange-300 transition"
+                            >View all</button>
+                        </div>
+                        {upcomingEvents.length === 0 ? (
+                            <p className="text-xs text-gray-500">No upcoming events.</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {upcomingEvents.map(ev => (
+                                    <div key={ev.id} className="border-l-2 border-orange-500/60 pl-2">
+                                        <p className="text-xs font-medium text-gray-200 leading-snug truncate">{ev.title}</p>
+                                        <p className="text-xs text-gray-500">{ev.startDate} · {ev.eventType}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <button
+                            onClick={() => navigate('/calendar')}
+                            className="mt-3 w-full text-xs text-center text-gray-400 hover:text-white transition"
+                        >+ Add event</button>
+                    </div>
+                </aside>
             </main>
 
             {showModal && (

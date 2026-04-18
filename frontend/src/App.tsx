@@ -11,6 +11,7 @@ import SearchPage from './pages/SearchPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ChatPage from './pages/ChatPage';
 import AdminPage from './pages/AdminPage';
+import CalendarPage from './pages/CalendarPage';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+          <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
