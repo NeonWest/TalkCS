@@ -22,4 +22,5 @@ public class PostResponse{
     private PostStatus status;
     private Long acceptedAnswerId;
     private String authorLevel;
+    private boolean bookmarkedByCurrentUser;
 }

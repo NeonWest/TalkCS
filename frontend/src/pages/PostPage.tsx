@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getPostById, updatePost, deletePost, setPostStatus, acceptAnswer } from '../api/posts';
+import { getPostById, updatePost, deletePost, setPostStatus, acceptAnswer, bookmarkPost, unbookmarkPost } from '../api/posts';
 import { getComments, createComment, updateComment, deleteComment } from '../api/comments';
 import { voteOnPost, voteOnComment, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
@@ -300,10 +300,12 @@ export default function PostPage() {
     const [updatingPost, setUpdatingPost] = useState(false);
     const [deletingPost, setDeletingPost] = useState(false);
     const [votingPost, setVotingPost] = useState(false);
+    const [bookmarked, setBookmarked] = useState(false);
+    const [bookmarking, setBookmarking] = useState(false);
 
     useEffect(() => {
         Promise.all([
-            getPostById(postId).then(setPost),
+            getPostById(postId).then(p => { setPost(p); setBookmarked(p.bookmarkedByCurrentUser ?? false); }),
             getComments(postId).then(setComments),
         ]).finally(() => setLoading(false));
     }, [postId]);
@@ -525,6 +527,22 @@ export default function PostPage() {
                                             ▼
                                         </button>
                                     </div>
+                                    {isAuthenticated && (
+                                        <button
+                                            onClick={async () => {
+                                                setBookmarking(true);
+                                                try {
+                                                    if (bookmarked) { await unbookmarkPost(post.id); setBookmarked(false); }
+                                                    else { await bookmarkPost(post.id); setBookmarked(true); }
+                                                } finally { setBookmarking(false); }
+                                            }}
+                                            disabled={bookmarking}
+                                            title={bookmarked ? 'Remove bookmark' : 'Bookmark'}
+                                            className={`text-lg transition disabled:opacity-50 ${bookmarked ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'}`}
+                                        >
+                                            {bookmarked ? '🔖' : '🔖'}
+                                        </button>
+                                    )}
                                     {canDeletePost && (
                                         <div className="flex items-center gap-2">
                                         {canEditPost && (

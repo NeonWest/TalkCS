@@ -1,6 +1,7 @@
 package com.talkcs.backend.controller;
 import com.talkcs.backend.dto.*;
 import com.talkcs.backend.service.*;
+import com.talkcs.backend.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userservice;
+    private final PostService postservice;
 
     @GetMapping("/{username}")
     public ResponseEntity<UserResponse> getUserProfile(@PathVariable String username) {
@@ -25,6 +27,11 @@ public class UserController {
     @GetMapping("/leaderboard")
     public ResponseEntity<List<UserResponse>> getLeaderboard() {
         return ResponseEntity.ok(userservice.getLeaderboard());
+    }
+
+    @GetMapping("/{username}/bookmarks")
+    public ResponseEntity<List<PostResponse>> getBookmarks(@PathVariable String username) {
+        return ResponseEntity.ok(postservice.getUserBookmarks(username));
     }
 
     @PostMapping("/{username}/follow")

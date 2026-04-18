@@ -53,6 +53,18 @@ public class PostController{
         return ResponseEntity.ok(postservice.setStatus(id, body.get("status")));
     }
 
+    @PostMapping("/{id}/bookmark")
+    public ResponseEntity<Void> bookmark(@PathVariable Long id) {
+        postservice.bookmarkPost(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}/bookmark")
+    public ResponseEntity<Void> unbookmark(@PathVariable Long id) {
+        postservice.unbookmarkPost(id);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/similar")
     public ResponseEntity<List<SimilarPostResponse>> getSimilar(
             @RequestParam String title,
