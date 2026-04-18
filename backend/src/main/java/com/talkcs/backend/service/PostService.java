@@ -197,6 +197,12 @@ public class PostService{
             .build();
     }
 
+    public List<PostResponse> getTrendingPosts(int limit) {
+        java.time.LocalDateTime since = java.time.LocalDateTime.now().minusDays(7);
+        return postrepository.findTrendingPosts(since, PageRequest.of(0, limit))
+            .stream().map(this::toResponse).toList();
+    }
+
     private boolean isBookmarked(Long postId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || auth.getName().equals("anonymousUser")) return false;

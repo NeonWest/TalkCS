@@ -53,6 +53,12 @@ public class PostController{
         return ResponseEntity.ok(postservice.setStatus(id, body.get("status")));
     }
 
+    @GetMapping("/trending")
+    public ResponseEntity<List<PostResponse>> getTrending(
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(postservice.getTrendingPosts(limit));
+    }
+
     @PostMapping("/{id}/bookmark")
     public ResponseEntity<Void> bookmark(@PathVariable Long id) {
         postservice.bookmarkPost(id);

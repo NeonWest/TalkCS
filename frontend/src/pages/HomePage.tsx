@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getCategories, createCategory } from '../api/categories';
-import { getPosts } from '../api/posts';
+import { getPosts, getTrendingPosts } from '../api/posts';
+import type { Post } from '../api/posts';
 import type { Category } from '../api/categories';
 import NavbarSearch from '../components/NavbarSearch';
 
@@ -17,6 +18,7 @@ export default function HomePage() {
     const [form, setForm] = useState({ name: '', description: '' });
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState('');
+    const [trending, setTrending] = useState<Post[]>([]);
 
     const isAdmin = user?.role === 'ADMIN';
 
@@ -44,6 +46,7 @@ export default function HomePage() {
         };
 
         void loadCategoriesAndCounts();
+        getTrendingPosts(8).then(setTrending).catch(() => {});
     }, []);
 
     const handleLogout = () => {
@@ -125,7 +128,8 @@ export default function HomePage() {
             </header>
 
             {/* Main content */}
-            <main className="max-w-4xl mx-auto px-4 py-6">
+            <main className="max-w-5xl mx-auto px-4 py-6 flex gap-6 items-start">
+            <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-6 mt-1">
                     <div>
                         <h2 className="text-xl font-bold text-white">Forum Categories</h2>
@@ -174,6 +178,29 @@ export default function HomePage() {
                         ))}
                     </div>
                 )}
+            </div>
+
+            {/* Trending sidebar */}
+            <aside className="w-64 shrink-0 hidden lg:block">
+                <div className="bg-[#2d2d2d] rounded-xl border border-white/10 p-4">
+                    <h3 className="text-sm font-bold text-gray-200 mb-3">🔥 Trending This Week</h3>
+                    {trending.length === 0 ? (
+                        <p className="text-xs text-gray-400">No trending posts yet.</p>
+                    ) : (
+                        <div className="space-y-2">
+                            {trending.map((post, i) => (
+                                <button key={post.id} onClick={() => navigate(`/post/${post.id}`)}
+                                    className="w-full text-left group">
+                                    <div className="flex gap-2 items-start">
+                                        <span className="text-xs text-orange-500 font-bold w-4 shrink-0 mt-0.5">#{i + 1}</span>
+                                        <p className="text-xs text-gray-300 group-hover:text-white transition line-clamp-2 leading-snug">{post.title}</p>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </aside>
             </main>
 
             {/* Create category modal */}

@@ -72,6 +72,9 @@ export const unbookmarkPost = async (id: number): Promise<void> => { await api.d
 export const getUserBookmarks = async (username: string): Promise<Post[]> =>
     (await api.get<Post[]>(`/api/users/${username}/bookmarks`)).data;
 
+export const getTrendingPosts = async (limit = 10): Promise<Post[]> =>
+    (await api.get<Post[]>(`/api/posts/trending?limit=${limit}`)).data;
+
 export interface SimilarPost { id: number; title: string; score: number; }
 
 export const getSimilarPosts = async (
