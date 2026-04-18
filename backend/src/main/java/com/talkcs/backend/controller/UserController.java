@@ -26,4 +26,16 @@ public class UserController {
     public ResponseEntity<List<UserResponse>> getLeaderboard() {
         return ResponseEntity.ok(userservice.getLeaderboard());
     }
+
+    @PostMapping("/{username}/follow")
+    public ResponseEntity<Void> follow(@PathVariable String username) {
+        userservice.followUser(username);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{username}/follow")
+    public ResponseEntity<Void> unfollow(@PathVariable String username) {
+        userservice.unfollowUser(username);
+        return ResponseEntity.ok().build();
+    }
 }

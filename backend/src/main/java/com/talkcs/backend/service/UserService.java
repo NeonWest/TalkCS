@@ -3,7 +3,9 @@ import com.talkcs.backend.dto.*;
 import com.talkcs.backend.repository.*;
 import com.talkcs.backend.model.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -12,11 +14,16 @@ public class UserService {
     private final UserRepository userrepository;
     private final PostRepository postrepository;
     private final CommentRepository commentrepository;
+    private final FollowRepository followRepository;
 
     public UserResponse getUserProfile(String username) {
         User user = userrepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         int rep = user.getReputation();
+        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userrepository.findByEmail(currentEmail).orElse(null);
+        boolean followed = currentUser != null &&
+            followRepository.existsByFollowerIdAndFollowingId(currentUser.getId(), user.getId());
         return UserResponse.builder()
             .id(user.getId())
             .username(user.getUsername())
@@ -28,6 +35,9 @@ public class UserService {
             .level(getLevelNumber(rep))
             .levelTitle(getLevelTitle(rep))
             .nextLevelRepRequired(getNextLevelRep(rep))
+            .followerCount(followRepository.countByFollowingId(user.getId()))
+            .followingCount(followRepository.countByFollowerId(user.getId()))
+            .followedByCurrentUser(followed)
             .build();
     }
 
@@ -66,6 +76,24 @@ public class UserService {
                 .role(u.getRole())
                 .build())
             .toList();
+    }
+
+    public void followUser(String username) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User follower = userrepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        User following = userrepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        if (follower.getId().equals(following.getId())) throw new RuntimeException("Cannot follow yourself");
+        if (!followRepository.existsByFollowerIdAndFollowingId(follower.getId(), following.getId())) {
+            followRepository.save(Follow.builder().follower(follower).following(following).createdAt(LocalDateTime.now()).build());
+        }
+    }
+
+    public void unfollowUser(String username) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User follower = userrepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        User following = userrepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        followRepository.findByFollowerIdAndFollowingId(follower.getId(), following.getId())
+            .ifPresent(followRepository::delete);
     }
 
     public List<PostResponse> getUserPosts(String username) {
