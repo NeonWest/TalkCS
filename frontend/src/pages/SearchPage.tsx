@@ -5,6 +5,7 @@ import { search } from '../api/search';
 import type { SearchResponse } from '../api/search';
 import NavbarSearch from '../components/NavbarSearch';
 import NotificationBell from '../components/NotificationBell';
+import ChatIcon from '../components/ChatIcon';
 
 export default function SearchPage() {
     const location = useLocation();
@@ -60,6 +61,7 @@ export default function SearchPage() {
                     <div className="flex items-center gap-3 shrink-0">
                         {isAuthenticated ? (
                             <>
+                                <ChatIcon />
                                 <NotificationBell />
                                 <button
                                     onClick={handleMyProfile}
