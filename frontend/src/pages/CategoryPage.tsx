@@ -2,7 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getCategoryById } from '../api/categories';
-import { getPosts, createPost, updatePost, deletePost } from '../api/posts';
+import { getPosts, createPost, updatePost, deletePost, getSimilarPosts } from '../api/posts';
+import type { SimilarPost } from '../api/posts';
 import { getResources, uploadResource, deleteResource, voteOnResource } from '../api/resources';
 import { voteOnPost, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
@@ -61,7 +62,9 @@ export default function CategoryPage() {
     const [hasPrevious, setHasPrevious] = useState(false);
     const [sortBy, setSortBy] = useState<'newest' | 'votes' | 'comments'>('newest');
     const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+    const [similarPosts, setSimilarPosts] = useState<SimilarPost[]>([]);
     const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const similarTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const PAGE_SIZE = 10;
 
@@ -115,6 +118,19 @@ export default function CategoryPage() {
             } catch { /* ignore */ }
         }, 500);
         return () => { if (suggestTimer.current) clearTimeout(suggestTimer.current); };
+    }, [form.title, form.body, showModal]);
+
+    useEffect(() => {
+        if (!showModal) return;
+        if (similarTimer.current) clearTimeout(similarTimer.current);
+        similarTimer.current = setTimeout(async () => {
+            if (!form.title.trim()) { setSimilarPosts([]); return; }
+            try {
+                const results = await getSimilarPosts(form.title, form.body, categoryId, form.tags);
+                setSimilarPosts(results);
+            } catch { /* ignore */ }
+        }, 500);
+        return () => { if (similarTimer.current) clearTimeout(similarTimer.current); };
     }, [form.title, form.body, showModal]);
 
     const handleLogout = () => {
@@ -557,6 +573,24 @@ export default function CategoryPage() {
                                     placeholder="What's your question or topic?"
                                 />
                             </div>
+                            {similarPosts.length > 0 && (
+                                <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg px-4 py-3">
+                                    <p className="text-xs font-semibold text-orange-400 mb-2">Similar questions — yours may already be answered:</p>
+                                    <ul className="space-y-1">
+                                        {similarPosts.map(p => (
+                                            <li key={p.id}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => navigate(`/post/${p.id}`)}
+                                                    className="text-sm text-orange-300 hover:text-orange-200 hover:underline text-left"
+                                                >
+                                                    {p.title}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                             <div>
                                 <label className="block text-sm font-medium text-gray-300 mb-2">Body</label>
                                 <MarkdownEditor
@@ -615,6 +649,7 @@ export default function CategoryPage() {
                                         setShowModal(false);
                                         setError('');
                                         setTagSuggestions([]);
+                                        setSimilarPosts([]);
                                     }}
                                     className="text-sm px-4 py-2 rounded-lg border border-white/20 text-gray-300 hover:bg-white/10 transition"
                                 >

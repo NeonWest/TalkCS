@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import com.talkcs.backend.dto.SimilarPostResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PostController{
     private final PostService postservice;
+    private final SimilarityService similarityService;
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllPostsByCategoryId(
@@ -49,6 +51,15 @@ public class PostController{
     @PutMapping("/{id}/status")
     public ResponseEntity<PostResponse> setStatus(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
         return ResponseEntity.ok(postservice.setStatus(id, body.get("status")));
+    }
+
+    @GetMapping("/similar")
+    public ResponseEntity<List<SimilarPostResponse>> getSimilar(
+            @RequestParam String title,
+            @RequestParam(required = false, defaultValue = "") String body,
+            @RequestParam Long categoryId,
+            @RequestParam(required = false) List<String> tags) {
+        return ResponseEntity.ok(similarityService.findSimilar(title, body, categoryId, tags));
     }
 
     @PutMapping("/{id}/accept/{commentId}")
