@@ -5,6 +5,7 @@ import { getLeaderboard } from '../api/users';
 import type { LeaderboardUser } from '../api/users';
 import NavbarSearch from '../components/NavbarSearch';
 import NotificationBell from '../components/NotificationBell';
+import ChatIcon from '../components/ChatIcon';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
@@ -34,6 +35,7 @@ export default function LeaderboardPage() {
                         {isAuthenticated ? (
                             <>
                                 <span className="text-sm text-gray-300 hidden sm:inline">{user?.email}</span>
+                                <ChatIcon />
                                 <NotificationBell />
                                 <button
                                     onClick={() => user?.username && navigate(`/profile/${user.username}`)}

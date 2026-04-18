@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getPostById, updatePost, deletePost, setPostStatus, acceptAnswer, bookmarkPost, unbookmarkPost } from '../api/posts';
+import { getPostById, updatePost, deletePost, acceptAnswer, bookmarkPost, unbookmarkPost } from '../api/posts';
 import { getComments, createComment, updateComment, deleteComment } from '../api/comments';
 import { voteOnPost, voteOnComment, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
 import type { CommentResponse } from '../api/comments';
 import NavbarSearch from '../components/NavbarSearch';
 import NotificationBell from '../components/NotificationBell';
+import ChatIcon from '../components/ChatIcon';
 import MDEditor from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
 import MarkdownEditor from '../components/MarkdownEditor';
@@ -458,6 +459,7 @@ export default function PostPage() {
                             <>
                                 <span className="text-sm text-gray-300 hidden sm:inline">{user?.email}</span>
                                 <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">{user?.role}</span>
+                                <ChatIcon />
                                 <NotificationBell />
                                 <button
                                     onClick={handleMyProfile}

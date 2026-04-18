@@ -22,6 +22,11 @@ public class User{
     private String password;
     private String role;
     private LocalDateTime createdAt;
+    @Builder.Default
     @Column(columnDefinition = "integer default 0")
     private int reputation = 0;
+
+    @Builder.Default
+    @Column(columnDefinition = "boolean default true")
+    private boolean emailNotificationsEnabled = true;
 }
