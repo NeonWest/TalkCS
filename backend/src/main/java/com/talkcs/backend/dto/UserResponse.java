@@ -17,4 +17,7 @@ public class UserResponse {
     private int level;
     private String levelTitle;
     private Integer nextLevelRepRequired;
+    private long followerCount;
+    private long followingCount;
+    private boolean followedByCurrentUser;
 }

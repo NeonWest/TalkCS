@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getUserProfile, getUserPosts } from '../api/users';
+import { getUserProfile, getUserPosts, followUser, unfollowUser } from '../api/users';
 import { voteOnPost } from '../api/votes';
 import { getUserBadges } from '../api/badges';
 import type { UserProfile } from '../api/users';
@@ -28,6 +28,9 @@ export default function ProfilePage() {
     const [error, setError] = useState('');
     const [votingPostId, setVotingPostId] = useState<number | null>(null);
     const [badges, setBadges] = useState<Badge[]>([]);
+    const [following, setFollowing] = useState(false);
+    const [followerCount, setFollowerCount] = useState(0);
+    const [followLoading, setFollowLoading] = useState(false);
 
     const refreshUserPosts = async (targetUsername: string) => {
         const updated = await getUserPosts(targetUsername);
@@ -44,7 +47,11 @@ export default function ProfilePage() {
         setError('');
         setLoading(true);
         Promise.all([
-            getUserProfile(username).then(setProfile),
+            getUserProfile(username).then(p => {
+                setProfile(p);
+                setFollowing(p.followedByCurrentUser);
+                setFollowerCount(p.followerCount);
+            }),
             getUserPosts(username).then(setPosts),
             getUserBadges(username).then(setBadges),
         ])
@@ -150,6 +157,39 @@ export default function ProfilePage() {
                                     )}
                                 </div>
                             </div>
+                            {/* Follow button */}
+                            {isAuthenticated && user?.username !== profile.username && (
+                                <div className="flex items-center gap-4 pt-2">
+                                    <button
+                                        onClick={async () => {
+                                            setFollowLoading(true);
+                                            try {
+                                                if (following) {
+                                                    await unfollowUser(profile.username);
+                                                    setFollowing(false);
+                                                    setFollowerCount(c => c - 1);
+                                                } else {
+                                                    await followUser(profile.username);
+                                                    setFollowing(true);
+                                                    setFollowerCount(c => c + 1);
+                                                }
+                                            } finally { setFollowLoading(false); }
+                                        }}
+                                        disabled={followLoading}
+                                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition disabled:opacity-50 ${following ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-orange-500 hover:bg-orange-600 text-white'}`}
+                                    >
+                                        {followLoading ? '...' : following ? 'Unfollow' : 'Follow'}
+                                    </button>
+                                    <span className="text-sm text-gray-400">{followerCount} follower{followerCount !== 1 ? 's' : ''}</span>
+                                    <span className="text-sm text-gray-400">{profile.followingCount} following</span>
+                                </div>
+                            )}
+                            {(user?.username === profile.username) && (
+                                <div className="flex gap-4 pt-2">
+                                    <span className="text-sm text-gray-400">{followerCount} follower{followerCount !== 1 ? 's' : ''}</span>
+                                    <span className="text-sm text-gray-400">{profile.followingCount} following</span>
+                                </div>
+                            )}
                             {/* Stats Row */}
                             <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/10">
                                 <div className="bg-[#2b2b2b] rounded-xl p-3 text-center border border-white/10">

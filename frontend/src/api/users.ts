@@ -12,6 +12,9 @@ export interface UserProfile {
     level: number;
     levelTitle: string;
     nextLevelRepRequired: number | null;
+    followerCount: number;
+    followingCount: number;
+    followedByCurrentUser: boolean;
 }
 
 export const getUserProfile = async (username: string): Promise<UserProfile> => {
@@ -33,4 +36,12 @@ export interface LeaderboardUser {
 
 export const getLeaderboard = async (): Promise<LeaderboardUser[]> => {
     return (await api.get<LeaderboardUser[]>('/api/users/leaderboard')).data;
+};
+
+export const followUser = async (username: string): Promise<void> => {
+    await api.post(`/api/users/${username}/follow`);
+};
+
+export const unfollowUser = async (username: string): Promise<void> => {
+    await api.delete(`/api/users/${username}/follow`);
 };
