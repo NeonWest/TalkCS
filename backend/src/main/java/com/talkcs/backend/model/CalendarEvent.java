@@ -29,4 +29,8 @@ public class CalendarEvent {
     private EventType eventType;
 
     private LocalDateTime createdAt;
+
+    @Column(name = "is_public", nullable = false)
+    @Builder.Default
+    private boolean publicEvent = false;
 }

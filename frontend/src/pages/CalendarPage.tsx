@@ -5,8 +5,13 @@ import {
     getCalendarEvents,
     createCalendarEvent,
     deleteCalendarEvent,
+    submitEventProposal,
+    getPendingProposals,
+    approveProposal,
+    rejectProposal,
     type CalendarEvent,
     type CalendarEventRequest,
+    type CalendarEventProposal,
 } from '../api/calendar';
 import { getCategories } from '../api/categories';
 
@@ -23,22 +28,16 @@ const MONTHS = [
     'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-interface Category {
-    id: number;
-    name: string;
-}
+interface Category { id: number; name: string; }
 
 const emptyForm = (): CalendarEventRequest => ({
-    title: '',
-    description: '',
-    startDate: '',
-    endDate: '',
-    categoryId: undefined,
-    eventType: 'LECTURE',
+    title: '', description: '', startDate: '', endDate: '', categoryId: undefined, eventType: 'LECTURE',
 });
 
+type ModalMode = 'add' | 'request';
+
 export default function CalendarPage() {
-    const { user, isAuthenticated } = useAuth();
+    const { user } = useAuth();
     const isAdmin = user?.role === 'ADMIN';
 
     const now = new Date();
@@ -50,11 +49,17 @@ export default function CalendarPage() {
     const [filterCategoryId, setFilterCategoryId] = useState<number | undefined>(undefined);
 
     const [showModal, setShowModal] = useState(false);
+    const [modalMode, setModalMode] = useState<ModalMode>('add');
     const [form, setForm] = useState<CalendarEventRequest>(emptyForm());
     const [saving, setSaving] = useState(false);
     const [formError, setFormError] = useState('');
+    const [formSuccess, setFormSuccess] = useState('');
 
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+
+    const [proposals, setProposals] = useState<CalendarEventProposal[]>([]);
+    const [showProposals, setShowProposals] = useState(false);
+    const [proposalAction, setProposalAction] = useState<{ id: number; note: string } | null>(null);
 
     useEffect(() => {
         getCategories().then(data => setCategories(data)).catch(() => {});
@@ -68,14 +73,14 @@ export default function CalendarPage() {
             .finally(() => setLoading(false));
     }, [year, month, filterCategoryId]);
 
-    const prevMonth = () => {
-        if (month === 1) { setYear(y => y - 1); setMonth(12); }
-        else setMonth(m => m - 1);
-    };
-    const nextMonth = () => {
-        if (month === 12) { setYear(y => y + 1); setMonth(1); }
-        else setMonth(m => m + 1);
-    };
+    useEffect(() => {
+        if (isAdmin && showProposals) {
+            getPendingProposals().then(setProposals).catch(() => {});
+        }
+    }, [isAdmin, showProposals]);
+
+    const prevMonth = () => { if (month === 1) { setYear(y => y - 1); setMonth(12); } else setMonth(m => m - 1); };
+    const nextMonth = () => { if (month === 12) { setYear(y => y + 1); setMonth(1); } else setMonth(m => m + 1); };
 
     const firstDay = new Date(year, month - 1, 1).getDay();
     const daysInMonth = new Date(year, month, 0).getDate();
@@ -88,26 +93,41 @@ export default function CalendarPage() {
         eventsByDay[d].push(e);
     });
 
-    const handleCreate = async (ev: React.FormEvent) => {
+    const openModal = (mode: ModalMode) => {
+        setForm(emptyForm());
+        setFormError('');
+        setFormSuccess('');
+        setModalMode(mode);
+        setShowModal(true);
+    };
+
+    const handleSubmit = async (ev: React.FormEvent) => {
         ev.preventDefault();
         setFormError('');
+        setFormSuccess('');
         setSaving(true);
+        const payload: CalendarEventRequest = {
+            ...form,
+            endDate: form.endDate || undefined,
+            categoryId: form.categoryId || undefined,
+        };
         try {
-            const payload: CalendarEventRequest = {
-                ...form,
-                endDate: form.endDate || undefined,
-                categoryId: form.categoryId || undefined,
-            };
-            const created = await createCalendarEvent(payload);
-            const eventYear = parseInt(created.startDate.split('-')[0], 10);
-            const eventMonth = parseInt(created.startDate.split('-')[1], 10);
-            if (eventYear === year && eventMonth === month) {
-                setEvents(prev => [...prev, created]);
+            if (modalMode === 'request') {
+                await submitEventProposal(payload);
+                setFormSuccess('Request submitted! Admins will review it.');
+                setTimeout(() => { setShowModal(false); setForm(emptyForm()); }, 1800);
+            } else {
+                const created = await createCalendarEvent(payload);
+                const eventYear = parseInt(created.startDate.split('-')[0], 10);
+                const eventMonth = parseInt(created.startDate.split('-')[1], 10);
+                if (eventYear === year && eventMonth === month) {
+                    setEvents(prev => [...prev, created]);
+                }
+                setShowModal(false);
+                setForm(emptyForm());
             }
-            setShowModal(false);
-            setForm(emptyForm());
         } catch {
-            setFormError('Failed to create event.');
+            setFormError(modalMode === 'request' ? 'Failed to submit request.' : 'Failed to create event.');
         } finally {
             setSaving(false);
         }
@@ -123,6 +143,30 @@ export default function CalendarPage() {
         }
     };
 
+    const handleApprove = async (id: number) => {
+        try {
+            const created = await approveProposal(id);
+            setProposals(prev => prev.filter(p => p.id !== id));
+            const eventYear = parseInt(created.startDate.split('-')[0], 10);
+            const eventMonth = parseInt(created.startDate.split('-')[1], 10);
+            if (eventYear === year && eventMonth === month) {
+                setEvents(prev => [...prev, created]);
+            }
+        } catch {
+            alert('Failed to approve proposal.');
+        }
+    };
+
+    const handleReject = async (id: number, note: string) => {
+        try {
+            await rejectProposal(id, note);
+            setProposals(prev => prev.filter(p => p.id !== id));
+            setProposalAction(null);
+        } catch {
+            alert('Failed to reject proposal.');
+        }
+    };
+
     const cells: (number | null)[] = [
         ...Array(firstDay).fill(null),
         ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
@@ -132,8 +176,8 @@ export default function CalendarPage() {
     return (
         <div className="min-h-screen bg-[#1f1f1f] text-gray-100">
             <Navbar />
-
             <main className="max-w-5xl mx-auto px-4 py-6">
+
                 {/* Controls */}
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                     <div className="flex items-center gap-3">
@@ -145,7 +189,7 @@ export default function CalendarPage() {
                             className="text-xs px-3 py-1.5 rounded-lg border border-white/20 text-gray-400 hover:bg-white/10 transition"
                         >Today</button>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <select
                             value={filterCategoryId ?? ''}
                             onChange={e => setFilterCategoryId(e.target.value ? Number(e.target.value) : undefined)}
@@ -154,20 +198,99 @@ export default function CalendarPage() {
                             <option value="">All categories</option>
                             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
-                        {isAuthenticated && (
+                        {isAdmin && (
                             <button
-                                onClick={() => { setForm(emptyForm()); setShowModal(true); }}
+                                onClick={() => setShowProposals(v => !v)}
+                                className="text-sm border border-orange-500/50 text-orange-400 hover:bg-orange-500/10 px-3 py-1.5 rounded-xl transition font-medium"
+                            >Proposals</button>
+                        )}
+                        {isAdmin ? (
+                            <button
+                                onClick={() => openModal('add')}
                                 className="text-sm bg-orange-500 text-white hover:bg-orange-600 px-4 py-1.5 rounded-xl transition font-semibold shadow-sm"
                             >+ Add Event</button>
+                        ) : (
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => openModal('add')}
+                                    className="text-sm bg-[#2d2d2d] border border-white/20 text-gray-300 hover:bg-white/10 px-3 py-1.5 rounded-xl transition font-medium"
+                                >+ Private Event</button>
+                                <button
+                                    onClick={() => openModal('request')}
+                                    className="text-sm bg-orange-500 text-white hover:bg-orange-600 px-4 py-1.5 rounded-xl transition font-semibold shadow-sm"
+                                >+ Request Event</button>
+                            </div>
                         )}
                     </div>
                 </div>
+
+                {/* Admin proposals panel */}
+                {isAdmin && showProposals && (
+                    <div className="mb-6 bg-[#2d2d2d] rounded-xl border border-white/10 p-4">
+                        <h3 className="text-sm font-semibold text-gray-200 mb-3">Pending Event Proposals</h3>
+                        {proposals.length === 0 ? (
+                            <p className="text-sm text-gray-400">No pending proposals.</p>
+                        ) : (
+                            <div className="space-y-3">
+                                {proposals.map(p => (
+                                    <div key={p.id} className="bg-[#1f1f1f] rounded-lg p-3 border border-white/10">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className={`text-xs px-1.5 py-0.5 rounded border ${EVENT_COLORS[p.eventType] ?? EVENT_COLORS.OTHER}`}>{p.eventType}</span>
+                                                    <span className="text-sm font-medium text-gray-100">{p.title}</span>
+                                                </div>
+                                                {p.description && <p className="text-xs text-gray-400 mb-1">{p.description}</p>}
+                                                <p className="text-xs text-gray-500">{p.startDate}{p.endDate ? ` → ${p.endDate}` : ''} · by {p.submittedByUsername}{p.categoryName ? ` · ${p.categoryName}` : ''}</p>
+                                            </div>
+                                            <div className="flex gap-2 shrink-0">
+                                                <button
+                                                    onClick={() => handleApprove(p.id)}
+                                                    className="text-xs px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
+                                                >Approve</button>
+                                                <button
+                                                    onClick={() => setProposalAction({ id: p.id, note: '' })}
+                                                    className="text-xs px-3 py-1 bg-red-600/30 hover:bg-red-600/50 text-red-300 rounded-lg transition"
+                                                >Reject</button>
+                                            </div>
+                                        </div>
+                                        {proposalAction?.id === p.id && (
+                                            <div className="mt-2 flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Rejection reason (optional)"
+                                                    value={proposalAction.note}
+                                                    onChange={e => setProposalAction(a => a ? { ...a, note: e.target.value } : null)}
+                                                    className="flex-1 bg-[#2d2d2d] border border-white/15 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
+                                                />
+                                                <button
+                                                    onClick={() => handleReject(p.id, proposalAction.note)}
+                                                    className="text-xs px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+                                                >Confirm</button>
+                                                <button
+                                                    onClick={() => setProposalAction(null)}
+                                                    className="text-xs px-2 py-1 text-gray-400 hover:text-white transition"
+                                                >Cancel</button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Legend */}
                 <div className="flex items-center gap-3 mb-4 flex-wrap">
                     {(['EXAM', 'DEADLINE', 'LECTURE', 'OTHER'] as const).map(type => (
                         <span key={type} className={`text-xs px-2 py-0.5 rounded-full border ${EVENT_COLORS[type]}`}>{type}</span>
                     ))}
+                    {!isAdmin && (
+                        <>
+                            <span className="text-xs px-2 py-0.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300">🔒 Private</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-300">🌐 Public</span>
+                        </>
+                    )}
                 </div>
 
                 {/* Calendar grid */}
@@ -187,10 +310,7 @@ export default function CalendarPage() {
                                 const isToday = dayStr === todayStr;
                                 const dayEvents = eventsByDay[day] || [];
                                 return (
-                                    <div
-                                        key={day}
-                                        className={`min-h-[90px] p-1.5 border-b border-r border-white/5 ${isToday ? 'bg-orange-500/5' : ''}`}
-                                    >
+                                    <div key={day} className={`min-h-[90px] p-1.5 border-b border-r border-white/5 ${isToday ? 'bg-orange-500/5' : ''}`}>
                                         <span className={`text-xs font-medium mb-1 inline-flex items-center justify-center h-5 w-5 rounded-full ${isToday ? 'bg-orange-500 text-white' : 'text-gray-400'}`}>
                                             {day}
                                         </span>
@@ -199,10 +319,10 @@ export default function CalendarPage() {
                                                 <button
                                                     key={ev.id}
                                                     onClick={() => setSelectedEvent(ev)}
-                                                    className={`w-full text-left text-xs px-1.5 py-0.5 rounded border truncate transition hover:opacity-80 ${EVENT_COLORS[ev.eventType]}`}
-                                                    title={ev.title}
+                                                    className={`w-full text-left text-xs px-1.5 py-0.5 rounded border truncate transition hover:opacity-80 ${EVENT_COLORS[ev.eventType]} ${!ev.publicEvent ? 'opacity-70' : ''}`}
+                                                    title={`${ev.title}${!ev.publicEvent ? ' (private)' : ''}`}
                                                 >
-                                                    {ev.title}
+                                                    {!ev.publicEvent && <span className="mr-0.5">🔒</span>}{ev.title}
                                                 </button>
                                             ))}
                                             {dayEvents.length > 3 && (
@@ -223,7 +343,10 @@ export default function CalendarPage() {
                     <div className="bg-[#2d2d2d] rounded-xl shadow-xl w-full max-w-md p-6 border border-white/10" onClick={e => e.stopPropagation()}>
                         <div className="flex items-start justify-between gap-4 mb-3">
                             <div>
-                                <span className={`text-xs px-2 py-0.5 rounded-full border ${EVENT_COLORS[selectedEvent.eventType]}`}>{selectedEvent.eventType}</span>
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-xs px-2 py-0.5 rounded-full border ${EVENT_COLORS[selectedEvent.eventType]}`}>{selectedEvent.eventType}</span>
+                                    {!selectedEvent.publicEvent && <span className="text-xs px-2 py-0.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300">Private</span>}
+                                </div>
                                 <h3 className="text-lg font-semibold text-gray-100 mt-2">{selectedEvent.title}</h3>
                             </div>
                             <button onClick={() => setSelectedEvent(null)} className="text-gray-400 hover:text-white text-xl leading-none">×</button>
@@ -244,12 +367,20 @@ export default function CalendarPage() {
                 </div>
             )}
 
-            {/* Create event modal */}
+            {/* Create / Request event modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
                     <div className="bg-[#2d2d2d] rounded-xl shadow-xl w-full max-w-md p-6 border border-white/10">
-                        <h3 className="text-lg font-semibold text-gray-100 mb-4">Add Calendar Event</h3>
-                        <form onSubmit={handleCreate} className="space-y-4">
+                        <h3 className="text-lg font-semibold text-gray-100 mb-1">
+                            {modalMode === 'request' ? 'Request Public Event' : isAdmin ? 'Add Public Event' : 'Add Private Event'}
+                        </h3>
+                        {modalMode === 'request' && (
+                            <p className="text-xs text-gray-400 mb-4">Your request will be reviewed by an admin before it becomes visible to everyone.</p>
+                        )}
+                        {modalMode === 'add' && !isAdmin && (
+                            <p className="text-xs text-gray-400 mb-4">This event will only be visible to you. Use "Request Event" to suggest a public event.</p>
+                        )}
+                        <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
                                 <input
@@ -318,17 +449,18 @@ export default function CalendarPage() {
                                 </div>
                             </div>
                             {formError && <p className="text-sm text-red-400">{formError}</p>}
+                            {formSuccess && <p className="text-sm text-green-400">{formSuccess}</p>}
                             <div className="flex justify-end gap-3 pt-1">
                                 <button
                                     type="button"
-                                    onClick={() => { setShowModal(false); setFormError(''); }}
+                                    onClick={() => { setShowModal(false); setFormError(''); setFormSuccess(''); }}
                                     className="text-sm px-4 py-2 rounded-lg border border-white/20 text-gray-300 hover:bg-white/10 transition"
                                 >Cancel</button>
                                 <button
                                     type="submit"
                                     disabled={saving}
                                     className="text-sm px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium transition disabled:opacity-50"
-                                >{saving ? 'Saving...' : 'Create'}</button>
+                                >{saving ? 'Saving...' : modalMode === 'request' ? 'Submit Request' : 'Create'}</button>
                             </div>
                         </form>
                     </div>

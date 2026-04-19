@@ -1,43 +1,48 @@
 package com.talkcs.backend.service;
 
+import com.talkcs.backend.dto.CalendarEventProposalResponse;
 import com.talkcs.backend.dto.CalendarEventRequest;
 import com.talkcs.backend.dto.CalendarEventResponse;
-import com.talkcs.backend.model.CalendarEvent;
-import com.talkcs.backend.model.Category;
-import com.talkcs.backend.model.EventType;
-import com.talkcs.backend.model.User;
-import com.talkcs.backend.repository.CalendarEventRepository;
-import com.talkcs.backend.repository.CategoryRepository;
-import com.talkcs.backend.repository.UserRepository;
+import com.talkcs.backend.model.*;
+import com.talkcs.backend.model.CalendarEventProposal.ProposalStatus;
+import com.talkcs.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class CalendarService {
     private final CalendarEventRepository calendarEventRepository;
+    private final CalendarEventProposalRepository proposalRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
-    public Map<String, Object> getEventsByMonth(int year, int month, Long categoryId) {
-        YearMonth yearMonth = YearMonth.of(year, month);
-        LocalDate start = yearMonth.atDay(1);
-        LocalDate end = yearMonth.atEndOfMonth();
+    public Map<String, Object> getEventsByMonth(int year, int month, Long categoryId, String email) {
+        YearMonth ym = YearMonth.of(year, month);
+        LocalDate start = ym.atDay(1);
+        LocalDate end = ym.atEndOfMonth();
 
-        List<CalendarEvent> events;
-        if (categoryId != null) {
-            events = calendarEventRepository.findByCategoryIdAndStartDateBetweenOrderByStartDateAsc(categoryId, start, end);
-        } else {
-            events = calendarEventRepository.findByStartDateBetweenOrderByStartDateAsc(start, end);
-        }
+        User currentUser = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        boolean isAdmin = "ADMIN".equals(currentUser.getRole());
 
-        List<CalendarEventResponse> responses = events.stream()
+        List<CalendarEvent> publicEvents = categoryId != null
+            ? calendarEventRepository.findPublicByCategoryAndDateRange(categoryId, start, end)
+            : calendarEventRepository.findPublicByDateRange(start, end);
+
+        List<CalendarEvent> privateEvents = isAdmin ? List.of()
+            : (categoryId != null
+                ? calendarEventRepository.findPrivateByUserAndCategoryAndDateRange(currentUser.getId(), categoryId, start, end)
+                : calendarEventRepository.findPrivateByUserAndDateRange(currentUser.getId(), start, end));
+
+        List<CalendarEventResponse> responses = Stream.concat(publicEvents.stream(), privateEvents.stream())
+            .sorted(Comparator.comparing(CalendarEvent::getStartDate))
             .map(CalendarEventResponse::from)
             .toList();
 
@@ -50,13 +55,9 @@ public class CalendarService {
 
     public Map<String, Object> getUpcomingEvents(Long categoryId, int limit) {
         LocalDate today = LocalDate.now();
-        List<CalendarEvent> events;
-
-        if (categoryId != null) {
-            events = calendarEventRepository.findByCategoryIdAndStartDateGreaterThanEqualOrderByStartDateAsc(categoryId, today);
-        } else {
-            events = calendarEventRepository.findByStartDateGreaterThanEqualOrderByStartDateAsc(today);
-        }
+        List<CalendarEvent> events = categoryId != null
+            ? calendarEventRepository.findUpcomingPublicByCategory(categoryId, today)
+            : calendarEventRepository.findUpcomingPublic(today);
 
         List<CalendarEventResponse> responses = events.stream()
             .limit(limit)
@@ -72,12 +73,9 @@ public class CalendarService {
     public CalendarEventResponse createEvent(CalendarEventRequest req, String email) {
         User createdBy = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
+        boolean isAdmin = "ADMIN".equals(createdBy.getRole());
 
-        Category category = null;
-        if (req.getCategoryId() != null) {
-            category = categoryRepository.findById(req.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-        }
+        Category category = resolveCategory(req.getCategoryId());
 
         CalendarEvent event = CalendarEvent.builder()
             .title(req.getTitle())
@@ -88,23 +86,84 @@ public class CalendarService {
             .createdBy(createdBy)
             .eventType(EventType.valueOf(req.getEventType().toUpperCase()))
             .createdAt(LocalDateTime.now())
+            .publicEvent(isAdmin)
             .build();
 
-        CalendarEvent saved = calendarEventRepository.save(event);
-        return CalendarEventResponse.from(saved);
+        return CalendarEventResponse.from(calendarEventRepository.save(event));
+    }
+
+    public CalendarEventProposalResponse submitProposal(CalendarEventRequest req, String email) {
+        User submittedBy = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Category category = resolveCategory(req.getCategoryId());
+
+        CalendarEventProposal proposal = CalendarEventProposal.builder()
+            .title(req.getTitle())
+            .description(req.getDescription())
+            .startDate(req.getStartDate())
+            .endDate(req.getEndDate())
+            .eventType(EventType.valueOf(req.getEventType().toUpperCase()))
+            .category(category)
+            .submittedBy(submittedBy)
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        return CalendarEventProposalResponse.from(proposalRepository.save(proposal));
+    }
+
+    public List<CalendarEventProposalResponse> getPendingProposals() {
+        return proposalRepository.findByStatusOrderByCreatedAtDesc(ProposalStatus.PENDING)
+            .stream().map(CalendarEventProposalResponse::from).toList();
+    }
+
+    public List<CalendarEventProposalResponse> getMyProposals(String email) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        return proposalRepository.findBySubmittedByIdOrderByCreatedAtDesc(user.getId())
+            .stream().map(CalendarEventProposalResponse::from).toList();
+    }
+
+    @Transactional
+    public CalendarEventResponse approveProposal(Long proposalId) {
+        CalendarEventProposal proposal = proposalRepository.findById(proposalId)
+            .orElseThrow(() -> new RuntimeException("Proposal not found"));
+
+        CalendarEvent event = CalendarEvent.builder()
+            .title(proposal.getTitle())
+            .description(proposal.getDescription())
+            .startDate(proposal.getStartDate())
+            .endDate(proposal.getEndDate())
+            .eventType(proposal.getEventType())
+            .category(proposal.getCategory())
+            .createdBy(proposal.getSubmittedBy())
+            .createdAt(LocalDateTime.now())
+            .publicEvent(true)
+            .build();
+
+        CalendarEventResponse response = CalendarEventResponse.from(calendarEventRepository.save(event));
+        proposal.setStatus(ProposalStatus.APPROVED);
+        proposalRepository.save(proposal);
+        return response;
+    }
+
+    public CalendarEventProposalResponse rejectProposal(Long proposalId, String adminNote) {
+        CalendarEventProposal proposal = proposalRepository.findById(proposalId)
+            .orElseThrow(() -> new RuntimeException("Proposal not found"));
+
+        proposal.setStatus(ProposalStatus.REJECTED);
+        proposal.setAdminNote(adminNote);
+        return CalendarEventProposalResponse.from(proposalRepository.save(proposal));
     }
 
     public CalendarEventResponse updateEvent(Long id, CalendarEventRequest req, String email) {
         CalendarEvent event = calendarEventRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Event not found"));
-
         User currentUser = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!event.getCreatedBy().getId().equals(currentUser.getId())) {
-            if (!"ADMIN".equals(currentUser.getRole())) {
-                throw new RuntimeException("Unauthorized");
-            }
+        if (!event.getCreatedBy().getId().equals(currentUser.getId()) && !"ADMIN".equals(currentUser.getRole())) {
+            throw new RuntimeException("Unauthorized");
         }
 
         event.setTitle(req.getTitle());
@@ -112,32 +171,27 @@ public class CalendarService {
         event.setStartDate(req.getStartDate());
         event.setEndDate(req.getEndDate());
         event.setEventType(EventType.valueOf(req.getEventType().toUpperCase()));
+        event.setCategory(resolveCategory(req.getCategoryId()));
 
-        if (req.getCategoryId() != null) {
-            Category category = categoryRepository.findById(req.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-            event.setCategory(category);
-        } else {
-            event.setCategory(null);
-        }
-
-        CalendarEvent updated = calendarEventRepository.save(event);
-        return CalendarEventResponse.from(updated);
+        return CalendarEventResponse.from(calendarEventRepository.save(event));
     }
 
     public void deleteEvent(Long id, String email) {
         CalendarEvent event = calendarEventRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Event not found"));
-
         User currentUser = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!event.getCreatedBy().getId().equals(currentUser.getId())) {
-            if (!"ADMIN".equals(currentUser.getRole())) {
-                throw new RuntimeException("Unauthorized");
-            }
+        if (!event.getCreatedBy().getId().equals(currentUser.getId()) && !"ADMIN".equals(currentUser.getRole())) {
+            throw new RuntimeException("Unauthorized");
         }
 
         calendarEventRepository.deleteById(id);
+    }
+
+    private Category resolveCategory(Long categoryId) {
+        if (categoryId == null) return null;
+        return categoryRepository.findById(categoryId)
+            .orElseThrow(() -> new RuntimeException("Category not found"));
     }
 }
