@@ -7,9 +7,7 @@ import { getComments, createComment, updateComment, deleteComment } from '../api
 import { voteOnPost, voteOnComment, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
 import type { CommentResponse } from '../api/comments';
-import NavbarSearch from '../components/NavbarSearch';
-import NotificationBell from '../components/NotificationBell';
-import ChatIcon from '../components/ChatIcon';
+import Navbar from '../components/Navbar';
 import MDEditor from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
 import MarkdownEditor from '../components/MarkdownEditor';
@@ -288,7 +286,7 @@ export default function PostPage() {
     const postId = Number(id);
     const navigate = useNavigate();
     const location = useLocation();
-    const { user, logout, isAuthenticated, token } = useAuth();
+    const { user, isAuthenticated, token } = useAuth();
     const queryCategoryId = Number(new URLSearchParams(location.search).get('categoryId'));
     const stateCategoryId = (location.state as { categoryId?: number } | null)?.categoryId;
     const categoryId = Number.isFinite(queryCategoryId) && queryCategoryId > 0 ? queryCategoryId : stateCategoryId;
@@ -316,13 +314,6 @@ export default function PostPage() {
             getComments(postId).then(setComments),
         ]).finally(() => setLoading(false));
     }, [postId]);
-
-    const handleLogout = () => { logout(); navigate('/login'); };
-
-    const handleMyProfile = () => {
-        if (!user?.username) return;
-        navigate(`/profile/${user.username}`);
-    };
 
     const navigateToProfile = (username: string) => {
         navigate(`/profile/${username}`);
@@ -444,56 +435,7 @@ export default function PostPage() {
 
     return (
         <div className="min-h-screen bg-[#1f1f1f] text-gray-100">
-            {/* Navbar */}
-            <header className="bg-[#323232] shadow-sm sticky top-0 z-50 border-b border-white/10">
-                <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-4">
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => navigate('/')}
-                            className="font-bold text-gray-100 hover:text-white text-xl leading-none transition cursor-pointer tracking-tight flex items-center gap-2 shrink-0"
-                        >
-                            <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
-                            TalkCS
-                        </button>
-                    </div>
-                    <NavbarSearch />
-                    <div className="flex items-center gap-1.5 shrink-0">
-                        {isAuthenticated ? (
-                            <>
-                                {isAdmin && (
-                                    <><button onClick={() => navigate('/admin')} className="text-sm text-orange-400 hover:text-orange-300 font-medium px-2 py-1 rounded-lg hover:bg-orange-500/10 transition">Admin</button><span className="w-px h-4 bg-white/20 mx-1" /></>
-                                )}
-                                <ChatIcon />
-                                <NotificationBell />
-                                <span className="w-px h-4 bg-white/20 mx-1" />
-                                <button
-                                    onClick={handleMyProfile}
-                                    disabled={!user?.username}
-                                    className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full pl-1.5 pr-3 py-1 transition disabled:opacity-50"
-                                >
-                                    <span className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                                        {user?.username?.charAt(0).toUpperCase() ?? '?'}
-                                    </span>
-                                    <span className="text-sm text-gray-200 hidden sm:block max-w-[100px] truncate">{user?.username}</span>
-                                    {isAdmin && <span className="text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded-full font-semibold leading-none">ADMIN</span>}
-                                </button>
-                                <button onClick={handleLogout} title="Log out" className="text-gray-500 hover:text-red-400 transition p-1">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                    </svg>
-                                </button>
-                            </>
-                        ) : (
-                            <button
-                                onClick={() => navigate('/login')}
-                                className="text-sm bg-orange-500 hover:bg-orange-600 text-white px-4 py-1.5 rounded-full transition font-medium"
-                            >
-                                Log In
-                            </button>
-                        )}
-                    </div>
-                </div>
-            </header>
+            <Navbar />
 
             <main className="max-w-4xl mx-auto px-4 py-6">
                 {loading ? (
