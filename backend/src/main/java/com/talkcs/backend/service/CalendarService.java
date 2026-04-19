@@ -69,8 +69,8 @@ public class CalendarService {
         return result;
     }
 
-    public CalendarEventResponse createEvent(CalendarEventRequest req, String username) {
-        User createdBy = userRepository.findByUsername(username)
+    public CalendarEventResponse createEvent(CalendarEventRequest req, String email) {
+        User createdBy = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
         Category category = null;
@@ -94,14 +94,14 @@ public class CalendarService {
         return CalendarEventResponse.from(saved);
     }
 
-    public CalendarEventResponse updateEvent(Long id, CalendarEventRequest req, String username) {
+    public CalendarEventResponse updateEvent(Long id, CalendarEventRequest req, String email) {
         CalendarEvent event = calendarEventRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Event not found"));
 
-        User currentUser = userRepository.findByUsername(username)
+        User currentUser = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!event.getCreatedBy().getUsername().equals(username)) {
+        if (!event.getCreatedBy().getId().equals(currentUser.getId())) {
             if (!"ADMIN".equals(currentUser.getRole())) {
                 throw new RuntimeException("Unauthorized");
             }
@@ -125,14 +125,14 @@ public class CalendarService {
         return CalendarEventResponse.from(updated);
     }
 
-    public void deleteEvent(Long id, String username) {
+    public void deleteEvent(Long id, String email) {
         CalendarEvent event = calendarEventRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Event not found"));
 
-        User currentUser = userRepository.findByUsername(username)
+        User currentUser = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!event.getCreatedBy().getUsername().equals(username)) {
+        if (!event.getCreatedBy().getId().equals(currentUser.getId())) {
             if (!"ADMIN".equals(currentUser.getRole())) {
                 throw new RuntimeException("Unauthorized");
             }

@@ -18,9 +18,8 @@ export interface AuthResponse {
     role: string;
 }
 
-export const register = async (data: RegisterRequest): Promise<string> => {
-    const response = await api.post<string>('/api/auth/register', data);
-    return response.data;
+export const register = async (data: RegisterRequest) => {
+    return api.post<AuthResponse>('/api/auth/register', data);
 };
 
 export const login = async (data: LoginRequest): Promise<AuthResponse> => {

@@ -107,9 +107,11 @@ public class UserService {
             .map(u -> UserResponse.builder()
                 .id(u.getId())
                 .username(u.getUsername())
+                .createdAt(u.getCreatedAt())
                 .reputation(u.getReputation())
                 .level(getLevelNumber(u.getReputation()))
                 .levelTitle(getLevelTitle(u.getReputation()))
+                .nextLevelRepRequired(getNextLevelRep(u.getReputation()))
                 .role(u.getRole())
                 .build())
             .toList();
