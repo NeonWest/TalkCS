@@ -17,6 +17,7 @@ public class CalendarEventResponse {
     private String createdByUsername;
     private String eventType;
     private LocalDateTime createdAt;
+    private Boolean publicEvent;
 
     public static CalendarEventResponse from(CalendarEvent e) {
         return CalendarEventResponse.builder()
@@ -30,6 +31,7 @@ public class CalendarEventResponse {
             .createdByUsername(e.getCreatedBy().getUsername())
             .eventType(e.getEventType().toString())
             .createdAt(e.getCreatedAt())
+            .publicEvent(e.isPublicEvent())
             .build();
     }
 }

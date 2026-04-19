@@ -6,31 +6,31 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
-@Entity @Table(name = "calendar_events")
-public class CalendarEvent {
+@Entity @Table(name = "calendar_event_proposals")
+public class CalendarEventProposal {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
-
     private String description;
-
     private LocalDate startDate;
-
     private LocalDate endDate;
-
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "category_id")
-    private Category category;
-
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "created_by_id")
-    private User createdBy;
 
     @Enumerated(EnumType.STRING)
     private EventType eventType;
 
+    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "category_id")
+    private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "submitted_by_id")
+    private User submittedBy;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private ProposalStatus status = ProposalStatus.PENDING;
+
+    private String adminNote;
     private LocalDateTime createdAt;
 
-    @Column(name = "is_public", nullable = false)
-    @Builder.Default
-    private boolean publicEvent = false;
+    public enum ProposalStatus { PENDING, APPROVED, REJECTED }
 }
