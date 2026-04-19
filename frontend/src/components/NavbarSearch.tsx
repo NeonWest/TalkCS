@@ -15,7 +15,7 @@ export default function NavbarSearch() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="hidden md:flex items-center gap-2 w-full max-w-xs mx-4">
+        <form onSubmit={handleSubmit} className="hidden md:flex items-center gap-2 flex-1 min-w-0 mx-4">
             <input
                 type="text"
                 value={keyword}

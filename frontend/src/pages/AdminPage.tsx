@@ -128,20 +128,30 @@ export default function AdminPage() {
     return (
         <div className="min-h-screen bg-[#1a1a1a] text-gray-100">
             <header className="bg-[#111111] border-b border-white/10 sticky top-0 z-40">
-                <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-                    <button onClick={() => navigate('/')} className="font-bold text-gray-100 hover:text-white text-xl leading-none transition cursor-pointer tracking-tight flex items-center gap-2">
+                <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-4">
+                    <button onClick={() => navigate('/')} className="font-bold text-gray-100 hover:text-white text-xl leading-none transition cursor-pointer tracking-tight flex items-center gap-2 shrink-0">
                         <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
                         TalkCS
                     </button>
                     <NavbarSearch />
-                    <div className="flex items-center gap-3">
-                        <span className="text-sm text-gray-300 hidden sm:inline">{user?.email}</span>
-                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">{user?.role}</span>
-                        <button onClick={() => navigate('/leaderboard')} className="text-sm text-gray-300 hover:text-white transition">Leaderboard</button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                        <button onClick={() => navigate('/leaderboard')} className="text-sm text-gray-400 hover:text-white transition px-2 py-1 rounded-lg hover:bg-white/5">Leaderboard</button>
+                        <span className="w-px h-4 bg-white/20 mx-1" />
                         <ChatIcon />
                         <NotificationBell />
-                        <button onClick={() => navigate(`/profile/${user?.username}`)} className="text-sm text-orange-500 hover:text-orange-400 transition">My Profile</button>
-                        <button onClick={handleLogout} className="text-sm text-gray-300 hover:text-white transition">Log out</button>
+                        <span className="w-px h-4 bg-white/20 mx-1" />
+                        <button onClick={() => navigate(`/profile/${user?.username}`)} className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full pl-1.5 pr-3 py-1 transition">
+                            <span className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                                {user?.username?.charAt(0).toUpperCase() ?? '?'}
+                            </span>
+                            <span className="text-sm text-gray-200 hidden sm:block max-w-[100px] truncate">{user?.username}</span>
+                            <span className="text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-1.5 py-0.5 rounded-full font-semibold leading-none">ADMIN</span>
+                        </button>
+                        <button onClick={handleLogout} title="Log out" className="text-gray-500 hover:text-red-400 transition p-1">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </header>
