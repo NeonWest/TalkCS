@@ -39,7 +39,7 @@ public class EmailService {
                 .build();
         try {
             resend.emails().send(options);
-        } catch (ResendException e) {
+        } catch (Exception e) {
             log.warn("Failed to send email to {}: {}", recipient.getEmail(), e.getMessage());
         }
     }

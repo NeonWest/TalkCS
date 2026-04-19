@@ -14,8 +14,7 @@ export default function RegisterPage() {
     const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormData>();
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, login } = useAuth();
     const navigate = useNavigate();
 
     if (isAuthenticated) return <Navigate to="/" replace />;
@@ -24,9 +23,9 @@ export default function RegisterPage() {
         setError('');
         setLoading(true);
         try {
-            await registerApi(data);
-            setSuccess(true);
-            setTimeout(() => navigate('/login'), 1500);
+            const response = await registerApi(data);
+            login(response.data);
+            navigate('/');
         } catch (err: any) {
             setError(err.response?.data || 'Registration failed. Please try again.');
         } finally {
@@ -51,11 +50,6 @@ export default function RegisterPage() {
 
                 {/* Card */}
                 <div className="bg-[#343434] rounded-xl shadow-sm p-8 border border-white/10">
-                    {success ? (
-                        <p className="text-green-600 text-sm text-center py-4">
-                            Account created! Redirecting to login...
-                        </p>
-                    ) : (
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             {/* Username */}
                             <div>
@@ -117,7 +111,6 @@ export default function RegisterPage() {
                                 {loading ? 'Creating account...' : 'Create account'}
                             </button>
                         </form>
-                    )}
                 </div>
 
                 <p className="text-gray-400 text-sm text-center mt-4">
