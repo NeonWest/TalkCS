@@ -62,7 +62,7 @@ public class UserService {
     public String uploadAvatar(MultipartFile file) throws IOException {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userrepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
-        Path dir = Paths.get("backend/uploads/avatars/");
+        Path dir = Paths.get("uploads/avatars/");
         Files.createDirectories(dir);
         String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Files.copy(file.getInputStream(), dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
@@ -75,7 +75,7 @@ public class UserService {
         User user = userrepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         if (user.getAvatarUrl() == null) throw new RuntimeException("No avatar");
-        return Paths.get("backend/uploads/avatars/" + user.getAvatarUrl());
+        return Paths.get("uploads/avatars/" + user.getAvatarUrl());
     }
 
     public static int getLevelNumber(int rep) {
