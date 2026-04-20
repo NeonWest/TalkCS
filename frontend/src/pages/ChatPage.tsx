@@ -28,6 +28,8 @@ export default function ChatPage() {
     const [isSearchingUsers, setIsSearchingUsers] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
 
+    const [showMobileList, setShowMobileList] = useState(true);
+
     const stompRef = useRef<Client | null>(null);
     const activeConvIdRef = useRef<number | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -148,6 +150,7 @@ export default function ChatPage() {
                 c.id === activeConvId ? { ...c, unreadCount: 0 } : c
             ));
         });
+        setShowMobileList(false);
     }, [activeConvId]);
 
     useEffect(() => {
@@ -190,6 +193,7 @@ export default function ChatPage() {
             setNewUsername('');
             setIsSearching(false);
             setShowSuggestions(false);
+            setShowMobileList(false);
         } catch {
             setNewUserError('User not found');
         }
@@ -203,7 +207,7 @@ export default function ChatPage() {
 
             <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full border-x border-white/5 bg-[#121212]">
                 {/* Sidebar */}
-                <div className="w-80 bg-[#1a1a1a] border-r border-white/5 flex flex-col shrink-0">
+                <div className={`${showMobileList ? 'flex' : 'hidden'} md:flex w-full md:w-80 bg-[#1a1a1a] border-r border-white/5 flex-col shrink-0`}>
                     <div className="p-4 border-b border-white/5">
                         <div className="flex items-center justify-between mb-4">
                             <h1 className="text-xl font-bold">Messages</h1>
@@ -290,7 +294,7 @@ export default function ChatPage() {
                                 {conversations.map(conv => (
                                     <button
                                         key={conv.id}
-                                        onClick={() => setActiveConvId(conv.id)}
+                                        onClick={() => { setActiveConvId(conv.id); setShowMobileList(false); }}
                                         className={`w-full text-left p-3 flex items-center gap-3 rounded-2xl transition-all duration-200
                                             ${activeConvId === conv.id 
                                                 ? 'bg-orange-500/15 shadow-sm ring-1 ring-orange-500/20' 
@@ -327,7 +331,7 @@ export default function ChatPage() {
                 </div>
 
                 {/* Main Chat Area */}
-                <div className="flex-1 flex flex-col bg-[#121212] overflow-hidden">
+                <div className={`${!showMobileList ? 'flex' : 'hidden'} md:flex flex-1 flex flex-col bg-[#121212] overflow-hidden`}>
                     {!activeConvId ? (
                         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
                             <div className="w-20 h-20 bg-white/5 rounded-[40px] flex items-center justify-center mb-6 text-gray-700">
@@ -337,12 +341,26 @@ export default function ChatPage() {
                             </div>
                             <h2 className="text-xl font-bold text-gray-100 mb-2">Your Messages</h2>
                             <p className="text-gray-500 max-w-sm">Select a conversation from the sidebar to start chatting with other students.</p>
+                            <button 
+                                onClick={() => setShowMobileList(true)}
+                                className="mt-6 md:hidden px-6 py-2 bg-orange-500 rounded-xl font-semibold"
+                            >
+                                View Conversations
+                            </button>
                         </div>
                     ) : (
                         <>
                             {/* Chat Header */}
-                            <div className="bg-[#1a1a1a]/80 backdrop-blur-md border-b border-white/5 px-6 py-3 flex items-center justify-between shrink-0 z-10">
-                                <div className="flex items-center gap-4">
+                            <div className="bg-[#1a1a1a]/80 backdrop-blur-md border-b border-white/5 px-4 md:px-6 py-3 flex items-center justify-between shrink-0 z-10">
+                                <div className="flex items-center gap-3 md:gap-4">
+                                    <button 
+                                        onClick={() => setShowMobileList(true)}
+                                        className="md:hidden p-2 -ml-2 text-gray-400 hover:text-white"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
                                     <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-orange-500/10">
                                         {activeConv?.otherUsername[0].toUpperCase()}
                                     </div>

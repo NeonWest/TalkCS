@@ -118,7 +118,9 @@ function CommentItem({
     };
 
     return (
-        <div className={`mt-3 ${depth > 0 ? 'ml-6 border-l border-white/20 pl-3' : `border-l-4 pl-3 ${isAccepted ? 'border-green-500 bg-green-500/5 rounded-r-lg' : 'border-orange-500'}`}`}>
+        <div className={`mt-3 ${depth > 0 
+            ? `${depth > 3 ? 'ml-2' : 'ml-2 sm:ml-6'} border-l border-white/20 pl-3` 
+            : `border-l-4 pl-3 ${isAccepted ? 'border-green-500 bg-green-500/5 rounded-r-lg' : 'border-orange-500'}`}`}>
             <div className="px-2 py-1">
                 {isAccepted && (
                     <div className="flex items-center gap-1.5 text-green-400 text-xs font-semibold mb-1">
@@ -445,35 +447,36 @@ export default function PostPage() {
                 ) : (
                     <>
                         {/* Post */}
-                        <div className="bg-[#343434] border border-white/10 rounded-xl p-5 mb-6 shadow-sm">
-                            <div className="flex items-start justify-between gap-4 mb-2">
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <h1 className="text-2xl font-semibold text-gray-100 leading-tight">{post.title}</h1>
+                        <div className="bg-[#343434] border border-white/10 rounded-xl p-4 sm:p-5 mb-6 shadow-sm">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                        <h1 className="text-xl sm:text-2xl font-semibold text-gray-100 leading-tight">{post.title}</h1>
                                         {post.status && post.status !== 'OPEN' && (
-                                            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${post.status === 'SOLVED' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
+                                            <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold shrink-0 ${post.status === 'SOLVED' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
                                                 {post.status}
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-sm text-gray-300 mb-2 flex items-center gap-2.5 flex-wrap">
-                                        by{' '}
-                                        <button
-                                            onClick={() => navigateToProfile(post.authorUsername)}
-                                            className="text-gray-200 hover:text-white transition"
-                                        >
-                                            {post.authorUsername}
-                                        </button>
+                                    <div className="text-xs sm:text-sm text-gray-300 flex items-center gap-2.5 flex-wrap">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-gray-400">by</span>
+                                            <button
+                                                onClick={() => navigateToProfile(post.authorUsername)}
+                                                className="text-gray-200 hover:text-white transition font-medium"
+                                            >
+                                                {post.authorUsername}
+                                            </button>
+                                        </div>
                                         {post.authorLevel && (
-                                            <span className="px-1.5 py-0.5 bg-orange-500/15 text-orange-400 rounded text-xs">{post.authorLevel}</span>
+                                            <span className="px-1.5 py-0.5 bg-orange-500/15 text-orange-400 rounded text-[10px] sm:text-xs">{post.authorLevel}</span>
                                         )}
-                                        <span>•</span>
-                                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                                        <span className="px-2 py-0.5 rounded-full bg-black/20 text-gray-200 text-xs">General</span>
-                                    </p>
+                                        <span className="hidden sm:inline text-gray-500">•</span>
+                                        <span className="text-gray-400">{new Date(post.createdAt).toLocaleDateString()}</span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-4 shrink-0">
-                                    <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-3 sm:gap-4 shrink-0 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0">
+                                    <div className="flex items-center gap-1 bg-black/10 sm:bg-transparent px-2 py-1 rounded-lg">
                                         <button
                                             onClick={() => void handleVotePost(1)}
                                             disabled={votingPost}
@@ -503,15 +506,15 @@ export default function PostPage() {
                                             title={bookmarked ? 'Remove bookmark' : 'Bookmark'}
                                             className={`text-lg transition disabled:opacity-50 ${bookmarked ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'}`}
                                         >
-                                            {bookmarked ? '🔖' : '🔖'}
+                                            🔖
                                         </button>
                                     )}
                                     {canDeletePost && (
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 border-l border-white/10 pl-2 sm:pl-0 sm:border-l-0">
                                         {canEditPost && (
                                             <button
                                                 onClick={openPostEditModal}
-                                                className="text-sm text-blue-400 hover:text-blue-300 transition"
+                                                className="text-xs sm:text-sm text-blue-400 hover:text-blue-300 transition"
                                             >
                                                 Edit
                                             </button>
@@ -519,7 +522,7 @@ export default function PostPage() {
                                         <button
                                             onClick={() => void handleDeletePost()}
                                             disabled={deletingPost}
-                                            className="text-sm text-red-400 hover:text-red-300 transition disabled:opacity-50"
+                                            className="text-xs sm:text-sm text-red-400 hover:text-red-300 transition disabled:opacity-50"
                                         >
                                             {deletingPost ? 'Deleting...' : 'Delete'}
                                         </button>

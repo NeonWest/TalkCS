@@ -82,29 +82,29 @@ export default function ProfilePage() {
                     <>
                         {/* Profile Header */}
                         <div className="bg-[#343434] rounded-xl shadow-sm p-5 space-y-4 border border-white/10">
-                            <div className="flex items-start gap-6">
+                            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
                                 {/* Avatar */}
                                 <div className="flex-shrink-0">
                                     {profile.avatarUrl ? (
                                         <img
                                             src={`http://localhost:8080${profile.avatarUrl}`}
                                             alt={profile.username}
-                                            className="w-14 h-14 rounded-full object-cover border-2 border-orange-500/30"
+                                            className="w-16 h-16 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-orange-500/30"
                                         />
                                     ) : (
-                                        <div className="w-14 h-14 rounded-full bg-orange-500 flex items-center justify-center">
-                                            <span className="text-white text-lg font-bold">{profile.username.charAt(0).toUpperCase()}</span>
+                                        <div className="w-16 h-16 sm:w-14 sm:h-14 rounded-full bg-orange-500 flex items-center justify-center">
+                                            <span className="text-white text-xl sm:text-lg font-bold">{profile.username.charAt(0).toUpperCase()}</span>
                                         </div>
                                     )}
                                 </div>
                                 {/* Profile Info */}
-                                <div className="flex-1">
+                                <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-3">
-                                        <h1 className="text-2xl font-bold text-gray-100">{profile.username}</h1>
+                                        <h1 className="text-2xl font-bold text-gray-100 truncate">{profile.username}</h1>
                                         {user?.username === profile.username && (
                                             <button
                                                 onClick={() => { setEditBio(profile.bio ?? ''); setEditAvatarFile(null); setShowEditModal(true); }}
-                                                className="text-xs text-orange-400 hover:text-orange-300 border border-orange-500/30 px-2 py-0.5 rounded-lg transition"
+                                                className="text-xs text-orange-400 hover:text-orange-300 border border-orange-500/30 px-2 py-0.5 rounded-lg transition shrink-0"
                                             >
                                                 Edit Profile
                                             </button>

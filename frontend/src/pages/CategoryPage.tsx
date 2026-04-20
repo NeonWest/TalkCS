@@ -288,17 +288,17 @@ export default function CategoryPage() {
         <div className="min-h-screen bg-[#1f1f1f] text-gray-100">
             <Navbar />
 
-            <main className="max-w-5xl mx-auto px-4 py-6 lg:flex lg:gap-6">
+            <main className="max-w-5xl mx-auto px-4 py-6 flex flex-col lg:flex-row lg:gap-6">
                 <div className="flex-1 min-w-0">
-                <div className="rounded-none md:rounded-xl shadow-sm border border-white/10 bg-[#343434] mb-6 overflow-hidden">
+                <div className="rounded-xl shadow-sm border border-white/10 bg-[#343434] mb-6 overflow-hidden">
                     <div className="h-1 bg-gradient-to-r from-orange-500 via-orange-400 to-orange-500" />
-                    <div className="p-5">
-                        <h2 className="text-2xl font-bold text-gray-100">{categoryName || 'Loading...'}</h2>
-                        <p className="text-sm text-gray-300 mt-1">{categoryDescription || 'General discussion space'}</p>
+                    <div className="p-4 sm:p-5">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-100">{categoryName || 'Loading...'}</h2>
+                        <p className="text-xs sm:text-sm text-gray-400 mt-1">{categoryDescription || 'General discussion space'}</p>
                         {isAuthenticated && (
                             <button
                                 onClick={() => activeTab === 'posts' ? setShowModal(true) : setShowResourceModal(true)}
-                                className="mt-4 text-sm bg-orange-500 text-white hover:bg-orange-600 px-4 py-1.5 rounded-xl transition font-semibold shadow-sm"
+                                className="w-full sm:w-auto mt-4 text-sm bg-orange-500 text-white hover:bg-orange-600 px-6 py-2 rounded-xl transition font-bold shadow-lg shadow-orange-500/20"
                             >
                                 {activeTab === 'posts' ? '+ New Post' : '+ Upload Resource'}
                             </button>
@@ -306,25 +306,28 @@ export default function CategoryPage() {
                     </div>
                 </div>
 
-                <div className="mb-4 flex items-center gap-2">
+                <div className="mb-6 flex items-center gap-2 bg-[#111] p-1 rounded-xl w-fit border border-white/10">
                     <button
                         onClick={() => setActiveTab('posts')}
-                        className={`text-sm px-3 py-1.5 rounded-lg border transition ${activeTab === 'posts' ? 'bg-orange-500 text-white border-orange-500' : 'border-white/20 text-gray-300 hover:bg-white/10'}`}
+                        className={`text-sm px-4 py-1.5 rounded-lg transition font-medium ${activeTab === 'posts' ? 'bg-orange-500 text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
                     >
                         Posts
                     </button>
                     <button
                         onClick={() => setActiveTab('resources')}
-                        className={`text-sm px-3 py-1.5 rounded-lg border transition ${activeTab === 'resources' ? 'bg-orange-500 text-white border-orange-500' : 'border-white/20 text-gray-300 hover:bg-white/10'}`}
+                        className={`text-sm px-4 py-1.5 rounded-lg transition font-medium ${activeTab === 'resources' ? 'bg-orange-500 text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
                     >
                         Resources
                     </button>
                 </div>
 
-                {error && <p className="text-base text-red-400 mb-4">{error}</p>}
+                {error && <p className="text-sm text-red-400 mb-4 bg-red-400/10 border border-red-400/20 px-4 py-2 rounded-lg">{error}</p>}
 
                 {loading ? (
-                    <p className="text-base text-gray-400">Loading...</p>
+                    <div className="flex flex-col items-center justify-center py-20 gap-3">
+                        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                        <p className="text-sm text-gray-500">Loading {activeTab}...</p>
+                    </div>
                 ) : activeTab === 'posts' && posts.length === 0 ? (
                     <div className="bg-[#101010] rounded-xl shadow-sm p-12 text-center text-gray-400 border border-white/10">
                         No posts yet. Be the first to post!
@@ -337,8 +340,8 @@ export default function CategoryPage() {
                     <>
                         {activeTab === 'posts' && (
                             <>
-                                <div className="mb-3 flex items-center justify-end">
-                                    <label className="text-sm text-gray-300 flex items-center gap-2">
+                                <div className="mb-4 flex items-center justify-end">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
                                         Sort by
                                         <select
                                             value={sortBy}
@@ -347,7 +350,7 @@ export default function CategoryPage() {
                                                 setSortBy(value);
                                                 setCurrentPage(0);
                                             }}
-                                            className="bg-[#242424] border border-white/15 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                            className="bg-[#242424] border border-white/15 rounded-lg px-2 py-1.5 text-xs text-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500"
                                         >
                                             <option value="newest">Newest</option>
                                             <option value="votes">Most Voted</option>
@@ -356,49 +359,41 @@ export default function CategoryPage() {
                                     </label>
                                 </div>
 
-                                <div className="space-y-2.5">
+                                <div className="space-y-3">
                                     {posts.map(post => (
                                         <div
                                             key={post.id}
                                             onClick={() => navigate(`/post/${post.id}?categoryId=${categoryId}`, { state: { categoryId } })}
-                                            className="bg-[#343434] rounded-xl shadow-sm border border-white/10 px-4 py-3 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer"
+                                            className="bg-[#343434] rounded-xl shadow-sm border border-white/10 px-4 py-4 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer"
                                         >
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-lg font-semibold text-orange-500 truncate">{post.title}</p>
+                                                    <p className="text-lg font-bold text-orange-500 truncate mb-1">{post.title}</p>
                                                     {post.body && (
-                                                        <p className="text-sm text-gray-400 mt-1 line-clamp-2">{stripMarkdown(post.body)}</p>
+                                                        <p className="text-sm text-gray-400 line-clamp-2">{stripMarkdown(post.body)}</p>
                                                     )}
-                                                    <div className="text-sm text-gray-300 mt-2 flex items-center gap-2.5 flex-wrap">
-                                                        <span className="h-8 w-8 rounded-full bg-orange-500 text-white text-xs flex items-center justify-center font-semibold">
-                                                            {post.authorUsername.charAt(0).toUpperCase()}
-                                                        </span>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                navigate(`/profile/${post.authorUsername}`);
-                                                            }}
-                                                            className="text-gray-200 hover:text-white transition font-medium"
-                                                        >
-                                                            {post.authorUsername}
-                                                        </button>
-                                                        {post.authorLevel && (
-                                                            <span className="px-1.5 py-0.5 bg-orange-500/15 text-orange-400 rounded text-xs">{post.authorLevel}</span>
-                                                        )}
-                                                        <span>•</span>
-                                                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                                                        <span>•</span>
-                                                        <span className="font-semibold">{post.commentCount} comments</span>
-                                                    </div>
-                                                    {post.tags && post.tags.length > 0 && (
-                                                        <div className="flex flex-wrap gap-1.5 mt-2">
-                                                            {post.tags.map(tag => (
-                                                                <span key={tag} className="px-2 py-0.5 bg-orange-500/15 text-orange-300 rounded-full text-xs">{tag}</span>
-                                                            ))}
+                                                    <div className="text-xs text-gray-400 mt-3 flex items-center gap-2 flex-wrap">
+                                                        <div className="flex items-center gap-2 pr-2 border-r border-white/10">
+                                                            <div className="h-6 w-6 rounded-full bg-orange-500 text-white text-[10px] flex items-center justify-center font-bold">
+                                                                {post.authorUsername.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    navigate(`/profile/${post.authorUsername}`);
+                                                                }}
+                                                                className="text-gray-200 hover:text-white transition font-bold"
+                                                            >
+                                                                {post.authorUsername}
+                                                            </button>
                                                         </div>
-                                                    )}
+                                                        <span className="hidden sm:inline">•</span>
+                                                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                                                        <span className="hidden sm:inline">•</span>
+                                                        <span className="font-bold text-orange-400/80">{post.commentCount} comments</span>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-2 shrink-0">
+                                                <div className="flex items-center gap-2 shrink-0 bg-black/10 px-2 py-1 rounded-lg">
                                                     <button
                                                         onClick={(e) => void handleVotePost(post.id, 1, e)}
                                                         disabled={votingPostId === post.id}
@@ -406,7 +401,7 @@ export default function CategoryPage() {
                                                     >
                                                         ▲
                                                     </button>
-                                                    <span className="text-sm font-semibold text-gray-200 w-6 text-center">{post.voteScore ?? 0}</span>
+                                                    <span className="text-sm font-bold text-gray-200 w-6 text-center">{post.voteScore ?? 0}</span>
                                                     <button
                                                         onClick={(e) => void handleVotePost(post.id, -1, e)}
                                                         disabled={votingPostId === post.id}
@@ -416,17 +411,18 @@ export default function CategoryPage() {
                                                     </button>
                                                 </div>
                                             </div>
+
                                             {(user?.username === post.authorUsername || user?.role === 'ADMIN') && (
-                                                <div className="mt-2 pt-2 border-t border-white/10 flex items-center gap-3">
+                                                <div className="mt-4 pt-3 border-t border-white/5 flex items-center gap-4">
                                                     {user?.username === post.authorUsername && (
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 openEditModal(post);
                                                             }}
-                                                            className="text-xs text-blue-400 hover:text-blue-300 transition"
+                                                            className="text-xs font-bold text-blue-400 hover:text-blue-300 transition uppercase tracking-wider"
                                                         >
-                                                            Edit
+                                                            Edit Post
                                                         </button>
                                                     )}
                                                     <button
@@ -435,7 +431,7 @@ export default function CategoryPage() {
                                                             void handleDelete(post);
                                                         }}
                                                         disabled={deletingPostId === post.id}
-                                                        className="text-xs text-red-400 hover:text-red-300 transition disabled:opacity-50"
+                                                        className="text-xs font-bold text-red-400/80 hover:text-red-400 transition disabled:opacity-50 uppercase tracking-wider"
                                                     >
                                                         {deletingPostId === post.id ? 'Deleting...' : 'Delete'}
                                                     </button>
@@ -525,31 +521,34 @@ export default function CategoryPage() {
                 </div>{/* end flex-1 */}
 
                 {/* Upcoming events sidebar */}
-                <aside className="hidden lg:block w-64 shrink-0 mt-0">
-                    <div className="bg-[#2d2d2d] rounded-xl border border-white/10 p-4 sticky top-20">
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-sm font-semibold text-gray-100">Upcoming Events</h3>
+                <aside className="w-full lg:w-64 shrink-0 mt-8 lg:mt-0">
+                    <div className="bg-[#2d2d2d] rounded-xl border border-white/10 p-4 lg:sticky lg:top-20">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-sm font-bold text-gray-100 uppercase tracking-widest">Upcoming Events</h3>
                             <button
                                 onClick={() => navigate('/calendar')}
-                                className="text-xs text-orange-400 hover:text-orange-300 transition"
+                                className="text-xs text-orange-400 hover:text-orange-300 font-bold transition"
                             >View all</button>
                         </div>
                         {upcomingEvents.length === 0 ? (
-                            <p className="text-xs text-gray-500">No upcoming events.</p>
+                            <p className="text-xs text-gray-500 py-4 text-center border border-dashed border-white/10 rounded-lg">No upcoming events.</p>
                         ) : (
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                                 {upcomingEvents.map(ev => (
-                                    <div key={ev.id} className="border-l-2 border-orange-500/60 pl-2">
-                                        <p className="text-xs font-medium text-gray-200 leading-snug truncate">{ev.title}</p>
-                                        <p className="text-xs text-gray-500">{ev.startDate} · {ev.eventType}</p>
+                                    <div key={ev.id} className="bg-white/5 rounded-lg p-2.5 border-l-4 border-orange-500 transition hover:bg-white/[0.08]">
+                                        <p className="text-xs font-bold text-gray-100 leading-snug truncate mb-1">{ev.title}</p>
+                                        <div className="flex items-center justify-between text-[10px]">
+                                            <span className="text-gray-400">{ev.startDate}</span>
+                                            <span className="text-orange-400/80 font-bold">{ev.eventType}</span>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         )}
                         <button
                             onClick={() => navigate('/calendar')}
-                            className="mt-3 w-full text-xs text-center text-gray-400 hover:text-white transition"
-                        >+ Add event</button>
+                            className="mt-4 w-full py-2 text-xs font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition border border-white/5"
+                        >+ Add your own event</button>
                     </div>
                 </aside>
             </main>
