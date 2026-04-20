@@ -125,10 +125,10 @@ export default function AdminPage() {
                 <h1 className="text-2xl font-bold text-white mb-6">Admin Panel</h1>
 
                 {/* Tabs */}
-                <div className="flex gap-1 mb-6 bg-[#111] rounded-xl p-1 w-fit border border-white/10">
+                <div className="flex gap-1 mb-6 bg-[#111] rounded-xl p-1 w-full sm:w-fit border border-white/10 overflow-x-auto no-scrollbar whitespace-nowrap">
                     {tabs.map(t => (
                         <button key={t.key} onClick={() => setTab(t.key)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${tab === t.key ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white'}`}>
+                            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition ${tab === t.key ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white'}`}>
                             {t.label}
                         </button>
                     ))}
@@ -136,12 +136,12 @@ export default function AdminPage() {
 
                 {/* Stats Tab */}
                 {tab === 'stats' && (
-                    <div>
+                    <div className="space-y-6">
                         {!stats ? (
                             <p className="text-gray-400">Loading...</p>
                         ) : (
                             <>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                                <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
                                     {[
                                         { label: 'Total Users', value: stats.totalUsers },
                                         { label: 'Total Posts', value: stats.totalPosts },
@@ -151,28 +151,28 @@ export default function AdminPage() {
                                         { label: 'New Users This Week', value: stats.newUsersThisWeek },
                                     ].map(s => (
                                         <div key={s.label} className="bg-[#2d2d2d] rounded-xl border border-white/10 p-4">
-                                            <p className="text-3xl font-bold text-orange-500">{s.value}</p>
-                                            <p className="text-sm text-gray-400 mt-1">{s.label}</p>
+                                            <p className="text-2xl sm:text-3xl font-bold text-orange-500">{s.value}</p>
+                                            <p className="text-xs sm:text-sm text-gray-400 mt-1">{s.label}</p>
                                         </div>
                                     ))}
                                 </div>
-                                <div className="bg-[#2d2d2d] rounded-xl border border-white/10 p-4">
-                                    <h3 className="text-sm font-bold text-gray-200 mb-4">Most Active Categories</h3>
+                                <div className="bg-[#2d2d2d] rounded-xl border border-white/10 p-4 sm:p-5">
+                                    <h3 className="text-sm font-bold text-gray-200 mb-4 uppercase tracking-wider">Most Active Categories</h3>
                                     {stats.mostActiveCategories.length === 0 ? (
                                         <p className="text-sm text-gray-400">No data yet.</p>
                                     ) : (
-                                        <div className="space-y-3">
+                                        <div className="space-y-4">
                                             {stats.mostActiveCategories.map((c, i) => {
                                                 const max = stats.mostActiveCategories[0].postCount;
                                                 const pct = max > 0 ? Math.round((c.postCount / max) * 100) : 0;
                                                 return (
                                                     <div key={c.categoryId}>
-                                                        <div className="flex justify-between text-sm mb-1">
-                                                            <span className="text-gray-300">#{i + 1} {c.categoryName}</span>
+                                                        <div className="flex justify-between text-sm mb-1.5">
+                                                            <span className="text-gray-300 font-medium">#{i + 1} {c.categoryName}</span>
                                                             <span className="text-orange-400 font-semibold">{c.postCount} posts</span>
                                                         </div>
                                                         <div className="h-2 bg-[#1a1a1a] rounded-full overflow-hidden">
-                                                            <div className="h-full bg-orange-500 rounded-full" style={{ width: `${pct}%` }} />
+                                                            <div className="h-full bg-orange-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                                                         </div>
                                                     </div>
                                                 );
@@ -188,17 +188,60 @@ export default function AdminPage() {
                 {/* Users Tab */}
                 {tab === 'users' && (
                     <div>
-                        <div className="flex gap-3 mb-4">
+                        <div className="flex flex-col sm:flex-row gap-3 mb-6">
                             <input
                                 value={userSearch}
                                 onChange={e => { setUserSearch(e.target.value); setUserPage(0); }}
                                 onKeyDown={e => e.key === 'Enter' && loadUsers()}
                                 placeholder="Search username..."
-                                className="bg-[#2d2d2d] border border-white/15 rounded-lg px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-orange-500 w-64"
+                                className="bg-[#2d2d2d] border border-white/15 rounded-lg px-4 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-orange-500 flex-1 sm:max-w-xs"
                             />
-                            <button onClick={loadUsers} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-sm font-semibold transition">Search</button>
+                            <button onClick={loadUsers} className="w-full sm:w-auto px-6 py-2.5 bg-orange-500 hover:bg-orange-600 rounded-lg text-sm font-semibold transition shadow-lg shadow-orange-500/10">Search</button>
                         </div>
-                        <div className="bg-[#2d2d2d] rounded-xl border border-white/10 overflow-hidden">
+                        
+                        {/* Mobile User Cards */}
+                        <div className="md:hidden space-y-4">
+                            {users.map(u => (
+                                <div key={u.id} className="bg-[#2d2d2d] rounded-xl border border-white/10 p-4 space-y-3">
+                                    <div className="flex justify-between items-start">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm font-bold text-gray-100 truncate">{u.username}</p>
+                                            <p className="text-xs text-gray-500 truncate">{u.email}</p>
+                                        </div>
+                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${u.role === 'ADMIN' ? 'bg-orange-500/20 text-orange-400' : 'bg-gray-700 text-gray-400'}`}>
+                                            {u.role}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2 py-2 border-y border-white/5">
+                                        <div className="text-center">
+                                            <p className="text-xs text-gray-500 uppercase font-bold tracking-tighter">Rep</p>
+                                            <p className="text-sm font-semibold text-gray-300">{u.reputation}</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-xs text-gray-500 uppercase font-bold tracking-tighter">Posts</p>
+                                            <p className="text-sm font-semibold text-gray-300">{u.postCount}</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-xs text-gray-500 uppercase font-bold tracking-tighter">Cmts</p>
+                                            <p className="text-sm font-semibold text-gray-300">{u.commentCount}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 pt-1">
+                                        <button onClick={() => handleToggleRole(u.id)}
+                                            className="flex-1 text-xs px-2 py-2 bg-[#3a3a3a] hover:bg-orange-500 rounded-lg transition text-gray-300 hover:text-white font-medium">
+                                            {u.role === 'ADMIN' ? 'Revoke Admin' : 'Make Admin'}
+                                        </button>
+                                        <button onClick={() => handleDeleteUser(u.id, u.username)}
+                                            className="text-xs px-3 py-2 bg-red-900/20 hover:bg-red-700 rounded-lg transition text-red-400 hover:text-white font-medium">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Desktop Table */}
+                        <div className="hidden md:block bg-[#2d2d2d] rounded-xl border border-white/10 overflow-hidden">
                             <table className="w-full text-sm">
                                 <thead className="bg-[#1a1a1a] border-b border-white/10">
                                     <tr>
@@ -236,10 +279,10 @@ export default function AdminPage() {
                             </table>
                         </div>
                         {userTotalPages > 1 && (
-                            <div className="flex gap-2 mt-4">
+                            <div className="flex flex-wrap gap-2 mt-6 justify-center sm:justify-start">
                                 {Array.from({ length: userTotalPages }, (_, i) => (
                                     <button key={i} onClick={() => setUserPage(i)}
-                                        className={`px-3 py-1 rounded text-sm ${userPage === i ? 'bg-orange-500 text-white' : 'bg-[#2d2d2d] text-gray-400 hover:text-white'}`}>
+                                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition ${userPage === i ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'bg-[#2d2d2d] text-gray-400 hover:text-white'}`}>
                                         {i + 1}
                                     </button>
                                 ))}
@@ -250,49 +293,55 @@ export default function AdminPage() {
 
                 {/* Categories Tab */}
                 {tab === 'categories' && (
-                    <div>
+                    <div className="space-y-4">
                         {editCat && (
-                            <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
-                                <div className="bg-[#2d2d2d] rounded-2xl border border-white/15 p-6 w-full max-w-md shadow-2xl">
+                            <div className="fixed inset-0 bg-black/70 z-[110] flex items-center justify-center p-4 backdrop-blur-sm">
+                                <div className="bg-[#2d2d2d] rounded-2xl border border-white/15 p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
                                     <h2 className="text-lg font-bold text-white mb-4">Edit Category</h2>
-                                    <div className="space-y-3">
-                                        <input value={editName} onChange={e => setEditName(e.target.value)}
-                                            className="w-full bg-[#1a1a1a] border border-white/15 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-orange-500" />
-                                        <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={3}
-                                            className="w-full bg-[#1a1a1a] border border-white/15 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-orange-500 resize-none" />
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Name</label>
+                                            <input value={editName} onChange={e => setEditName(e.target.value)}
+                                                className="w-full bg-[#1a1a1a] border border-white/15 rounded-lg px-4 py-2.5 text-gray-100 focus:outline-none focus:border-orange-500 transition-colors" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Description</label>
+                                            <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={4}
+                                                className="w-full bg-[#1a1a1a] border border-white/15 rounded-lg px-4 py-2.5 text-gray-100 focus:outline-none focus:border-orange-500 resize-none transition-colors" />
+                                        </div>
                                     </div>
-                                    <div className="flex gap-3 mt-4">
-                                        <button onClick={saveEditCat} className="flex-1 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-sm font-semibold transition">Save</button>
-                                        <button onClick={() => setEditCat(null)} className="flex-1 py-2 bg-[#3a3a3a] hover:bg-[#444] rounded-lg text-sm font-semibold transition">Cancel</button>
+                                    <div className="flex gap-3 mt-6">
+                                        <button onClick={saveEditCat} className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 rounded-lg text-sm font-bold transition text-white">Save Changes</button>
+                                        <button onClick={() => setEditCat(null)} className="flex-1 py-2.5 bg-[#3a3a3a] hover:bg-[#444] rounded-lg text-sm font-bold transition text-gray-300">Cancel</button>
                                     </div>
                                 </div>
                             </div>
                         )}
                         <div className="grid gap-3">
                             {categories.map(cat => (
-                                <div key={cat.id} className={`bg-[#2d2d2d] rounded-xl border border-white/10 px-4 py-3 flex items-center justify-between ${cat.archived ? 'opacity-50' : ''}`}>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <p className="text-gray-100 font-medium">{cat.name}</p>
-                                            {cat.archived && <span className="text-xs bg-red-900/50 text-red-400 px-2 py-0.5 rounded-full">Archived</span>}
+                                <div key={cat.id} className={`bg-[#2d2d2d] rounded-xl border border-white/10 px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:bg-white/[0.02] ${cat.archived ? 'opacity-50 grayscale-[0.5]' : ''}`}>
+                                    <div className="min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <p className="text-gray-100 font-bold tracking-tight">{cat.name}</p>
+                                            {cat.archived && <span className="text-[10px] bg-red-900/50 text-red-400 px-2 py-0.5 rounded-full font-bold uppercase">Archived</span>}
                                         </div>
-                                        <p className="text-sm text-gray-400 mt-0.5">{cat.description}</p>
+                                        <p className="text-sm text-gray-400 line-clamp-2 sm:line-clamp-none">{cat.description}</p>
                                     </div>
-                                    <div className="flex gap-2 shrink-0">
+                                    <div className="flex gap-2 sm:shrink-0 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0">
                                         {!cat.archived && (
                                             <button onClick={() => openEditCat(cat)}
-                                                className="text-xs px-3 py-1.5 bg-[#3a3a3a] hover:bg-orange-500 rounded-lg transition text-gray-300 hover:text-white">
+                                                className="flex-1 sm:flex-none text-xs px-4 py-2 bg-[#3a3a3a] hover:bg-orange-500 rounded-lg transition text-gray-300 hover:text-white font-medium">
                                                 Edit
                                             </button>
                                         )}
                                         {cat.archived ? (
                                             <button onClick={() => handleRestoreCat(cat.id)}
-                                                className="text-xs px-3 py-1.5 bg-green-900/40 hover:bg-green-700 rounded-lg transition text-green-400 hover:text-white">
+                                                className="flex-1 sm:flex-none text-xs px-4 py-2 bg-green-900/40 hover:bg-green-700 rounded-lg transition text-green-400 hover:text-white font-medium">
                                                 Restore
                                             </button>
                                         ) : (
                                             <button onClick={() => handleArchiveCat(cat.id)}
-                                                className="text-xs px-3 py-1.5 bg-red-900/40 hover:bg-red-700 rounded-lg transition text-red-400 hover:text-white">
+                                                className="flex-1 sm:flex-none text-xs px-4 py-2 bg-red-900/40 hover:bg-red-700 rounded-lg transition text-red-400 hover:text-white font-medium">
                                                 Archive
                                             </button>
                                         )}

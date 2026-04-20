@@ -97,7 +97,7 @@ export default function HomePage() {
             {/* Main content */}
             <main className="max-w-5xl mx-auto px-4 py-6 flex gap-6 items-start">
             <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-6 mt-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 mt-1">
                     <div>
                         <h2 className="text-xl font-bold text-white">Forum Categories</h2>
                         <p className="text-sm text-gray-300 mt-1">Browse topics and start a discussion</p>
@@ -106,7 +106,7 @@ export default function HomePage() {
                         <button
                             id="new-category-btn"
                             onClick={() => setShowModal(true)}
-                            className="text-sm bg-transparent border border-gray-500 hover:border-gray-300 text-gray-100 px-4 py-1.5 rounded-xl transition font-semibold"
+                            className="w-full sm:w-auto text-sm bg-transparent border border-gray-500 hover:border-gray-300 text-gray-100 px-4 py-1.5 rounded-xl transition font-semibold"
                         >
                             + New Category
                         </button>
@@ -126,7 +126,7 @@ export default function HomePage() {
                             <div
                                 key={cat.id}
                                 onClick={() => navigate(`/category/${cat.id}`)}
-                                className={`bg-[#3a3a3a] rounded-xl shadow-sm border border-white/15 px-4 py-3 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer flex items-center justify-between gap-4 ${idx % 3 === 0 ? 'border-l-4 border-l-orange-500' : idx % 3 === 1 ? 'border-l-4 border-l-orange-400' : 'border-l-4 border-l-orange-600'}`}
+                                className={`bg-[#3a3a3a] rounded-xl shadow-sm border border-white/15 px-4 py-3 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${idx % 3 === 0 ? 'border-l-4 border-l-orange-500' : idx % 3 === 1 ? 'border-l-4 border-l-orange-400' : 'border-l-4 border-l-orange-600'}`}
                             >
                                 <div className="flex items-start gap-4 min-w-0">
                                     <div className="h-9 w-9 rounded-lg bg-gray-200 text-gray-700 text-sm flex items-center justify-center font-bold shrink-0">
@@ -134,13 +134,15 @@ export default function HomePage() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-base font-semibold text-gray-100 truncate">{cat.name}</p>
-                                        <p className="text-sm text-gray-300 mt-0.5">{cat.description}</p>
+                                        <p className="text-sm text-gray-300 mt-0.5 line-clamp-2 sm:line-clamp-none">{cat.description}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 shrink-0">
-                                    <div className="w-14 text-center">
-                                        <p className="text-lg text-orange-500 font-semibold leading-none">{postCounts[cat.id] ?? 0}</p>
-                                        <p className="text-xs text-gray-300 mt-0.5">posts</p>
+                                <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-14 text-center">
+                                            <p className="text-lg text-orange-500 font-semibold leading-none">{postCounts[cat.id] ?? 0}</p>
+                                            <p className="text-xs text-gray-300 mt-0.5">posts</p>
+                                        </div>
                                     </div>
                                     {isAdmin && (
                                         <div className="flex gap-1" onClick={e => e.stopPropagation()}>

@@ -65,28 +65,35 @@ export default function NotificationBell() {
             </button>
 
             {open && (
-                <div className="absolute right-0 mt-2 w-80 bg-[#2d2d2d] border border-white/10 rounded-xl shadow-xl z-50 overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
+                <div className="fixed sm:absolute right-0 sm:right-0 top-14 sm:top-auto sm:mt-2 w-screen sm:w-80 h-[calc(100vh-3.5rem)] sm:h-auto bg-[#2d2d2d] border-t sm:border border-white/10 sm:rounded-xl shadow-xl z-50 overflow-hidden flex flex-col">
+                    <div className="flex items-center justify-between px-4 py-3 sm:py-2 border-b border-white/10 shrink-0">
                         <span className="text-sm font-semibold text-gray-200">Notifications</span>
-                        {count > 0 && (
-                            <button onClick={handleMarkAll} className="text-xs text-orange-400 hover:text-orange-300 transition">
-                                Mark all read
+                        <div className="flex items-center gap-4">
+                            {count > 0 && (
+                                <button onClick={handleMarkAll} className="text-xs text-orange-400 hover:text-orange-300 transition">
+                                    Mark all read
+                                </button>
+                            )}
+                            <button onClick={() => setOpen(false)} className="sm:hidden text-gray-400 hover:text-white">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                             </button>
-                        )}
+                        </div>
                     </div>
-                    <div className="max-h-80 overflow-y-auto">
+                    <div className="flex-1 overflow-y-auto">
                         {items.length === 0 ? (
-                            <p className="text-sm text-gray-400 text-center py-6">No notifications</p>
+                            <p className="text-sm text-gray-400 text-center py-12">No notifications</p>
                         ) : (
                             items.map(item => (
                                 <button key={item.id} onClick={() => void handleClick(item)}
-                                    className={`w-full text-left px-4 py-3 flex gap-3 items-start hover:bg-white/5 transition ${!item.isRead ? 'bg-orange-500/5' : ''}`}>
-                                    <span className="text-base shrink-0 mt-0.5">{TYPE_ICON[item.type] ?? '🔔'}</span>
+                                    className={`w-full text-left px-4 py-4 sm:py-3 flex gap-3 items-start hover:bg-white/5 transition border-b border-white/5 last:border-0 ${!item.isRead ? 'bg-orange-500/5' : ''}`}>
+                                    <span className="text-lg sm:text-base shrink-0 mt-0.5">{TYPE_ICON[item.type] ?? '🔔'}</span>
                                     <div className="flex-1 min-w-0">
-                                        <p className={`text-xs leading-snug ${item.isRead ? 'text-gray-400' : 'text-gray-200 font-medium'}`}>{item.message}</p>
-                                        <p className="text-xs text-gray-500 mt-0.5">{new Date(item.createdAt).toLocaleDateString()}</p>
+                                        <p className={`text-sm sm:text-xs leading-snug ${item.isRead ? 'text-gray-400' : 'text-gray-200 font-medium'}`}>{item.message}</p>
+                                        <p className="text-xs text-gray-500 mt-1">{new Date(item.createdAt).toLocaleDateString()}</p>
                                     </div>
-                                    {!item.isRead && <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0 mt-1" />}
+                                    {!item.isRead && <span className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-orange-500 shrink-0 mt-1.5" />}
                                 </button>
                             ))
                         )}

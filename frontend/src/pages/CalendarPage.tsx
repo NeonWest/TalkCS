@@ -295,43 +295,52 @@ export default function CalendarPage() {
 
                 {/* Calendar grid */}
                 {loading ? (
-                    <p className="text-gray-400">Loading...</p>
+                    <p className="text-gray-400 text-center py-12">Loading calendar...</p>
                 ) : (
-                    <div className="rounded-xl border border-white/10 bg-[#2d2d2d] overflow-hidden">
-                        <div className="grid grid-cols-7 border-b border-white/10">
-                            {DAYS.map(d => (
-                                <div key={d} className="text-center text-xs font-semibold text-gray-400 py-2">{d}</div>
-                            ))}
-                        </div>
-                        <div className="grid grid-cols-7">
-                            {cells.map((day, idx) => {
-                                if (!day) return <div key={`e-${idx}`} className="min-h-[90px] border-b border-r border-white/5" />;
-                                const dayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                                const isToday = dayStr === todayStr;
-                                const dayEvents = eventsByDay[day] || [];
-                                return (
-                                    <div key={day} className={`min-h-[90px] p-1.5 border-b border-r border-white/5 ${isToday ? 'bg-orange-500/5' : ''}`}>
-                                        <span className={`text-xs font-medium mb-1 inline-flex items-center justify-center h-5 w-5 rounded-full ${isToday ? 'bg-orange-500 text-white' : 'text-gray-400'}`}>
-                                            {day}
-                                        </span>
-                                        <div className="space-y-0.5">
-                                            {dayEvents.slice(0, 3).map(ev => (
-                                                <button
-                                                    key={ev.id}
-                                                    onClick={() => setSelectedEvent(ev)}
-                                                    className={`w-full text-left text-xs px-1.5 py-0.5 rounded border truncate transition hover:opacity-80 ${EVENT_COLORS[ev.eventType]} ${!ev.publicEvent ? 'opacity-70' : ''}`}
-                                                    title={`${ev.title}${!ev.publicEvent ? ' (private)' : ''}`}
-                                                >
-                                                    {!ev.publicEvent && <span className="mr-0.5">🔒</span>}{ev.title}
-                                                </button>
-                                            ))}
-                                            {dayEvents.length > 3 && (
-                                                <span className="text-xs text-gray-500 pl-1">+{dayEvents.length - 3} more</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                    <div className="rounded-xl border border-white/10 bg-[#2d2d2d] overflow-hidden shadow-2xl">
+                        <div className="overflow-x-auto">
+                            <div className="min-w-[600px] sm:min-w-0">
+                                <div className="grid grid-cols-7 border-b border-white/10 bg-[#242424]">
+                                    {DAYS.map(d => (
+                                        <div key={d} className="text-center text-[10px] sm:text-xs font-bold text-gray-500 py-3 uppercase tracking-widest">{d}</div>
+                                    ))}
+                                </div>
+                                <div className="grid grid-cols-7">
+                                    {cells.map((day, idx) => {
+                                        if (!day) return <div key={`e-${idx}`} className="min-h-[80px] sm:min-h-[110px] border-b border-r border-white/5 bg-[#1a1a1a]/30" />;
+                                        const dayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                        const isToday = dayStr === todayStr;
+                                        const dayEvents = eventsByDay[day] || [];
+                                        return (
+                                            <div key={day} className={`min-h-[80px] sm:min-h-[110px] p-1 sm:p-2 border-b border-r border-white/5 transition-colors hover:bg-white/[0.02] ${isToday ? 'bg-orange-500/5' : ''}`}>
+                                                <div className="flex justify-between items-start mb-1 sm:mb-2">
+                                                    <span className={`text-[10px] sm:text-xs font-bold flex items-center justify-center h-5 w-5 sm:h-6 sm:w-6 rounded-full ${isToday ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-gray-500'}`}>
+                                                        {day}
+                                                    </span>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    {dayEvents.slice(0, 3).map(ev => (
+                                                        <button
+                                                            key={ev.id}
+                                                            onClick={() => setSelectedEvent(ev)}
+                                                            className={`w-full text-left text-[9px] sm:text-[10px] px-1.5 py-1 rounded border leading-tight truncate transition hover:brightness-110 active:scale-[0.98] ${EVENT_COLORS[ev.eventType]} ${!ev.publicEvent ? 'opacity-70' : ''}`}
+                                                            title={`${ev.title}${!ev.publicEvent ? ' (private)' : ''}`}
+                                                        >
+                                                            <div className="flex items-center gap-1">
+                                                                {!ev.publicEvent && <span className="shrink-0 text-[8px]">🔒</span>}
+                                                                <span className="truncate">{ev.title}</span>
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                    {dayEvents.length > 3 && (
+                                                        <p className="text-[9px] sm:text-[10px] text-gray-500 font-medium pl-1">+{dayEvents.length - 3} more</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -339,8 +348,8 @@ export default function CalendarPage() {
 
             {/* Event detail modal */}
             {selectedEvent && (
-                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setSelectedEvent(null)}>
-                    <div className="bg-[#2d2d2d] rounded-xl shadow-xl w-full max-w-md p-6 border border-white/10" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[120] p-4 animate-in fade-in duration-200" onClick={() => setSelectedEvent(null)}>
+                    <div className="bg-[#2d2d2d] rounded-2xl shadow-2xl w-full max-w-md p-6 border border-white/10 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                         <div className="flex items-start justify-between gap-4 mb-3">
                             <div>
                                 <div className="flex items-center gap-2">
