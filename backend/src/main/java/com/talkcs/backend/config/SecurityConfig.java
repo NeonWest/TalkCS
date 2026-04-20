@@ -49,7 +49,15 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/api/users/**", "/api/search/**", "/api/resources/*/download", "/ws/**").permitAll()
+                .requestMatchers("/api/auth/**", "/api/search/**", "/api/resources/*/download", "/ws/**").permitAll()
+                // Specific public endpoints for users
+                .requestMatchers(
+                    org.springframework.http.HttpMethod.GET, 
+                    "/api/users/{username}", 
+                    "/api/users/{username}/posts", 
+                    "/api/users/{username}/avatar", 
+                    "/api/users/leaderboard"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
@@ -64,11 +72,15 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         
-        config.setAllowedOrigins(List.of(frontendUrl, "http://localhost:5173", "http://localhost:5174"));
+        // Allow all origins for dev to rule out CORS issues
+        config.setAllowedOriginPatterns(List.of("*"));
         
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("Authorization"));
+        config.setMaxAge(3600L);
+        
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;

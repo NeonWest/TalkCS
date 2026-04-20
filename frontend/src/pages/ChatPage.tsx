@@ -76,30 +76,69 @@ export default function ChatPage() {
     }, []);
 
     useEffect(() => {
-        if (!token) return;
+        if (!token || !user?.id) return;
+        
+        // Use the base URL from import.meta.env if available, otherwise fallback to localhost
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+        console.log('Connecting to WebSocket at:', `${apiUrl}/ws`);
+        
         const client = new Client({
-            webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+            webSocketFactory: () => new SockJS(`${apiUrl}/ws`),
             connectHeaders: { Authorization: `Bearer ${token}` },
             reconnectDelay: 5000,
-            onConnect: () => {
-                client.subscribe('/user/queue/messages', (frame) => {
+            onConnect: (frame) => {
+                console.log('Connected to WebSocket:', frame);
+                
+                // Subscribe to the direct user topic
+                const topic = `/topic/user/${user.id}/messages`;
+                console.log('Subscribing to topic:', topic);
+                
+                client.subscribe(topic, (frame) => {
                     const msg: ChatMessage = JSON.parse(frame.body);
-                    if (msg.conversationId === activeConvIdRef.current) {
-                        setMessages(prev => [...prev, msg]);
-                    } else {
-                        setConversations(prev => prev.map(c =>
-                            c.id === msg.conversationId
-                                ? { ...c, unreadCount: c.unreadCount + 1, lastMessage: msg.content }
-                                : c
-                        ));
+                    
+                    const currentActiveId = Number(activeConvIdRef.current);
+                    const msgConvId = Number(msg.conversationId);
+                    
+                    if (msgConvId === currentActiveId) {
+                        setMessages(prev => {
+                            const optimisticIdx = prev.findIndex(m => 
+                                m.senderUsername === msg.senderUsername && 
+                                m.content === msg.content && 
+                                m.id > 1700000000000
+                            );
+                            if (optimisticIdx !== -1) {
+                                const next = [...prev];
+                                next[optimisticIdx] = msg;
+                                return next;
+                            }
+                            if (prev.some(m => m.id === msg.id)) return prev;
+                            return [...prev, msg];
+                        });
                     }
+
+                    // Always update sidebar with last message
+                    setConversations(prev => prev.map(c =>
+                        c.id === msgConvId
+                            ? { 
+                                ...c, 
+                                lastMessage: msg.content,
+                                unreadCount: msgConvId === currentActiveId ? 0 : c.unreadCount + 1 
+                              }
+                            : c
+                    ));
                 });
             },
+            onStompError: (frame) => {
+                console.error('STOMP error:', frame);
+            },
+            onWebSocketClose: () => {
+                console.log('WebSocket closed');
+            }
         });
         stompRef.current = client;
         client.activate();
         return () => { client.deactivate(); };
-    }, [token]);
+    }, [token, user?.id]);
 
     useEffect(() => {
         if (!activeConvId) return;
@@ -117,9 +156,23 @@ export default function ChatPage() {
 
     const handleSend = () => {
         if (!input.trim() || !activeConvId || !stompRef.current?.connected) return;
+        
+        const content = input.trim();
+        
+        // Optimistic update for the sender
+        const optimisticMsg: ChatMessage = {
+            id: Date.now(), // Temp ID
+            conversationId: activeConvId,
+            senderUsername: user?.username || 'me',
+            content: content,
+            sentAt: new Date().toISOString(),
+            isRead: false
+        };
+        setMessages(prev => [...prev, optimisticMsg]);
+        
         stompRef.current.publish({
             destination: '/app/chat.send',
-            body: JSON.stringify({ conversationId: activeConvId, content: input.trim() }),
+            body: JSON.stringify({ conversationId: activeConvId, content: content }),
         });
         setInput('');
     };
