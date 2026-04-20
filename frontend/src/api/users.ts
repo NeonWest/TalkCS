@@ -34,6 +34,7 @@ export interface LeaderboardUser {
     level: number;
     levelTitle: string;
     role: string;
+    avatarUrl?: string;
 }
 
 export const getLeaderboard = async (): Promise<LeaderboardUser[]> => {
@@ -59,4 +60,8 @@ export const uploadAvatar = async (file: File): Promise<string> => {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
     return res.data.avatarUrl;
+};
+
+export const searchUsers = async (query: string): Promise<LeaderboardUser[]> => {
+    return (await api.get<LeaderboardUser[]>(`/api/users/search?q=${query}`)).data;
 };

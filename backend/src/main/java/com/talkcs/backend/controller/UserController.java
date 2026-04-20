@@ -19,6 +19,11 @@ public class UserController {
     private final UserService userservice;
     private final PostService postservice;
 
+    @GetMapping("/search")
+    public ResponseEntity<List<UserResponse>> searchUsers(@RequestParam String q) {
+        return ResponseEntity.ok(userservice.searchUsersForChat(q));
+    }
+
     @GetMapping("/{username}")
     public ResponseEntity<UserResponse> getUserProfile(@PathVariable String username) {
         return ResponseEntity.ok(userservice.getUserProfile(username));

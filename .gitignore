@@ -13,7 +13,7 @@ build/
 node_modules/
 dist/
 
-# ─── IDE ────────────────────────────────────────────────────────
+# ─── IDE / Tooling ──────────────────────────────────────────────
 .idea/
 *.iml
 .vscode/
@@ -24,3 +24,4 @@ Thumbs.db
 
 backend/uploads/
 start.sh
+/SS/*
