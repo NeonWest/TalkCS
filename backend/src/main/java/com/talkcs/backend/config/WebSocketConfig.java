@@ -2,6 +2,7 @@ package com.talkcs.backend.config;
 
 import com.talkcs.backend.security.WebSocketAuthInterceptor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -14,9 +15,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final WebSocketAuthInterceptor wsAuthInterceptor;
 
+    @Value("${app.base-url}")
+    private String frontendUrl;
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic", "/user");
+        config.enableSimpleBroker("/topic", "/queue");
         config.setApplicationDestinationPrefixes("/app");
         config.setUserDestinationPrefix("/user");
     }
@@ -24,7 +28,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:5173", "http://localhost:5174")
+                .setAllowedOriginPatterns(
+                        frontendUrl,
+                        "http://localhost:5173",
+                        "http://localhost:5174",
+                        "http://127.0.0.1:5173",
+                        "http://127.0.0.1:5174"
+                )
                 .withSockJS();
     }
 

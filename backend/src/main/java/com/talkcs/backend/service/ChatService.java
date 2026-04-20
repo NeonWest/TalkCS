@@ -8,12 +8,14 @@ import com.talkcs.backend.model.User;
 import com.talkcs.backend.repository.ChatConversationRepository;
 import com.talkcs.backend.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -69,8 +71,8 @@ public class ChatService {
         convRepo.save(conv);
 
         ChatMessageResponse response = toMsgResponse(msg);
-        messagingTemplate.convertAndSendToUser(recipient.getEmail(), "/queue/messages", response);
-        messagingTemplate.convertAndSendToUser(sender.getEmail(), "/queue/messages", response);
+        messagingTemplate.convertAndSend("/topic/user/" + recipient.getId() + "/messages", response);
+        messagingTemplate.convertAndSend("/topic/user/" + sender.getId() + "/messages", response);
     }
 
     private ChatConversationResponse toConvResponse(ChatConversation c, User me) {
