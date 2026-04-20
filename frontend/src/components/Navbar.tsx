@@ -14,11 +14,6 @@ export default function Navbar() {
     const onLeaderboard = location.pathname === '/leaderboard';
     const onCalendar = location.pathname === '/calendar';
 
-    const showLeaderboard = !onLeaderboard;
-    const showCalendar = !onCalendar;
-    const showAdmin = isAdmin && !onAdmin;
-    const hasNavLinks = showLeaderboard || showCalendar || showAdmin;
-
     const handleLogout = () => {
         logout();
         navigate('/login');
@@ -38,16 +33,33 @@ export default function Navbar() {
                 <div className="flex items-center gap-1.5 shrink-0">
                     {isAuthenticated ? (
                         <>
-                            {showLeaderboard && (
-                                <button onClick={() => navigate('/leaderboard')} className="text-sm text-gray-400 hover:text-white transition px-2 py-1 rounded-lg hover:bg-white/5">Leaderboard</button>
+                            <button 
+                                onClick={() => navigate('/leaderboard')} 
+                                className={`text-sm transition px-2 py-1 rounded-lg ${
+                                    onLeaderboard ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                }`}
+                            >
+                                Leaderboard
+                            </button>
+                            <button 
+                                onClick={() => navigate('/calendar')} 
+                                className={`text-sm transition px-2 py-1 rounded-lg ${
+                                    onCalendar ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                }`}
+                            >
+                                Calendar
+                            </button>
+                            {isAdmin && (
+                                <button 
+                                    onClick={() => navigate('/admin')} 
+                                    className={`text-sm font-medium px-2 py-1 rounded-lg transition ${
+                                        onAdmin ? 'text-orange-400 bg-orange-500/10' : 'text-orange-400/70 hover:text-orange-400 hover:bg-orange-500/5'
+                                    }`}
+                                >
+                                    Admin
+                                </button>
                             )}
-                            {showCalendar && (
-                                <button onClick={() => navigate('/calendar')} className="text-sm text-gray-400 hover:text-white transition px-2 py-1 rounded-lg hover:bg-white/5">Calendar</button>
-                            )}
-                            {showAdmin && (
-                                <button onClick={() => navigate('/admin')} className="text-sm text-orange-400 hover:text-orange-300 font-medium px-2 py-1 rounded-lg hover:bg-orange-500/10 transition">Admin</button>
-                            )}
-                            {hasNavLinks && <span className="w-px h-4 bg-white/20 mx-1" />}
+                            <span className="w-px h-4 bg-white/20 mx-1" />
                             <ChatIcon />
                             <NotificationBell />
                             <span className="w-px h-4 bg-white/20 mx-1" />

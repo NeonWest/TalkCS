@@ -13,10 +13,11 @@ build/
 node_modules/
 dist/
 
-# ─── IDE ────────────────────────────────────────────────────────
+# ─── IDE / Tooling ──────────────────────────────────────────────
 .idea/
 *.iml
 .vscode/
+.gemini/
 
 # ─── OS ─────────────────────────────────────────────────────────
 .DS_Store
@@ -24,5 +25,7 @@ Thumbs.db
 
 backend/uploads/
 CLAUDE.md
+GEMINI.md
 docs/IMPLEMENTATION_PLAN.md
 start.sh
+/SS/*

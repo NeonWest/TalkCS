@@ -18,4 +18,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findTop20ByOrderByReputationDesc();
     long countByCreatedAtAfter(LocalDateTime date);
     Page<User> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
+    List<User> findByUsernameContainingIgnoreCaseAndUsernameNot(String username, String currentUsername, Pageable pageable);
 }

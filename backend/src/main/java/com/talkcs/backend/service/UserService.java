@@ -3,6 +3,7 @@ import com.talkcs.backend.dto.*;
 import com.talkcs.backend.repository.*;
 import com.talkcs.backend.model.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +24,22 @@ public class UserService {
     private final CommentRepository commentrepository;
     private final FollowRepository followRepository;
     private final NotificationService notificationService;
+
+    public List<UserResponse> searchUsersForChat(String query) {
+        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userrepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new RuntimeException("Current user not found"));
+        
+        return userrepository.findByUsernameContainingIgnoreCaseAndUsernameNot(query, currentUser.getUsername(), PageRequest.of(0, 5))
+                .stream()
+                .map(u -> UserResponse.builder()
+                        .id(u.getId())
+                        .username(u.getUsername())
+                        .avatarUrl(u.getAvatarUrl() != null ? "/api/users/" + u.getUsername() + "/avatar" : null)
+                        .role(u.getRole())
+                        .build())
+                .toList();
+    }
 
     public UserResponse getUserProfile(String username) {
         User user = userrepository.findByUsername(username)
