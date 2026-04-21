@@ -47,8 +47,8 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
   const selectedTime = date ? format(date, "HH:mm") : null
 
   return (
-    <div className="flex flex-col md:flex-row bg-[#242424] rounded-lg overflow-hidden border border-white/5 shadow-2xl">
-      <div className="p-1.5 border-r border-white/5">
+    <div className="flex flex-col md:flex-row bg-card rounded-lg overflow-hidden border border-border shadow-2xl">
+      <div className="p-1.5 border-r border-border">
         <Calendar
           mode="single"
           selected={date}
@@ -57,8 +57,8 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
           className="bg-transparent"
         />
       </div>
-      <div className="flex flex-col w-full md:w-20 bg-[#1a1a1a]/50">
-        <div className="p-2 border-b border-white/5 flex items-center justify-center gap-2 text-gray-500 font-bold text-[9px] uppercase tracking-widest bg-[#2a2a2a]/30">
+      <div className="flex flex-col w-full md:w-20 bg-muted/30">
+        <div className="p-2 border-b border-border flex items-center justify-center gap-2 text-muted-foreground font-bold text-[9px] uppercase tracking-widest bg-muted/50">
           <Clock className="h-2.5 w-2.5" />
           <span>Time</span>
         </div>
@@ -73,8 +73,8 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
                 className={cn(
                   "h-7 text-[10px] justify-center font-medium transition-colors px-1",
                   selectedTime === time 
-                    ? "bg-orange-500 text-white hover:bg-orange-600" 
-                    : "text-gray-400 hover:bg-white/5 hover:text-white"
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
                 )}
               >
                 {time}

@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Bell } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -51,74 +53,53 @@ function timeAgo(dateString: string) {
 
 export default function NotificationBell() {
   const navigate = useNavigate();
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [items, setItems] = useState<NotificationItem[]>([]);
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
 
-  const fetchCount = async () => {
-    try {
-      const count = await getUnreadCount();
-      setUnreadCount(count);
-    } catch (err) {
-      console.error("Failed to fetch unread count", err);
-    }
-  };
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ["unreadCount"],
+    queryFn: getUnreadCount,
+    refetchInterval: 30000, // Still poll every 30s
+  });
 
-  const fetchNotifications = async () => {
-    try {
-      const data = await getNotifications();
-      setItems(data);
-    } catch (err) {
-      console.error("Failed to fetch notifications", err);
-    }
-  };
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: getNotifications,
+    enabled: isOpen, // Only fetch when popover is open
+  });
 
-  useEffect(() => {
-    fetchCount();
-    const id = setInterval(fetchCount, 30000);
-    return () => clearInterval(id);
-  }, []);
+  const markReadMutation = useMutation({
+    mutationFn: markRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["unreadCount"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
 
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    if (open) {
-      fetchNotifications();
-    }
-  };
+  const markAllReadMutation = useMutation({
+    mutationFn: markAllRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["unreadCount"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      toast.success("All notifications marked as read");
+    },
+  });
 
-  const handleMarkAllAsRead = async () => {
-    try {
-      await markAllRead();
-      setItems((prev) => prev.map((item) => ({ ...item, isRead: true })));
-      setUnreadCount(0);
-    } catch (err) {
-      console.error("Failed to mark all as read", err);
-    }
-  };
-
-  const handleNotificationClick = async (item: NotificationItem) => {
+  const handleNotificationClick = (item: NotificationItem) => {
     if (!item.isRead) {
-      try {
-        await markRead(item.id);
-        setItems((prev) =>
-          prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n))
-        );
-        setUnreadCount((c) => Math.max(0, c - 1));
-      } catch (err) {
-        console.error("Failed to mark notification as read", err);
-      }
+      markReadMutation.mutate(item.id);
     }
     setIsOpen(false);
     navigate(item.link);
   };
 
   return (
-    <Popover open={isOpen} onOpenChange={handleOpenChange}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           size="icon"
           variant="ghost"
-          className="relative text-foreground hover:text-white"
+          className="relative text-foreground hover:bg-black/10 dark:hover:bg-accent hover:text-foreground transition-colors"
           aria-label="Open notifications"
         >
           <Bell size={18} strokeWidth={2} aria-hidden="true" />
@@ -135,7 +116,8 @@ export default function NotificationBell() {
           {unreadCount > 0 && (
             <button
               className="text-xs font-medium text-primary hover:underline"
-              onClick={handleMarkAllAsRead}
+              onClick={() => markAllReadMutation.mutate()}
+              disabled={markAllReadMutation.isPending}
             >
               Mark all as read
             </button>
@@ -147,7 +129,11 @@ export default function NotificationBell() {
           className="-mx-1 my-1 h-px bg-border"
         ></div>
         <div className="max-h-[400px] overflow-y-auto">
-          {items.length === 0 ? (
+          {isLoading ? (
+            <div className="px-3 py-8 text-center text-sm text-muted-foreground animate-pulse">
+              Loading...
+            </div>
+          ) : items.length === 0 ? (
             <div className="px-3 py-8 text-center text-sm text-muted-foreground">
               No notifications yet
             </div>

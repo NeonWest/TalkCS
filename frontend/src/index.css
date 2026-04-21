@@ -3,23 +3,65 @@
 @theme {
   --color-primary: var(--color-orange-500);
   --color-primary-foreground: var(--color-white);
-  --color-background: #1f1f1f;
-  --color-foreground: var(--color-gray-100);
-  --color-card: #2d2d2d;
-  --color-card-foreground: var(--color-gray-100);
-  --color-popover: #1a1a1a;
-  --color-popover-foreground: var(--color-gray-100);
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-input: rgba(255, 255, 255, 0.15);
+  
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  
+  --color-border: var(--border);
+  --color-input: var(--input);
   --color-ring: var(--color-orange-500);
-  --color-secondary: #2a2a2a;
-  --color-secondary-foreground: var(--color-gray-100);
-  --color-accent: #3a3a3a;
-  --color-accent-foreground: var(--color-white);
+  
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  
   --color-destructive: var(--color-red-600);
   --color-destructive-foreground: var(--color-white);
-  --color-muted: #2a2a2a;
-  --color-muted-foreground: var(--color-gray-400);
+  
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --accent: #cbd5e1; /* Darker accent for light mode hover visibility */
+  --accent-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+}
+
+.dark {
+  --background: #1f1f1f;
+  --foreground: #f8fafc;
+  --card: #2d2d2d;
+  --card-foreground: #f8fafc;
+  --popover: #1a1a1a;
+  --popover-foreground: #f8fafc;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --secondary: #2a2a2a;
+  --secondary-foreground: #f8fafc;
+  --accent: #3a3a3a;
+  --accent-foreground: #ffffff;
+  --muted: #2a2a2a;
+  --muted-foreground: #94a3b8;
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -32,8 +74,9 @@ html, body {
   overflow-x: hidden;
   width: 100%;
   position: relative;
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @layer utilities {

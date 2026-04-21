@@ -177,17 +177,17 @@ export default function CalendarPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#1f1f1f] text-gray-100">
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar />
             <main className="max-w-6xl mx-auto px-4 py-6">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold text-orange-500">Community Calendar</h1>
+                    <h1 className="text-3xl font-bold text-primary">Community Calendar</h1>
                     <div className="flex gap-2">
                         {isAdmin && (
                             <Button
                                 variant="outline"
                                 onClick={() => setShowProposals(!showProposals)}
-                                className="border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
+                                className="border-primary/50 text-primary hover:bg-primary/10"
                             >
                                 Proposals {proposals.length > 0 && `(${proposals.length})`}
                             </Button>
@@ -196,21 +196,21 @@ export default function CalendarPage() {
                 </div>
 
                 {isAdmin && showProposals && (
-                    <Card className="mb-8 p-6 bg-[#2d2d2d] border-white/10">
-                        <h2 className="text-xl font-semibold mb-4 text-white">Pending Proposals</h2>
+                    <Card className="mb-8 p-6 bg-card border-border">
+                        <h2 className="text-xl font-semibold mb-4 text-foreground">Pending Proposals</h2>
                         {proposals.length === 0 ? (
-                            <p className="text-gray-400">No pending proposals.</p>
+                            <p className="text-muted-foreground">No pending proposals.</p>
                         ) : (
                             <div className="grid gap-4">
                                 {proposals.map(p => (
-                                    <div key={p.id} className="flex items-center justify-between p-4 bg-[#242424] rounded-lg border border-white/5">
+                                    <div key={p.id} className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
-                                                <Badge variant="outline" className="border-orange-500/30 text-orange-400">{p.eventType}</Badge>
-                                                <h3 className="font-medium text-white">{p.title}</h3>
+                                                <Badge variant="outline" className="border-primary/30 text-primary">{p.eventType}</Badge>
+                                                <h3 className="font-medium text-foreground">{p.title}</h3>
                                             </div>
-                                            <p className="text-sm text-gray-400">{p.description}</p>
-                                            <p className="text-xs text-gray-400 mt-1">
+                                            <p className="text-sm text-muted-foreground">{p.description}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">
                                                 {p.startDate} {p.endDate ? `→ ${p.endDate}` : ''} · by {p.submittedByUsername}
                                             </p>
                                         </div>
@@ -231,16 +231,16 @@ export default function CalendarPage() {
 
                 {proposalAction && (
                     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4">
-                        <Card className="w-full max-w-md p-6 bg-[#2d2d2d] border-white/10">
-                            <h3 className="text-lg font-semibold mb-4 text-white">Reject Proposal</h3>
+                        <Card className="w-full max-w-md p-6 bg-card border-border">
+                            <h3 className="text-lg font-semibold mb-4 text-foreground">Reject Proposal</h3>
                             <textarea
                                 value={proposalAction.note}
                                 onChange={e => setProposalAction({ ...proposalAction, note: e.target.value })}
                                 placeholder="Rejection reason (optional)"
-                                className="w-full bg-[#1a1a1a] border-white/10 rounded-md p-3 mb-4 resize-none h-24 text-sm text-white"
+                                className="w-full bg-popover border-border rounded-md p-3 mb-4 resize-none h-24 text-sm text-foreground"
                             />
                             <div className="flex justify-end gap-2">
-                                <Button variant="ghost" className="text-gray-400 hover:text-white" onClick={() => setProposalAction(null)}>Cancel</Button>
+                                <Button variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={() => setProposalAction(null)}>Cancel</Button>
                                 <Button variant="destructive" onClick={() => handleReject(proposalAction.id, proposalAction.note)}>Confirm Reject</Button>
                             </div>
                         </Card>
@@ -248,7 +248,7 @@ export default function CalendarPage() {
                 )}
 
                 {loading ? (
-                    <p className="text-gray-400 text-center py-12">Loading calendar...</p>
+                    <p className="text-muted-foreground text-center py-12">Loading calendar...</p>
                 ) : (
                     <EventManager
                         events={mappedEvents}

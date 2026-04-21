@@ -119,8 +119,8 @@ function CommentItem({
 
     return (
         <div className={`mt-3 ${depth > 0 
-            ? `${depth > 3 ? 'ml-2' : 'ml-2 sm:ml-6'} border-l border-white/20 pl-3` 
-            : `border-l-4 pl-3 ${isAccepted ? 'border-green-500 bg-green-500/5 rounded-r-lg' : 'border-orange-500'}`}`}>
+            ? `${depth > 3 ? 'ml-2' : 'ml-2 sm:ml-6'} border-l border-border pl-3` 
+            : `border-l-4 pl-3 ${isAccepted ? 'border-green-500 bg-green-500/5 rounded-r-lg' : 'border-primary'}`}`}>
             <div className="px-2 py-1">
                 {isAccepted && (
                     <div className="flex items-center gap-1.5 text-green-400 text-xs font-semibold mb-1">
@@ -131,27 +131,27 @@ function CommentItem({
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => onAuthorClick(comment.authorUsername)}
-                            className="text-base font-semibold text-gray-100 hover:text-white transition"
+                            className="text-base font-semibold text-foreground hover:text-white transition"
                         >
                             {comment.authorUsername}
                         </button>
                         {comment.authorLevel && (
-                            <span className="px-1.5 py-0.5 bg-orange-500/15 text-orange-400 rounded text-xs">{comment.authorLevel}</span>
+                            <span className="px-1.5 py-0.5 bg-primary/15 text-primary rounded text-xs">{comment.authorLevel}</span>
                         )}
-                        <span className="text-xs text-gray-400">· {new Date(comment.createdAt).toLocaleDateString()}</span>
+                        <span className="text-xs text-muted-foreground">· {new Date(comment.createdAt).toLocaleDateString()}</span>
                         <div className="ml-2 flex items-center gap-1">
                             <button
                                 onClick={() => void handleVote(1)}
                                 disabled={voting}
-                                className={`text-xs transition ${comment.userVote === 1 ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                className={`text-xs transition ${comment.userVote === 1 ? 'text-primary' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}
                             >
                                 ▲
                             </button>
-                            <span className="text-xs font-semibold text-gray-200 w-5 text-center">{comment.voteScore ?? 0}</span>
+                            <span className="text-xs font-semibold text-foreground w-5 text-center">{comment.voteScore ?? 0}</span>
                             <button
                                 onClick={() => void handleVote(-1)}
                                 disabled={voting}
-                                className={`text-xs transition ${comment.userVote === -1 ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                className={`text-xs transition ${comment.userVote === -1 ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}
                             >
                                 ▼
                             </button>
@@ -206,14 +206,14 @@ function CommentItem({
                             <button
                                 type="button"
                                 onClick={() => setEditing(false)}
-                                className="text-sm px-3 py-1.5 rounded border border-white/20 text-gray-300 hover:bg-white/10 transition"
+                                className="text-sm px-3 py-1.5 rounded border border-border text-muted-foreground hover:bg-white/10 transition"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={editingSubmit}
-                                className="text-sm px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded transition disabled:opacity-50"
+                                className="text-sm px-3 py-1.5 bg-primary hover:bg-primary/90 text-white rounded transition disabled:opacity-50"
                             >
                                 {editingSubmit ? 'Saving...' : 'Save'}
                             </button>
@@ -221,7 +221,7 @@ function CommentItem({
                     </form>
                 ) : (
                     <>
-                        <div className="text-sm text-gray-200" data-color-mode="dark">
+                        <div className="text-sm text-foreground" data-color-mode="dark">
                         <MDEditor.Markdown source={linkMentions(comment.body)} style={{ background: 'transparent', color: 'inherit' }} />
                     </div>
                         <button
@@ -236,7 +236,7 @@ function CommentItem({
                     </>
                 )}
 
-                {actionError && <p className="text-xs text-red-500 mt-2">{actionError}</p>}
+                {actionError && <p className="text-xs text-destructive mt-2">{actionError}</p>}
 
                 {replying && (
                     <form onSubmit={handleReply} className="mt-2 flex gap-2">
@@ -247,12 +247,12 @@ function CommentItem({
                             onChange={e => setReplyBody(e.target.value)}
                             required
                             placeholder="Write a reply..."
-                            className="flex-1 bg-[#242424] border border-white/15 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                            className="flex-1 bg-muted border border-border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="text-sm px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded transition disabled:opacity-50"
+                            className="text-sm px-3 py-1.5 bg-primary hover:bg-primary/90 text-white rounded transition disabled:opacity-50"
                         >
                             {submitting ? '...' : 'Reply'}
                         </button>
@@ -436,59 +436,59 @@ export default function PostPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#1f1f1f] text-gray-100">
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar />
 
             <main className="max-w-4xl mx-auto px-4 py-6">
                 {loading ? (
-                    <p className="text-base text-gray-400">Loading...</p>
+                    <p className="text-base text-muted-foreground">Loading...</p>
                 ) : !post ? (
-                    <p className="text-base text-red-400">Post not found.</p>
+                    <p className="text-base text-destructive">Post not found.</p>
                 ) : (
                     <>
                         {/* Post */}
-                        <div className="bg-[#343434] border border-white/10 rounded-xl p-4 sm:p-5 mb-6 shadow-sm">
+                        <div className="bg-card border border-border rounded-xl p-4 sm:p-5 mb-6 shadow-sm">
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                        <h1 className="text-xl sm:text-2xl font-semibold text-gray-100 leading-tight">{post.title}</h1>
+                                        <h1 className="text-xl sm:text-2xl font-semibold text-foreground leading-tight">{post.title}</h1>
                                         {post.status && post.status !== 'OPEN' && (
-                                            <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold shrink-0 ${post.status === 'SOLVED' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
+                                            <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold shrink-0 ${post.status === 'SOLVED' ? 'bg-green-500/20 text-green-400' : 'bg-muted/50 text-muted-foreground'}`}>
                                                 {post.status}
                                             </span>
                                         )}
                                     </div>
-                                    <div className="text-xs sm:text-sm text-gray-300 flex items-center gap-2.5 flex-wrap">
+                                    <div className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2.5 flex-wrap">
                                         <div className="flex items-center gap-1.5">
-                                            <span className="text-gray-400">by</span>
+                                            <span className="text-muted-foreground">by</span>
                                             <button
                                                 onClick={() => navigateToProfile(post.authorUsername)}
-                                                className="text-gray-200 hover:text-white transition font-medium"
+                                                className="text-foreground hover:text-white transition font-medium"
                                             >
                                                 {post.authorUsername}
                                             </button>
                                         </div>
                                         {post.authorLevel && (
-                                            <span className="px-1.5 py-0.5 bg-orange-500/15 text-orange-400 rounded text-[10px] sm:text-xs">{post.authorLevel}</span>
+                                            <span className="px-1.5 py-0.5 bg-primary/15 text-primary rounded text-[10px] sm:text-xs">{post.authorLevel}</span>
                                         )}
-                                        <span className="hidden sm:inline text-gray-500">•</span>
-                                        <span className="text-gray-400">{new Date(post.createdAt).toLocaleDateString()}</span>
+                                        <span className="hidden sm:inline text-muted-foreground">•</span>
+                                        <span className="text-muted-foreground">{new Date(post.createdAt).toLocaleDateString()}</span>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 sm:gap-4 shrink-0 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0">
+                                <div className="flex items-center gap-3 sm:gap-4 shrink-0 border-t sm:border-t-0 border-border pt-3 sm:pt-0">
                                     <div className="flex items-center gap-1 bg-black/10 sm:bg-transparent px-2 py-1 rounded-lg">
                                         <button
                                             onClick={() => void handleVotePost(1)}
                                             disabled={votingPost}
-                                            className={`text-sm transition ${post.userVote === 1 ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                            className={`text-sm transition ${post.userVote === 1 ? 'text-primary' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}
                                         >
                                             ▲
                                         </button>
-                                        <span className="text-sm font-semibold text-gray-200 w-6 text-center">{post.voteScore ?? 0}</span>
+                                        <span className="text-sm font-semibold text-foreground w-6 text-center">{post.voteScore ?? 0}</span>
                                         <button
                                             onClick={() => void handleVotePost(-1)}
                                             disabled={votingPost}
-                                            className={`text-sm transition ${post.userVote === -1 ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                            className={`text-sm transition ${post.userVote === -1 ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}
                                         >
                                             ▼
                                         </button>
@@ -504,13 +504,13 @@ export default function PostPage() {
                                             }}
                                             disabled={bookmarking}
                                             title={bookmarked ? 'Remove bookmark' : 'Bookmark'}
-                                            className={`text-lg transition disabled:opacity-50 ${bookmarked ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'}`}
+                                            className={`text-lg transition disabled:opacity-50 ${bookmarked ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                                         >
                                             🔖
                                         </button>
                                     )}
                                     {canDeletePost && (
-                                        <div className="flex items-center gap-2 border-l border-white/10 pl-2 sm:pl-0 sm:border-l-0">
+                                        <div className="flex items-center gap-2 border-l border-border pl-2 sm:pl-0 sm:border-l-0">
                                         {canEditPost && (
                                             <button
                                                 onClick={openPostEditModal}
@@ -522,7 +522,7 @@ export default function PostPage() {
                                         <button
                                             onClick={() => void handleDeletePost()}
                                             disabled={deletingPost}
-                                            className="text-xs sm:text-sm text-red-400 hover:text-red-300 transition disabled:opacity-50"
+                                            className="text-xs sm:text-sm text-destructive hover:text-destructive/80 transition disabled:opacity-50"
                                         >
                                             {deletingPost ? 'Deleting...' : 'Delete'}
                                         </button>
@@ -530,28 +530,28 @@ export default function PostPage() {
                                     )}
                                 </div>
                             </div>
-                            <div className="border-t border-white/10 pt-3">
-                                <div className="text-base leading-relaxed text-gray-200" data-color-mode="dark">
+                            <div className="border-t border-border pt-3">
+                                <div className="text-base leading-relaxed text-foreground" data-color-mode="dark">
                                     <MDEditor.Markdown source={linkMentions(post.body)} style={{ background: 'transparent', color: 'inherit' }} />
                                 </div>
                                 {post.tags && post.tags.length > 0 && (
                                     <div className="flex flex-wrap gap-1.5 mt-4">
                                         {post.tags.map(tag => (
-                                            <span key={tag} className="px-2.5 py-0.5 bg-orange-500/15 text-orange-300 rounded-full text-xs">{tag}</span>
+                                            <span key={tag} className="px-2.5 py-0.5 bg-primary/15 text-primary rounded-full text-xs">{tag}</span>
                                         ))}
                                     </div>
                                 )}
                             </div>
-                            {postError && <p className="text-xs text-red-500 mt-3">{postError}</p>}
+                            {postError && <p className="text-xs text-destructive mt-3">{postError}</p>}
                         </div>
 
                         {/* Comments */}
                         <div className="mb-6">
-                            <h2 className="text-xl font-bold text-gray-300 tracking-wide mb-2">
+                            <h2 className="text-xl font-bold text-muted-foreground tracking-wide mb-2">
                                 {comments.length} Comment{comments.length !== 1 ? 's' : ''}
                             </h2>
                             {comments.length === 0 ? (
-                                <p className="text-base text-gray-400">No comments yet.</p>
+                                <p className="text-base text-muted-foreground">No comments yet.</p>
                             ) : (
                                 comments.map(c => (
                                     <CommentItem
@@ -571,12 +571,12 @@ export default function PostPage() {
                                     />
                                 ))
                             )}
-                            {commentError && <p className="text-xs text-red-500 mt-3">{commentError}</p>}
+                            {commentError && <p className="text-xs text-destructive mt-3">{commentError}</p>}
                         </div>
 
                         {/* Comment form */}
-                        <div className="bg-[#343434] border border-white/10 rounded-xl p-5 mt-8 shadow-sm">
-                            <p className="text-sm font-medium text-gray-300 mb-2">Leave a comment</p>
+                        <div className="bg-card border border-border rounded-xl p-5 mt-8 shadow-sm">
+                            <p className="text-sm font-medium text-muted-foreground mb-2">Leave a comment</p>
                             <form onSubmit={handleComment} className="space-y-2">
                                 <MarkdownEditor
                                     value={commentBody}
@@ -588,7 +588,7 @@ export default function PostPage() {
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        className="text-sm px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded transition font-medium disabled:opacity-50"
+                                        className="text-sm px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded transition font-medium disabled:opacity-50"
                                     >
                                         {submitting ? '...' : 'Comment'}
                                     </button>
@@ -602,21 +602,21 @@ export default function PostPage() {
             {/* Edit post modal */}
             {showEditPostModal && (
                 <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-                    <div className="bg-[#2d2d2d] text-gray-100 rounded-xl shadow-xl w-full max-w-lg p-6 mx-4 border border-white/10">
-                        <h3 className="text-base font-semibold text-gray-100 mb-4">Edit Post</h3>
+                    <div className="bg-card text-foreground rounded-xl shadow-xl w-full max-lg p-6 mx-4 border border-border">
+                        <h3 className="text-base font-semibold text-foreground mb-4">Edit Post</h3>
                         <form onSubmit={handleEditPost} className="space-y-3">
                             <div>
-                                <label className="block text-xs font-medium text-gray-300 mb-1">Title</label>
+                                <label className="block text-xs font-medium text-muted-foreground mb-1">Title</label>
                                 <input
                                     type="text"
                                     value={postForm.title}
                                     onChange={e => setPostForm(p => ({ ...p, title: e.target.value }))}
                                     required
-                                    className="w-full bg-[#242424] border border-white/15 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    className="w-full bg-muted border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-300 mb-1">Body</label>
+                                <label className="block text-xs font-medium text-muted-foreground mb-1">Body</label>
                                 <MarkdownEditor
                                     value={postForm.body}
                                     onChange={v => setPostForm(p => ({ ...p, body: v }))}
@@ -625,10 +625,10 @@ export default function PostPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-300 mb-1">Tags</label>
+                                <label className="block text-xs font-medium text-muted-foreground mb-1">Tags</label>
                                 <div className="flex flex-wrap gap-1.5 mb-2">
                                     {postForm.tags.map(tag => (
-                                        <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-orange-500/20 text-orange-300 rounded-full text-xs">
+                                        <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-primary/20 text-primary rounded-full text-xs">
                                             {tag}
                                             <button type="button" onClick={() => setPostForm(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }))} className="hover:text-white">×</button>
                                         </span>
@@ -642,27 +642,27 @@ export default function PostPage() {
                                         if ((e.key === 'Enter' || e.key === ',') && postTagInput.trim()) {
                                             e.preventDefault();
                                             const tag = postTagInput.trim().toLowerCase();
-                                            if (!postForm.tags.includes(tag)) setPostForm(p => ({ ...p, tags: [...p.tags, tag] }));
+                                            if (!postForm.tags.includes(tag)) setPostForm(p => ({ ...p, tags: [...postForm.tags, tag] }));
                                             setPostTagInput('');
                                         }
                                     }}
                                     placeholder="Type a tag and press Enter"
-                                    className="w-full bg-[#242424] border border-white/15 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    className="w-full bg-muted border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
-                            {postError && <p className="text-xs text-red-500">{postError}</p>}
+                            {postError && <p className="text-xs text-destructive">{postError}</p>}
                             <div className="flex justify-end gap-2 pt-1">
                                 <button
                                     type="button"
                                     onClick={() => { setShowEditPostModal(false); setPostError(''); }}
-                                    className="text-sm px-4 py-2 rounded border border-white/20 text-gray-300 hover:bg-white/10 transition"
+                                    className="text-sm px-4 py-2 rounded border border-border text-muted-foreground hover:bg-white/10 transition"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={updatingPost}
-                                    className="text-sm px-4 py-2 rounded bg-orange-500 hover:bg-orange-600 text-white font-medium transition disabled:opacity-50"
+                                    className="text-sm px-4 py-2 rounded bg-primary hover:bg-primary/90 text-white font-medium transition disabled:opacity-50"
                                 >
                                     {updatingPost ? 'Saving...' : 'Save'}
                                 </button>

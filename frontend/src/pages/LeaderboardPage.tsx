@@ -16,32 +16,32 @@ export default function LeaderboardPage() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-[#1f1f1f] text-gray-100">
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar />
 
             <main className="max-w-4xl mx-auto px-4 py-6">
-                <h1 className="text-2xl font-bold text-gray-100 mb-5">Leaderboard</h1>
+                <h1 className="text-2xl font-bold text-foreground mb-5">Leaderboard</h1>
                 {loading ? (
-                    <p className="text-gray-400">Loading...</p>
+                    <p className="text-muted-foreground">Loading...</p>
                 ) : (
                     <div className="space-y-2">
                         {users.map((u, i) => (
                             <div
                                 key={u.id}
                                 onClick={() => navigate(`/profile/${u.username}`)}
-                                className="bg-[#343434] rounded-xl border border-white/10 px-3 sm:px-5 py-3 flex items-center gap-3 sm:gap-4 cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition"
+                                className="bg-card rounded-xl border border-border px-3 sm:px-5 py-3 flex items-center gap-3 sm:gap-4 cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition"
                             >
-                                <span className="text-xl sm:text-2xl w-6 sm:w-8 text-center shrink-0">{i < 3 ? MEDALS[i] : <span className="text-gray-500 font-bold text-sm sm:text-base">#{i + 1}</span>}</span>
-                                <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/10">
-                                    <span className="text-white text-xs sm:text-sm font-bold">{u.username.charAt(0).toUpperCase()}</span>
+                                <span className="text-xl sm:text-2xl w-6 sm:w-8 text-center shrink-0">{i < 3 ? MEDALS[i] : <span className="text-muted-foreground font-bold text-sm sm:text-base">#{i + 1}</span>}</span>
+                                <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/10">
+                                    <span className="text-primary-foreground text-xs sm:text-sm font-bold">{u.username.charAt(0).toUpperCase()}</span>
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-bold text-gray-100 text-sm sm:text-base truncate">{u.username}</p>
-                                    <p className="text-[10px] sm:text-xs text-gray-400 font-medium">Lv.{u.level} {u.levelTitle}</p>
+                                    <p className="font-bold text-foreground text-sm sm:text-base truncate">{u.username}</p>
+                                    <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Lv.{u.level} {u.levelTitle}</p>
                                 </div>
                                 <div className="text-right shrink-0">
-                                    <p className="font-bold text-orange-400 text-sm sm:text-base">{u.reputation}</p>
-                                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">rep</p>
+                                    <p className="font-bold text-primary text-sm sm:text-base">{u.reputation}</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">rep</p>
                                 </div>
                             </div>
                         ))}
