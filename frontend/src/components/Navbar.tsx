@@ -44,7 +44,7 @@ export default function Navbar() {
                                 <button 
                                     onClick={() => navigate('/leaderboard')} 
                                     className={`text-sm transition px-2 py-1 rounded-lg ${
-                                        onLeaderboard ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                        onLeaderboard ? 'text-orange-400 bg-orange-500/10' : 'text-gray-400 hover:text-white hover:bg-white/5'
                                     }`}
                                 >
                                     Leaderboard
@@ -52,7 +52,7 @@ export default function Navbar() {
                                 <button 
                                     onClick={() => navigate('/calendar')} 
                                     className={`text-sm transition px-2 py-1 rounded-lg ${
-                                        onCalendar ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                        onCalendar ? 'text-orange-400 bg-orange-500/10' : 'text-gray-400 hover:text-white hover:bg-white/5'
                                     }`}
                                 >
                                     Calendar
