@@ -21,6 +21,7 @@ export interface CalendarEventRequest {
     endDate?: string;
     categoryId?: number;
     eventType: string;
+    publicEvent?: boolean;
 }
 
 export interface CalendarEventProposal {

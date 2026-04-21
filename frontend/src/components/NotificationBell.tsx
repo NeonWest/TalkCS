@@ -1,105 +1,193 @@
-import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getNotifications, getUnreadCount, markRead, markAllRead } from '../api/notifications';
-import type { NotificationItem } from '../api/notifications';
+"use client";
+
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Bell } from "lucide-react";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { getNotifications, getUnreadCount, markRead, markAllRead } from "../api/notifications";
+import type { NotificationItem } from "../api/notifications";
+import { cn } from "../lib/utils";
 
 const TYPE_ICON: Record<string, string> = {
-    MENTION: '💬', REPLY: '↩️', VOTE_MILESTONE: '⭐', ACCEPTED_ANSWER: '✅', FOLLOW: '👤',
+  MENTION: "💬",
+  REPLY: "↩️",
+  VOTE_MILESTONE: "⭐",
+  ACCEPTED_ANSWER: "✅",
+  FOLLOW: "👤",
 };
 
+function Dot({ className }: { className?: string }) {
+  return (
+    <svg
+      width="6"
+      height="6"
+      fill="currentColor"
+      viewBox="0 0 6 6"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="3" cy="3" r="3" />
+    </svg>
+  );
+}
+
+function timeAgo(dateString: string) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return "just now";
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  return date.toLocaleDateString();
+}
+
 export default function NotificationBell() {
-    const navigate = useNavigate();
-    const [count, setCount] = useState(0);
-    const [open, setOpen] = useState(false);
-    const [items, setItems] = useState<NotificationItem[]>([]);
-    const ref = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [items, setItems] = useState<NotificationItem[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
 
-    const fetchCount = async () => { try { setCount(await getUnreadCount()); } catch {} };
+  const fetchCount = async () => {
+    try {
+      const count = await getUnreadCount();
+      setUnreadCount(count);
+    } catch (err) {
+      console.error("Failed to fetch unread count", err);
+    }
+  };
 
-    useEffect(() => {
-        fetchCount();
-        const id = setInterval(fetchCount, 30000);
-        return () => clearInterval(id);
-    }, []);
+  const fetchNotifications = async () => {
+    try {
+      const data = await getNotifications();
+      setItems(data);
+    } catch (err) {
+      console.error("Failed to fetch notifications", err);
+    }
+  };
 
-    useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-        };
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
-    }, []);
+  useEffect(() => {
+    fetchCount();
+    const id = setInterval(fetchCount, 30000);
+    return () => clearInterval(id);
+  }, []);
 
-    const handleOpen = async () => {
-        if (!open) {
-            try { setItems(await getNotifications()); } catch {}
-        }
-        setOpen(o => !o);
-    };
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open) {
+      fetchNotifications();
+    }
+  };
 
-    const handleClick = async (item: NotificationItem) => {
-        if (!item.isRead) {
-            await markRead(item.id);
-            setItems(prev => prev.map(n => n.id === item.id ? { ...n, isRead: true } : n));
-            setCount(c => Math.max(0, c - 1));
-        }
-        setOpen(false);
-        navigate(item.link);
-    };
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllRead();
+      setItems((prev) => prev.map((item) => ({ ...item, isRead: true })));
+      setUnreadCount(0);
+    } catch (err) {
+      console.error("Failed to mark all as read", err);
+    }
+  };
 
-    const handleMarkAll = async () => {
-        await markAllRead();
-        setItems(prev => prev.map(n => ({ ...n, isRead: true })));
-        setCount(0);
-    };
+  const handleNotificationClick = async (item: NotificationItem) => {
+    if (!item.isRead) {
+      try {
+        await markRead(item.id);
+        setItems((prev) =>
+          prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n))
+        );
+        setUnreadCount((c) => Math.max(0, c - 1));
+      } catch (err) {
+        console.error("Failed to mark notification as read", err);
+      }
+    }
+    setIsOpen(false);
+    navigate(item.link);
+  };
 
-    return (
-        <div ref={ref} className="relative">
-            <button onClick={handleOpen} className="relative text-gray-300 hover:text-white transition p-1">
-                <span className="text-lg">🔔</span>
-                {count > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
-                        {count > 9 ? '9+' : count}
-                    </span>
-                )}
+  return (
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
+      <PopoverTrigger asChild>
+        <Button
+          size="icon"
+          variant="ghost"
+          className="relative text-foreground hover:text-white"
+          aria-label="Open notifications"
+        >
+          <Bell size={18} strokeWidth={2} aria-hidden="true" />
+          {unreadCount > 0 && (
+            <Badge className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-primary hover:bg-primary/90 text-primary-foreground border-none text-[10px]">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </Badge>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-1 bg-popover border-border text-popover-foreground shadow-2xl" align="end" sideOffset={8}>
+        <div className="flex items-baseline justify-between gap-4 px-3 py-2">
+          <div className="text-sm font-semibold">Notifications</div>
+          {unreadCount > 0 && (
+            <button
+              className="text-xs font-medium text-primary hover:underline"
+              onClick={handleMarkAllAsRead}
+            >
+              Mark all as read
             </button>
-
-            {open && (
-                <div className="fixed sm:absolute right-0 sm:right-0 top-14 sm:top-auto sm:mt-2 w-screen sm:w-80 h-[calc(100vh-3.5rem)] sm:h-auto bg-[#2d2d2d] border-t sm:border border-white/10 sm:rounded-xl shadow-xl z-50 overflow-hidden flex flex-col">
-                    <div className="flex items-center justify-between px-4 py-3 sm:py-2 border-b border-white/10 shrink-0">
-                        <span className="text-sm font-semibold text-gray-200">Notifications</span>
-                        <div className="flex items-center gap-4">
-                            {count > 0 && (
-                                <button onClick={handleMarkAll} className="text-xs text-orange-400 hover:text-orange-300 transition">
-                                    Mark all read
-                                </button>
-                            )}
-                            <button onClick={() => setOpen(false)} className="sm:hidden text-gray-400 hover:text-white">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div className="flex-1 overflow-y-auto">
-                        {items.length === 0 ? (
-                            <p className="text-sm text-gray-400 text-center py-12">No notifications</p>
-                        ) : (
-                            items.map(item => (
-                                <button key={item.id} onClick={() => void handleClick(item)}
-                                    className={`w-full text-left px-4 py-4 sm:py-3 flex gap-3 items-start hover:bg-white/5 transition border-b border-white/5 last:border-0 ${!item.isRead ? 'bg-orange-500/5' : ''}`}>
-                                    <span className="text-lg sm:text-base shrink-0 mt-0.5">{TYPE_ICON[item.type] ?? '🔔'}</span>
-                                    <div className="flex-1 min-w-0">
-                                        <p className={`text-sm sm:text-xs leading-snug ${item.isRead ? 'text-gray-400' : 'text-gray-200 font-medium'}`}>{item.message}</p>
-                                        <p className="text-xs text-gray-500 mt-1">{new Date(item.createdAt).toLocaleDateString()}</p>
-                                    </div>
-                                    {!item.isRead && <span className="w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full bg-orange-500 shrink-0 mt-1.5" />}
-                                </button>
-                            ))
-                        )}
-                    </div>
-                </div>
-            )}
+          )}
         </div>
-    );
+        <div
+          role="separator"
+          aria-orientation="horizontal"
+          className="-mx-1 my-1 h-px bg-border"
+        ></div>
+        <div className="max-h-[400px] overflow-y-auto">
+          {items.length === 0 ? (
+            <div className="px-3 py-8 text-center text-sm text-muted-foreground">
+              No notifications yet
+            </div>
+          ) : (
+            items.map((item) => (
+              <div
+                key={item.id}
+                className={cn(
+                  "rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent cursor-pointer",
+                  !item.isRead && "bg-primary/5"
+                )}
+                onClick={() => handleNotificationClick(item)}
+              >
+                <div className="relative flex items-start pe-3 gap-3">
+                    <span className="text-lg shrink-0 mt-0.5" role="img" aria-label={item.type}>
+                        {TYPE_ICON[item.type] ?? '🔔'}
+                    </span>
+                  <div className="flex-1 space-y-1">
+                    <p className={cn(
+                        "text-sm leading-snug",
+                        item.isRead ? "text-muted-foreground" : "text-foreground"
+                    )}>
+                      {item.message}
+                    </p>
+                    <div className="text-xs text-muted-foreground">
+                      {timeAgo(item.createdAt)}
+                    </div>
+                  </div>
+                  {!item.isRead && (
+                    <div className="absolute end-0 self-center">
+                      <span className="sr-only">Unread</span>
+                      <Dot className="text-primary" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 }
