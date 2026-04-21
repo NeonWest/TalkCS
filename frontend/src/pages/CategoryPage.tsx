@@ -285,20 +285,20 @@ export default function CategoryPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#1f1f1f] text-gray-100">
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar />
 
             <main className="max-w-5xl mx-auto px-4 py-6 flex flex-col lg:flex-row lg:gap-6">
                 <div className="flex-1 min-w-0">
-                <div className="rounded-xl shadow-sm border border-white/10 bg-[#343434] mb-6 overflow-hidden">
-                    <div className="h-1 bg-gradient-to-r from-orange-500 via-orange-400 to-orange-500" />
+                <div className="rounded-xl shadow-sm border border-border bg-card mb-6 overflow-hidden">
+                    <div className="h-1 bg-gradient-to-r from-primary via-primary/80 to-primary" />
                     <div className="p-4 sm:p-5">
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-100">{categoryName || 'Loading...'}</h2>
-                        <p className="text-xs sm:text-sm text-gray-400 mt-1">{categoryDescription || 'General discussion space'}</p>
+                        <h2 className="text-xl sm:text-2xl font-bold text-foreground">{categoryName || 'Loading...'}</h2>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">{categoryDescription || 'General discussion space'}</p>
                         {isAuthenticated && (
                             <button
                                 onClick={() => activeTab === 'posts' ? setShowModal(true) : setShowResourceModal(true)}
-                                className="w-full sm:w-auto mt-4 text-sm bg-orange-500 text-white hover:bg-orange-600 px-6 py-2 rounded-xl transition font-bold shadow-lg shadow-orange-500/20"
+                                className="w-full sm:w-auto mt-4 text-sm bg-primary text-white hover:bg-primary/90 px-6 py-2 rounded-xl transition font-bold shadow-lg shadow-primary/20"
                             >
                                 {activeTab === 'posts' ? '+ New Post' : '+ Upload Resource'}
                             </button>
@@ -306,34 +306,34 @@ export default function CategoryPage() {
                     </div>
                 </div>
 
-                <div className="mb-6 flex items-center gap-2 bg-[#111] p-1 rounded-xl w-fit border border-white/10">
+                <div className="mb-6 flex items-center gap-2 bg-background p-1 rounded-xl w-fit border border-border">
                     <button
                         onClick={() => setActiveTab('posts')}
-                        className={`text-sm px-4 py-1.5 rounded-lg transition font-medium ${activeTab === 'posts' ? 'bg-orange-500 text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
+                        className={`text-sm px-4 py-1.5 rounded-lg transition font-medium ${activeTab === 'posts' ? 'bg-primary text-white shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                         Posts
                     </button>
                     <button
                         onClick={() => setActiveTab('resources')}
-                        className={`text-sm px-4 py-1.5 rounded-lg transition font-medium ${activeTab === 'resources' ? 'bg-orange-500 text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
+                        className={`text-sm px-4 py-1.5 rounded-lg transition font-medium ${activeTab === 'resources' ? 'bg-primary text-white shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                         Resources
                     </button>
                 </div>
 
-                {error && <p className="text-sm text-red-400 mb-4 bg-red-400/10 border border-red-400/20 px-4 py-2 rounded-lg">{error}</p>}
+                {error && <p className="text-sm text-destructive mb-4 bg-destructive/10 border border-destructive/20 px-4 py-2 rounded-lg">{error}</p>}
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-3">
-                        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                        <p className="text-sm text-gray-500">Loading {activeTab}...</p>
+                        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <p className="text-sm text-muted-foreground">Loading {activeTab}...</p>
                     </div>
                 ) : activeTab === 'posts' && posts.length === 0 ? (
-                    <div className="bg-[#101010] rounded-xl shadow-sm p-12 text-center text-gray-400 border border-white/10">
+                    <div className="bg-background rounded-xl shadow-sm p-12 text-center text-muted-foreground border border-border">
                         No posts yet. Be the first to post!
                     </div>
                 ) : activeTab === 'resources' && resources.length === 0 ? (
-                    <div className="bg-[#101010] rounded-xl shadow-sm p-12 text-center text-gray-400 border border-white/10">
+                    <div className="bg-background rounded-xl shadow-sm p-12 text-center text-muted-foreground border border-border">
                         No resources yet. Upload the first file!
                     </div>
                 ) : (
@@ -341,7 +341,7 @@ export default function CategoryPage() {
                         {activeTab === 'posts' && (
                             <>
                                 <div className="mb-4 flex items-center justify-end">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                                         Sort by
                                         <select
                                             value={sortBy}
@@ -350,7 +350,7 @@ export default function CategoryPage() {
                                                 setSortBy(value);
                                                 setCurrentPage(0);
                                             }}
-                                            className="bg-[#242424] border border-white/15 rounded-lg px-2 py-1.5 text-xs text-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                                            className="bg-muted border border-border rounded-lg px-2 py-1.5 text-xs text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                                         >
                                             <option value="newest">Newest</option>
                                             <option value="votes">Most Voted</option>
@@ -364,17 +364,17 @@ export default function CategoryPage() {
                                         <div
                                             key={post.id}
                                             onClick={() => navigate(`/post/${post.id}?categoryId=${categoryId}`, { state: { categoryId } })}
-                                            className="bg-[#343434] rounded-xl shadow-sm border border-white/10 px-4 py-4 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer"
+                                            className="bg-card rounded-xl shadow-sm border border-border px-4 py-4 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer"
                                         >
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-lg font-bold text-orange-500 truncate mb-1">{post.title}</p>
+                                                    <p className="text-lg font-bold text-primary truncate mb-1">{post.title}</p>
                                                     {post.body && (
-                                                        <p className="text-sm text-gray-400 line-clamp-2">{stripMarkdown(post.body)}</p>
+                                                        <p className="text-sm text-muted-foreground line-clamp-2">{stripMarkdown(post.body)}</p>
                                                     )}
-                                                    <div className="text-xs text-gray-400 mt-3 flex items-center gap-2 flex-wrap">
-                                                        <div className="flex items-center gap-2 pr-2 border-r border-white/10">
-                                                            <div className="h-6 w-6 rounded-full bg-orange-500 text-white text-[10px] flex items-center justify-center font-bold">
+                                                    <div className="text-xs text-muted-foreground mt-3 flex items-center gap-2 flex-wrap">
+                                                        <div className="flex items-center gap-2 pr-2 border-r border-border">
+                                                            <div className="h-6 w-6 rounded-full bg-primary text-white text-[10px] flex items-center justify-center font-bold">
                                                                 {post.authorUsername.charAt(0).toUpperCase()}
                                                             </div>
                                                             <button
@@ -382,7 +382,7 @@ export default function CategoryPage() {
                                                                     e.stopPropagation();
                                                                     navigate(`/profile/${post.authorUsername}`);
                                                                 }}
-                                                                className="text-gray-200 hover:text-white transition font-bold"
+                                                                className="text-foreground hover:text-white transition font-bold"
                                                             >
                                                                 {post.authorUsername}
                                                             </button>
@@ -390,22 +390,22 @@ export default function CategoryPage() {
                                                         <span className="hidden sm:inline">•</span>
                                                         <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                                                         <span className="hidden sm:inline">•</span>
-                                                        <span className="font-bold text-orange-400/80">{post.commentCount} comments</span>
+                                                        <span className="font-bold text-primary/80">{post.commentCount} comments</span>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2 shrink-0 bg-black/10 px-2 py-1 rounded-lg">
                                                     <button
                                                         onClick={(e) => void handleVotePost(post.id, 1, e)}
                                                         disabled={votingPostId === post.id}
-                                                        className={`text-sm transition ${post.userVote === 1 ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                                        className={`text-sm transition ${post.userVote === 1 ? 'text-primary' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}
                                                     >
                                                         ▲
                                                     </button>
-                                                    <span className="text-sm font-bold text-gray-200 w-6 text-center">{post.voteScore ?? 0}</span>
+                                                    <span className="text-sm font-bold text-foreground w-6 text-center">{post.voteScore ?? 0}</span>
                                                     <button
                                                         onClick={(e) => void handleVotePost(post.id, -1, e)}
                                                         disabled={votingPostId === post.id}
-                                                        className={`text-sm transition ${post.userVote === -1 ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                                        className={`text-sm transition ${post.userVote === -1 ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}
                                                     >
                                                         ▼
                                                     </button>
@@ -413,7 +413,7 @@ export default function CategoryPage() {
                                             </div>
 
                                             {(user?.username === post.authorUsername || user?.role === 'ADMIN') && (
-                                                <div className="mt-4 pt-3 border-t border-white/5 flex items-center gap-4">
+                                                <div className="mt-4 pt-3 border-t border-border flex items-center gap-4">
                                                     {user?.username === post.authorUsername && (
                                                         <button
                                                             onClick={(e) => {
@@ -431,7 +431,7 @@ export default function CategoryPage() {
                                                             void handleDelete(post);
                                                         }}
                                                         disabled={deletingPostId === post.id}
-                                                        className="text-xs font-bold text-red-400/80 hover:text-red-400 transition disabled:opacity-50 uppercase tracking-wider"
+                                                        className="text-xs font-bold text-destructive hover:text-destructive/80 transition disabled:opacity-50 uppercase tracking-wider"
                                                     >
                                                         {deletingPostId === post.id ? 'Deleting...' : 'Delete'}
                                                     </button>
@@ -445,17 +445,17 @@ export default function CategoryPage() {
                                     <button
                                         onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
                                         disabled={!hasPrevious}
-                                        className="text-sm px-3 py-1.5 rounded border border-white/20 text-gray-300 hover:bg-white/10 transition disabled:opacity-50"
+                                        className="text-sm px-3 py-1.5 rounded border border-border text-muted-foreground hover:bg-white/10 transition disabled:opacity-50"
                                     >
                                         Previous
                                     </button>
-                                    <span className="text-sm text-gray-300">
+                                    <span className="text-sm text-muted-foreground">
                                         Page {totalPages === 0 ? 0 : currentPage + 1} of {totalPages}
                                     </span>
                                     <button
                                         onClick={() => setCurrentPage(prev => prev + 1)}
                                         disabled={!hasNext}
-                                        className="text-sm px-3 py-1.5 rounded border border-white/20 text-gray-300 hover:bg-white/10 transition disabled:opacity-50"
+                                        className="text-sm px-3 py-1.5 rounded border border-border text-muted-foreground hover:bg-white/10 transition disabled:opacity-50"
                                     >
                                         Next
                                     </button>
@@ -466,13 +466,13 @@ export default function CategoryPage() {
                         {activeTab === 'resources' && (
                             <div className="space-y-2.5">
                                 {resources.map(resource => (
-                                    <div key={resource.id} className="bg-[#343434] rounded-xl shadow-sm border border-white/10 px-4 py-3">
+                                    <div key={resource.id} className="bg-card rounded-xl shadow-sm border border-border px-4 py-3">
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-lg font-semibold text-orange-500 truncate">{resource.title}</p>
-                                                <p className="text-sm text-gray-300 mt-1">{resource.description}</p>
-                                                <div className="text-sm text-gray-300 mt-2 flex items-center gap-2.5 flex-wrap">
-                                                    <span className="font-medium text-gray-200">{resource.uploaderUsername}</span>
+                                                <p className="text-lg font-semibold text-primary truncate">{resource.title}</p>
+                                                <p className="text-sm text-muted-foreground mt-1">{resource.description}</p>
+                                                <div className="text-sm text-muted-foreground mt-2 flex items-center gap-2.5 flex-wrap">
+                                                    <span className="font-medium text-foreground">{resource.uploaderUsername}</span>
                                                     <span>•</span>
                                                     <span>{resource.fileName}</span>
                                                     <span>•</span>
@@ -483,21 +483,21 @@ export default function CategoryPage() {
                                                 <button
                                                     onClick={(e) => void handleVoteResource(resource.id, 1, e)}
                                                     disabled={votingResourceId === resource.id}
-                                                    className={`text-sm transition ${resource.userVote === 1 ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                                    className={`text-sm transition ${resource.userVote === 1 ? 'text-primary' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}
                                                 >
                                                     ▲
                                                 </button>
-                                                <span className="text-sm font-semibold text-gray-200 w-6 text-center">{resource.voteScore ?? 0}</span>
+                                                <span className="text-sm font-semibold text-foreground w-6 text-center">{resource.voteScore ?? 0}</span>
                                                 <button
                                                     onClick={(e) => void handleVoteResource(resource.id, -1, e)}
                                                     disabled={votingResourceId === resource.id}
-                                                    className={`text-sm transition ${resource.userVote === -1 ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}
+                                                    className={`text-sm transition ${resource.userVote === -1 ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}
                                                 >
                                                     ▼
                                                 </button>
                                                 <button
                                                     onClick={(e) => handleDownloadResource(resource.id, e)}
-                                                    className="text-xs px-3 py-1.5 rounded border border-white/20 text-gray-200 hover:bg-white/10 transition"
+                                                    className="text-xs px-3 py-1.5 rounded border border-border text-foreground hover:bg-white/10 transition"
                                                 >
                                                     Download
                                                 </button>
@@ -505,7 +505,7 @@ export default function CategoryPage() {
                                                     <button
                                                         onClick={(e) => void handleDeleteResource(resource, e)}
                                                         disabled={deletingResourceId === resource.id}
-                                                        className="text-xs px-3 py-1.5 rounded border border-red-400/40 text-red-300 hover:bg-red-500/10 transition disabled:opacity-50"
+                                                        className="text-xs px-3 py-1.5 rounded border border-destructive/40 text-destructive hover:bg-destructive/10 transition disabled:opacity-50"
                                                     >
                                                         {deletingResourceId === resource.id ? 'Deleting...' : 'Delete'}
                                                     </button>
@@ -522,24 +522,24 @@ export default function CategoryPage() {
 
                 {/* Upcoming events sidebar */}
                 <aside className="w-full lg:w-64 shrink-0 mt-8 lg:mt-0">
-                    <div className="bg-[#2d2d2d] rounded-xl border border-white/10 p-4 lg:sticky lg:top-20">
+                    <div className="bg-card rounded-xl border border-border p-4 lg:sticky lg:top-20">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-bold text-gray-100 uppercase tracking-widest">Upcoming Events</h3>
+                            <h3 className="text-sm font-bold text-foreground uppercase tracking-widest">Upcoming Events</h3>
                             <button
                                 onClick={() => navigate('/calendar')}
-                                className="text-xs text-orange-400 hover:text-orange-300 font-bold transition"
+                                className="text-xs text-primary hover:text-primary/80 font-bold transition"
                             >View all</button>
                         </div>
                         {upcomingEvents.length === 0 ? (
-                            <p className="text-xs text-gray-500 py-4 text-center border border-dashed border-white/10 rounded-lg">No upcoming events.</p>
+                            <p className="text-xs text-muted-foreground py-4 text-center border border-dashed border-border rounded-lg">No upcoming events.</p>
                         ) : (
                             <div className="space-y-3">
                                 {upcomingEvents.map(ev => (
-                                    <div key={ev.id} className="bg-white/5 rounded-lg p-2.5 border-l-4 border-orange-500 transition hover:bg-white/[0.08]">
-                                        <p className="text-xs font-bold text-gray-100 leading-snug truncate mb-1">{ev.title}</p>
+                                    <div key={ev.id} className="bg-white/5 rounded-lg p-2.5 border-l-4 border-primary transition hover:bg-white/[0.08]">
+                                        <p className="text-xs font-bold text-foreground leading-snug truncate mb-1">{ev.title}</p>
                                         <div className="flex items-center justify-between text-[10px]">
-                                            <span className="text-gray-400">{ev.startDate}</span>
-                                            <span className="text-orange-400/80 font-bold">{ev.eventType}</span>
+                                            <span className="text-muted-foreground">{ev.startDate}</span>
+                                            <span className="text-primary/80 font-bold">{ev.eventType}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -547,7 +547,7 @@ export default function CategoryPage() {
                         )}
                         <button
                             onClick={() => navigate('/calendar')}
-                            className="mt-4 w-full py-2 text-xs font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition border border-white/5"
+                            className="mt-4 w-full py-2 text-xs font-bold text-muted-foreground hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition border border-border"
                         >+ Add your own event</button>
                     </div>
                 </aside>
@@ -555,31 +555,31 @@ export default function CategoryPage() {
 
             {showModal && (
                 <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
-                    <div className="bg-[#2d2d2d] text-gray-100 rounded-xl shadow-xl w-full max-w-2xl p-6 border border-white/10">
-                        <h3 className="text-lg font-semibold text-gray-100 mb-4">New Post</h3>
+                    <div className="bg-card text-foreground rounded-xl shadow-xl w-full max-w-2xl p-6 border border-border">
+                        <h3 className="text-lg font-semibold text-foreground mb-4">New Post</h3>
                         <form onSubmit={handleCreate} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Title</label>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">Title</label>
                                 <input
                                     id="post-title"
                                     type="text"
                                     value={form.title}
                                     onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
                                     required
-                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    className="w-full bg-muted border border-border rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary"
                                     placeholder="What's your question or topic?"
                                 />
                             </div>
                             {similarPosts.length > 0 && (
-                                <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg px-4 py-3">
-                                    <p className="text-xs font-semibold text-orange-400 mb-2">Similar questions — yours may already be answered:</p>
+                                <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-3">
+                                    <p className="text-xs font-semibold text-primary mb-2">Similar questions — yours may already be answered:</p>
                                     <ul className="space-y-1">
                                         {similarPosts.map(p => (
                                             <li key={p.id}>
                                                 <button
                                                     type="button"
                                                     onClick={() => navigate(`/post/${p.id}`)}
-                                                    className="text-sm text-orange-300 hover:text-orange-200 hover:underline text-left"
+                                                    className="text-sm text-primary/80 hover:text-primary/60 hover:underline text-left"
                                                 >
                                                     {p.title}
                                                 </button>
@@ -589,7 +589,7 @@ export default function CategoryPage() {
                                 </div>
                             )}
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Body</label>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">Body</label>
                                 <MarkdownEditor
                                     value={form.body}
                                     onChange={v => setForm(p => ({ ...p, body: v }))}
@@ -598,10 +598,10 @@ export default function CategoryPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Tags</label>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">Tags</label>
                                 <div className="flex flex-wrap gap-1.5 mb-2">
                                     {form.tags.map(tag => (
-                                        <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-orange-500/20 text-orange-300 rounded-full text-xs">
+                                        <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-primary/20 text-primary rounded-full text-xs">
                                             {tag}
                                             <button type="button" onClick={() => setForm(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }))} className="hover:text-white">×</button>
                                         </span>
@@ -620,11 +620,11 @@ export default function CategoryPage() {
                                         }
                                     }}
                                     placeholder="Type a tag and press Enter"
-                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    className="w-full bg-muted border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                                 {tagSuggestions.length > 0 && (
                                     <div className="mt-2 flex flex-wrap gap-1.5">
-                                        <span className="text-xs text-gray-400 self-center">Suggestions:</span>
+                                        <span className="text-xs text-muted-foreground self-center">Suggestions:</span>
                                         {tagSuggestions.map(s => (
                                             <button
                                                 key={s} type="button"
@@ -632,13 +632,13 @@ export default function CategoryPage() {
                                                     if (!form.tags.includes(s)) setForm(p => ({ ...p, tags: [...p.tags, s] }));
                                                     setTagSuggestions(prev => prev.filter(t => t !== s));
                                                 }}
-                                                className="px-2 py-0.5 bg-white/10 hover:bg-orange-500/30 text-gray-300 hover:text-orange-300 rounded-full text-xs transition"
+                                                className="px-2 py-0.5 bg-white/10 hover:bg-primary/30 text-muted-foreground hover:text-primary rounded-full text-xs transition"
                                             >+ {s}</button>
                                         ))}
                                     </div>
                                 )}
                             </div>
-                            {error && <p className="text-sm text-red-500">{error}</p>}
+                            {error && <p className="text-sm text-destructive">{error}</p>}
                             <div className="flex justify-end gap-3 pt-2">
                                 <button
                                     type="button"
@@ -648,14 +648,14 @@ export default function CategoryPage() {
                                         setTagSuggestions([]);
                                         setSimilarPosts([]);
                                     }}
-                                    className="text-sm px-4 py-2 rounded-lg border border-white/20 text-gray-300 hover:bg-white/10 transition"
+                                    className="text-sm px-4 py-2 rounded-lg border border-border text-muted-foreground hover:bg-white/10 transition"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={creating}
-                                    className="text-sm px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium transition disabled:opacity-50"
+                                    className="text-sm px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium transition disabled:opacity-50"
                                 >
                                     {creating ? 'Posting...' : 'Post'}
                                 </button>
@@ -667,22 +667,22 @@ export default function CategoryPage() {
 
             {editingPost && (
                 <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
-                    <div className="bg-[#2d2d2d] text-gray-100 rounded-xl shadow-xl w-full max-w-2xl p-6 border border-white/10">
-                        <h3 className="text-lg font-semibold text-gray-100 mb-4">Edit Post</h3>
+                    <div className="bg-card text-foreground rounded-xl shadow-xl w-full max-w-2xl p-6 border border-border">
+                        <h3 className="text-lg font-semibold text-foreground mb-4">Edit Post</h3>
                         <form onSubmit={handleEdit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Title</label>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">Title</label>
                                 <input
                                     id="edit-post-title"
                                     type="text"
                                     value={editForm.title}
                                     onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))}
                                     required
-                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    className="w-full bg-muted border border-border rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Body</label>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">Body</label>
                                 <MarkdownEditor
                                     value={editForm.body}
                                     onChange={v => setEditForm(p => ({ ...p, body: v }))}
@@ -691,10 +691,10 @@ export default function CategoryPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Tags</label>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">Tags</label>
                                 <div className="flex flex-wrap gap-1.5 mb-2">
                                     {editForm.tags.map(tag => (
-                                        <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-orange-500/20 text-orange-300 rounded-full text-xs">
+                                        <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-primary/20 text-primary rounded-full text-xs">
                                             {tag}
                                             <button type="button" onClick={() => setEditForm(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }))} className="hover:text-white">×</button>
                                         </span>
@@ -708,15 +708,15 @@ export default function CategoryPage() {
                                         if ((e.key === 'Enter' || e.key === ',') && editTagInput.trim()) {
                                             e.preventDefault();
                                             const tag = editTagInput.trim().toLowerCase();
-                                            if (!editForm.tags.includes(tag)) setEditForm(p => ({ ...p, tags: [...p.tags, tag] }));
+                                            if (!editForm.tags.includes(tag)) setEditForm(p => ({ ...p, tags: [...editForm.tags, tag] }));
                                             setEditTagInput('');
                                         }
                                     }}
                                     placeholder="Type a tag and press Enter"
-                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    className="w-full bg-muted border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
-                            {error && <p className="text-sm text-red-500">{error}</p>}
+                            {error && <p className="text-sm text-destructive">{error}</p>}
                             <div className="flex justify-end gap-3 pt-2">
                                 <button
                                     type="button"
@@ -724,14 +724,14 @@ export default function CategoryPage() {
                                         setEditingPost(null);
                                         setError('');
                                     }}
-                                    className="text-sm px-4 py-2 rounded-lg border border-white/20 text-gray-300 hover:bg-white/10 transition"
+                                    className="text-sm px-4 py-2 rounded-lg border border-border text-muted-foreground hover:bg-white/10 transition"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={savingEdit}
-                                    className="text-sm px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium transition disabled:opacity-50"
+                                    className="text-sm px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium transition disabled:opacity-50"
                                 >
                                     {savingEdit ? 'Saving...' : 'Save'}
                                 </button>
@@ -743,38 +743,38 @@ export default function CategoryPage() {
 
             {showResourceModal && (
                 <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
-                    <div className="bg-[#2d2d2d] text-gray-100 rounded-xl shadow-xl w-full max-w-2xl p-6 border border-white/10">
-                        <h3 className="text-lg font-semibold text-gray-100 mb-4">Upload Resource</h3>
+                    <div className="bg-card text-foreground rounded-xl shadow-xl w-full max-w-2xl p-6 border border-border">
+                        <h3 className="text-lg font-semibold text-foreground mb-4">Upload Resource</h3>
                         <form onSubmit={handleUploadResource} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Title</label>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">Title</label>
                                 <input
                                     type="text"
                                     value={resourceForm.title}
                                     onChange={(e) => setResourceForm((p) => ({ ...p, title: e.target.value }))}
                                     required
-                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    className="w-full bg-muted border border-border rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary"
                                     placeholder="Resource title"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">Description</label>
                                 <textarea
                                     value={resourceForm.description}
                                     onChange={(e) => setResourceForm((p) => ({ ...p, description: e.target.value }))}
                                     required
                                     rows={4}
-                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                                    className="w-full bg-muted border border-border rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                                     placeholder="What is this file about?"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">File</label>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">File</label>
                                 <input
                                     type="file"
                                     required
                                     onChange={(e) => setResourceForm((p) => ({ ...p, file: e.target.files?.[0] ?? null }))}
-                                    className="w-full bg-[#242424] border border-white/15 rounded-lg px-4 py-2 text-sm"
+                                    className="w-full bg-muted border border-border rounded-lg px-4 py-2 text-sm"
                                 />
                             </div>
                             <div className="flex justify-end gap-3 pt-2">
@@ -784,14 +784,14 @@ export default function CategoryPage() {
                                         setShowResourceModal(false);
                                         setError('');
                                     }}
-                                    className="text-sm px-4 py-2 rounded-lg border border-white/20 text-gray-300 hover:bg-white/10 transition"
+                                    className="text-sm px-4 py-2 rounded-lg border border-border text-muted-foreground hover:bg-white/10 transition"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={uploadingResource}
-                                    className="text-sm px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium transition disabled:opacity-50"
+                                    className="text-sm px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium transition disabled:opacity-50"
                                 >
                                     {uploadingResource ? 'Uploading...' : 'Upload'}
                                 </button>

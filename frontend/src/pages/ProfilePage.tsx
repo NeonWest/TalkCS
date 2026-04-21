@@ -68,20 +68,20 @@ export default function ProfilePage() {
     }, [username]);
 
     return (
-        <div className="min-h-screen bg-[#1f1f1f] text-gray-100">
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar />
 
             <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
                 {loading ? (
-                    <p className="text-base text-gray-400">Loading...</p>
+                    <p className="text-base text-muted-foreground">Loading...</p>
                 ) : error ? (
-                    <p className="text-base text-red-500">{error}</p>
+                    <p className="text-base text-destructive">{error}</p>
                 ) : !profile ? (
-                    <p className="text-base text-red-500">Profile not found.</p>
+                    <p className="text-base text-destructive">Profile not found.</p>
                 ) : (
                     <>
                         {/* Profile Header */}
-                        <div className="bg-[#343434] rounded-xl shadow-sm p-5 space-y-4 border border-white/10">
+                        <div className="bg-card rounded-xl shadow-sm p-5 space-y-4 border border-border">
                             <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
                                 {/* Avatar */}
                                 <div className="flex-shrink-0">
@@ -89,10 +89,10 @@ export default function ProfilePage() {
                                         <img
                                             src={`http://localhost:8080${profile.avatarUrl}`}
                                             alt={profile.username}
-                                            className="w-16 h-16 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-orange-500/30"
+                                            className="w-16 h-16 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-primary/30"
                                         />
                                     ) : (
-                                        <div className="w-16 h-16 sm:w-14 sm:h-14 rounded-full bg-orange-500 flex items-center justify-center">
+                                        <div className="w-16 h-16 sm:w-14 sm:h-14 rounded-full bg-primary flex items-center justify-center">
                                             <span className="text-white text-xl sm:text-lg font-bold">{profile.username.charAt(0).toUpperCase()}</span>
                                         </div>
                                     )}
@@ -100,34 +100,34 @@ export default function ProfilePage() {
                                 {/* Profile Info */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-3">
-                                        <h1 className="text-2xl font-bold text-gray-100 truncate">{profile.username}</h1>
+                                        <h1 className="text-2xl font-bold text-foreground truncate">{profile.username}</h1>
                                         {user?.username === profile.username && (
                                             <button
                                                 onClick={() => { setEditBio(profile.bio ?? ''); setEditAvatarFile(null); setShowEditModal(true); }}
-                                                className="text-xs text-orange-400 hover:text-orange-300 border border-orange-500/30 px-2 py-0.5 rounded-lg transition shrink-0"
+                                                className="text-xs text-primary hover:text-primary/80 border border-primary/30 px-2 py-0.5 rounded-lg transition shrink-0"
                                             >
                                                 Edit Profile
                                             </button>
                                         )}
                                     </div>
                                     {profile.bio && (
-                                        <p className="text-sm text-gray-400 mt-1">{profile.bio}</p>
+                                        <p className="text-sm text-muted-foreground mt-1">{profile.bio}</p>
                                     )}
                                     <div className="mt-2 flex items-center gap-3 flex-wrap">
-                                        <span className="inline-block text-xs bg-orange-100 text-orange-700 px-3 py-1 rounded-full font-semibold">{profile.role}</span>
-                                        <span className="inline-block text-xs bg-orange-500/20 text-orange-300 px-3 py-1 rounded-full font-semibold">Lv.{profile.level} {profile.levelTitle}</span>
-                                        <span className="text-gray-300 text-sm">Joined {new Date(profile.createdAt).toLocaleDateString()}</span>
+                                        <span className="inline-block text-xs bg-primary/10 text-primary px-3 py-1 rounded-full font-semibold">{profile.role}</span>
+                                        <span className="inline-block text-xs bg-primary/20 text-primary px-3 py-1 rounded-full font-semibold">Lv.{profile.level} {profile.levelTitle}</span>
+                                        <span className="text-muted-foreground text-sm">Joined {new Date(profile.createdAt).toLocaleDateString()}</span>
                                     </div>
                                     {/* Progress bar toward next level */}
                                     {profile.nextLevelRepRequired !== null && (
                                         <div className="mt-3">
-                                            <div className="flex justify-between text-xs text-gray-400 mb-1">
+                                            <div className="flex justify-between text-xs text-muted-foreground mb-1">
                                                 <span>{profile.reputation} rep</span>
                                                 <span>{profile.nextLevelRepRequired} for next level</span>
                                             </div>
                                             <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
                                                 <div
-                                                    className="h-full bg-orange-500 rounded-full transition-all"
+                                                    className="h-full bg-primary rounded-full transition-all"
                                                     style={{ width: `${Math.min(100, (profile.reputation / profile.nextLevelRepRequired) * 100)}%` }}
                                                 />
                                             </div>
@@ -154,33 +154,33 @@ export default function ProfilePage() {
                                             } finally { setFollowLoading(false); }
                                         }}
                                         disabled={followLoading}
-                                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition disabled:opacity-50 ${following ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-orange-500 hover:bg-orange-600 text-white'}`}
+                                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition disabled:opacity-50 ${following ? 'bg-white/10 text-muted-foreground hover:bg-white/20' : 'bg-primary hover:bg-primary/90 text-white'}`}
                                     >
                                         {followLoading ? '...' : following ? 'Unfollow' : 'Follow'}
                                     </button>
-                                    <span className="text-sm text-gray-400">{followerCount} follower{followerCount !== 1 ? 's' : ''}</span>
-                                    <span className="text-sm text-gray-400">{profile.followingCount} following</span>
+                                    <span className="text-sm text-muted-foreground">{followerCount} follower{followerCount !== 1 ? 's' : ''}</span>
+                                    <span className="text-sm text-muted-foreground">{profile.followingCount} following</span>
                                 </div>
                             )}
                             {(user?.username === profile.username) && (
                                 <div className="flex gap-4 pt-2">
-                                    <span className="text-sm text-gray-400">{followerCount} follower{followerCount !== 1 ? 's' : ''}</span>
-                                    <span className="text-sm text-gray-400">{profile.followingCount} following</span>
+                                    <span className="text-sm text-muted-foreground">{followerCount} follower{followerCount !== 1 ? 's' : ''}</span>
+                                    <span className="text-sm text-muted-foreground">{profile.followingCount} following</span>
                                 </div>
                             )}
                             {/* Stats Row */}
-                            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/10">
-                                <div className="bg-[#2b2b2b] rounded-xl p-3 text-center border border-white/10">
-                                    <div className="text-2xl font-bold text-gray-100">{profile.postCount}</div>
-                                    <div className="text-xs text-gray-300 mt-1">Posts</div>
+                            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
+                                <div className="bg-card rounded-xl p-3 text-center border border-border">
+                                    <div className="text-2xl font-bold text-foreground">{profile.postCount}</div>
+                                    <div className="text-xs text-muted-foreground mt-1">Posts</div>
                                 </div>
-                                <div className="bg-[#2b2b2b] rounded-xl p-3 text-center border border-white/10">
-                                    <div className="text-2xl font-bold text-gray-100">{profile.commentCount ?? 0}</div>
-                                    <div className="text-xs text-gray-300 mt-1">Comments</div>
+                                <div className="bg-card rounded-xl p-3 text-center border border-border">
+                                    <div className="text-2xl font-bold text-foreground">{profile.commentCount ?? 0}</div>
+                                    <div className="text-xs text-muted-foreground mt-1">Comments</div>
                                 </div>
-                                <div className="bg-[#2b2b2b] rounded-xl p-3 text-center border border-white/10">
-                                    <div className="text-base text-gray-100 font-semibold">{profile.reputation ?? 0}</div>
-                                    <div className="text-xs text-gray-300 mt-1">Reputation</div>
+                                <div className="bg-card rounded-xl p-3 text-center border border-border">
+                                    <div className="text-base text-foreground font-semibold">{profile.reputation ?? 0}</div>
+                                    <div className="text-xs text-muted-foreground mt-1">Reputation</div>
                                 </div>
                             </div>
                         </div>
@@ -188,14 +188,14 @@ export default function ProfilePage() {
                         {/* Milestone Badges */}
                         {badges.filter(b => b.type === 'MILESTONE').length > 0 && (
                             <div>
-                                <h2 className="text-xl font-bold text-gray-200 mb-3 tracking-wide">Badges</h2>
+                                <h2 className="text-xl font-bold text-foreground mb-3 tracking-wide">Badges</h2>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                     {badges.filter(b => b.type === 'MILESTONE').map(badge => (
-                                        <div key={badge.id} className="bg-[#2b2b2b] rounded-xl border border-white/10 px-4 py-3 flex items-start gap-3">
+                                        <div key={badge.id} className="bg-card rounded-xl border border-border px-4 py-3 flex items-start gap-3">
                                             <span className="text-2xl">{badgeIcon(badge.iconKey)}</span>
                                             <div>
-                                                <p className="text-sm font-semibold text-gray-100">{badge.name}</p>
-                                                <p className="text-xs text-gray-400">{badge.description}</p>
+                                                <p className="text-sm font-semibold text-foreground">{badge.name}</p>
+                                                <p className="text-xs text-muted-foreground">{badge.description}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -206,19 +206,19 @@ export default function ProfilePage() {
                         {/* Expertise Badges */}
                         {badges.filter(b => b.type === 'SPECIAL').length > 0 && (
                             <div>
-                                <h2 className="text-xl font-bold text-gray-200 mb-3 tracking-wide">Expertise</h2>
+                                <h2 className="text-xl font-bold text-foreground mb-3 tracking-wide">Expertise</h2>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                     {badges.filter(b => b.type === 'SPECIAL').map(badge => {
                                         const tier = badge.name.includes('Gold') ? 'Gold'
                                             : badge.name.includes('Silver') ? 'Silver' : 'Bronze';
                                         const tierColor = tier === 'Gold' ? 'text-yellow-400'
-                                            : tier === 'Silver' ? 'text-gray-300' : 'text-orange-400';
+                                            : tier === 'Silver' ? 'text-muted-foreground' : 'text-primary';
                                         return (
-                                            <div key={badge.id} className="bg-[#2b2b2b] rounded-xl border border-white/10 px-4 py-3 flex items-start gap-3">
+                                            <div key={badge.id} className="bg-card rounded-xl border border-border px-4 py-3 flex items-start gap-3">
                                                 <span className="text-2xl">{tier === 'Gold' ? '🥇' : tier === 'Silver' ? '🥈' : '🥉'}</span>
                                                 <div>
                                                     <p className={`text-sm font-semibold ${tierColor}`}>{badge.name}</p>
-                                                    <p className="text-xs text-gray-400">{badge.description}</p>
+                                                    <p className="text-xs text-muted-foreground">{badge.description}</p>
                                                 </div>
                                             </div>
                                         );
@@ -232,7 +232,7 @@ export default function ProfilePage() {
                             <div className="flex gap-2 mb-3">
                                 {(['posts', 'saved'] as const).map(tab => (
                                     <button key={tab} onClick={() => setActiveTab(tab)}
-                                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === tab ? 'bg-orange-500 text-white' : 'border border-white/20 text-gray-300 hover:bg-white/10'}`}>
+                                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === tab ? 'bg-primary text-white' : 'border border-border text-muted-foreground hover:bg-white/10'}`}>
                                         {tab === 'posts' ? 'Recent Posts' : 'Saved Posts'}
                                     </button>
                                 ))}
@@ -240,7 +240,7 @@ export default function ProfilePage() {
                             {(() => {
                                 const list = activeTab === 'posts' ? posts : bookmarks;
                                 if (list.length === 0) return (
-                                    <div className="bg-[#101010] rounded-xl shadow-sm p-12 text-center text-gray-400 border border-white/10">
+                                    <div className="bg-background rounded-xl shadow-sm p-12 text-center text-muted-foreground border border-border">
                                         {activeTab === 'posts' ? 'No posts yet.' : 'No saved posts.'}
                                     </div>
                                 );
@@ -248,11 +248,11 @@ export default function ProfilePage() {
                                     <div className="space-y-3">
                                         {list.map(post => (
                                             <div key={post.id} onClick={() => navigate(`/post/${post.id}`)}
-                                                className="bg-[#343434] rounded-xl shadow-sm border border-white/10 px-4 py-3 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer">
+                                                className="bg-card rounded-xl shadow-sm border border-border px-4 py-3 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer">
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-lg font-semibold text-orange-500 truncate">{post.title}</p>
-                                                        <p className="text-sm text-gray-300 mt-1">
+                                                        <p className="text-lg font-semibold text-primary truncate">{post.title}</p>
+                                                        <p className="text-sm text-muted-foreground mt-1">
                                                             {new Date(post.createdAt).toLocaleDateString()}
                                                             <span className="mx-3">•</span>
                                                             {post.commentCount} comment{post.commentCount !== 1 ? 's' : ''}
@@ -262,11 +262,11 @@ export default function ProfilePage() {
                                                         <div className="flex items-center gap-1 shrink-0">
                                                             <button onClick={async (e) => { e.stopPropagation(); setVotingPostId(post.id); try { await voteOnPost(post.id, 1); if (username) await refreshUserPosts(username); } finally { setVotingPostId(null); } }}
                                                                 disabled={votingPostId === post.id}
-                                                                className={`text-sm transition ${post.userVote === 1 ? 'text-orange-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}>▲</button>
-                                                            <span className="text-sm font-semibold text-gray-200 w-6 text-center">{post.voteScore ?? 0}</span>
+                                                                className={`text-sm transition ${post.userVote === 1 ? 'text-primary' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}>▲</button>
+                                                            <span className="text-sm font-semibold text-foreground w-6 text-center">{post.voteScore ?? 0}</span>
                                                             <button onClick={async (e) => { e.stopPropagation(); setVotingPostId(post.id); try { await voteOnPost(post.id, -1); if (username) await refreshUserPosts(username); } finally { setVotingPostId(null); } }}
                                                                 disabled={votingPostId === post.id}
-                                                                className={`text-sm transition ${post.userVote === -1 ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'} disabled:opacity-50`}>▼</button>
+                                                                className={`text-sm transition ${post.userVote === -1 ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}>▼</button>
                                                         </div>
                                                     )}
                                                 </div>
@@ -283,27 +283,27 @@ export default function ProfilePage() {
             {/* Edit Profile Modal */}
             {showEditModal && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-                    <div className="bg-[#2d2d2d] rounded-xl border border-white/10 shadow-xl w-full max-w-md p-6 space-y-4">
-                        <h2 className="text-lg font-semibold text-gray-100">Edit Profile</h2>
+                    <div className="bg-card rounded-xl border border-border shadow-xl w-full max-w-md p-6 space-y-4">
+                        <h2 className="text-lg font-semibold text-foreground">Edit Profile</h2>
 
                         <div>
-                            <label className="block text-sm text-gray-400 mb-1">Bio</label>
+                            <label className="block text-sm text-muted-foreground mb-1">Bio</label>
                             <textarea
                                 value={editBio}
                                 onChange={e => setEditBio(e.target.value)}
                                 rows={3}
                                 placeholder="Tell others about yourself…"
-                                className="w-full bg-[#1a1a1a] text-white placeholder-gray-500 rounded-lg px-3 py-2 text-sm border border-white/10 focus:outline-none focus:border-orange-500/50 resize-none"
+                                className="w-full bg-popover text-white placeholder-muted-foreground rounded-lg px-3 py-2 text-sm border border-border focus:outline-none focus:border-primary/50 resize-none"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm text-gray-400 mb-1">Avatar</label>
+                            <label className="block text-sm text-muted-foreground mb-1">Avatar</label>
                             <input
                                 type="file"
                                 accept="image/*"
                                 onChange={e => setEditAvatarFile(e.target.files?.[0] ?? null)}
-                                className="text-sm text-gray-400 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-orange-500 file:text-white hover:file:bg-orange-600 cursor-pointer"
+                                className="text-sm text-muted-foreground file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-primary file:text-white hover:file:bg-primary/90 cursor-pointer"
                             />
                         </div>
 
@@ -322,13 +322,13 @@ export default function ProfilePage() {
                                     } finally { setEditSaving(false); }
                                 }}
                                 disabled={editSaving}
-                                className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white py-2 rounded-lg text-sm font-medium transition"
+                                className="flex-1 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white py-2 rounded-lg text-sm font-medium transition"
                             >
                                 {editSaving ? 'Saving…' : 'Save'}
                             </button>
                             <button
                                 onClick={() => setShowEditModal(false)}
-                                className="px-4 py-2 text-sm text-gray-400 hover:text-white transition"
+                                className="px-4 py-2 text-sm text-muted-foreground hover:text-white transition"
                             >
                                 Cancel
                             </button>

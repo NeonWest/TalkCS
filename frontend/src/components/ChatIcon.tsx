@@ -25,7 +25,7 @@ export default function ChatIcon() {
             size="icon"
             variant="ghost"
             onClick={() => navigate('/chat')}
-            className="group relative text-foreground hover:text-white transition-all duration-300"
+            className="group relative text-foreground hover:bg-black/10 dark:hover:bg-accent hover:text-foreground transition-all duration-300"
             title="Messages"
         >
             <svg

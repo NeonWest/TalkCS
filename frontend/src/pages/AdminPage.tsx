@@ -118,17 +118,17 @@ export default function AdminPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#1a1a1a] text-gray-100">
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar />
 
             <main className="max-w-6xl mx-auto px-4 py-6">
-                <h1 className="text-2xl font-bold text-white mb-6">Admin Panel</h1>
+                <h1 className="text-2xl font-bold text-foreground mb-6">Admin Panel</h1>
 
                 {/* Tabs */}
-                <div className="flex gap-1 mb-6 bg-[#111] rounded-xl p-1 w-full sm:w-fit border border-white/10 overflow-x-auto no-scrollbar whitespace-nowrap">
+                <div className="flex gap-1 mb-6 bg-background rounded-xl p-1 w-full sm:w-fit border border-border overflow-x-auto no-scrollbar whitespace-nowrap">
                     {tabs.map(t => (
                         <button key={t.key} onClick={() => setTab(t.key)}
-                            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition ${tab === t.key ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white'}`}>
+                            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition ${tab === t.key ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'}`}>
                             {t.label}
                         </button>
                     ))}
@@ -138,7 +138,7 @@ export default function AdminPage() {
                 {tab === 'stats' && (
                     <div className="space-y-6">
                         {!stats ? (
-                            <p className="text-gray-400">Loading...</p>
+                            <p className="text-muted-foreground">Loading...</p>
                         ) : (
                             <>
                                 <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
@@ -150,16 +150,16 @@ export default function AdminPage() {
                                         { label: 'Posts This Week', value: stats.postsThisWeek },
                                         { label: 'New Users This Week', value: stats.newUsersThisWeek },
                                     ].map(s => (
-                                        <div key={s.label} className="bg-[#2d2d2d] rounded-xl border border-white/10 p-4">
-                                            <p className="text-2xl sm:text-3xl font-bold text-orange-500">{s.value}</p>
-                                            <p className="text-xs sm:text-sm text-gray-400 mt-1">{s.label}</p>
+                                        <div key={s.label} className="bg-card rounded-xl border border-border p-4">
+                                            <p className="text-2xl sm:text-3xl font-bold text-primary">{s.value}</p>
+                                            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{s.label}</p>
                                         </div>
                                     ))}
                                 </div>
-                                <div className="bg-[#2d2d2d] rounded-xl border border-white/10 p-4 sm:p-5">
-                                    <h3 className="text-sm font-bold text-gray-200 mb-4 uppercase tracking-wider">Most Active Categories</h3>
+                                <div className="bg-card rounded-xl border border-border p-4 sm:p-5">
+                                    <h3 className="text-sm font-bold text-foreground mb-4 uppercase tracking-wider">Most Active Categories</h3>
                                     {stats.mostActiveCategories.length === 0 ? (
-                                        <p className="text-sm text-gray-400">No data yet.</p>
+                                        <p className="text-sm text-muted-foreground">No data yet.</p>
                                     ) : (
                                         <div className="space-y-4">
                                             {stats.mostActiveCategories.map((c, i) => {
@@ -168,11 +168,11 @@ export default function AdminPage() {
                                                 return (
                                                     <div key={c.categoryId}>
                                                         <div className="flex justify-between text-sm mb-1.5">
-                                                            <span className="text-gray-300 font-medium">#{i + 1} {c.categoryName}</span>
-                                                            <span className="text-orange-400 font-semibold">{c.postCount} posts</span>
+                                                            <span className="text-muted-foreground font-medium">#{i + 1} {c.categoryName}</span>
+                                                            <span className="text-primary font-semibold">{c.postCount} posts</span>
                                                         </div>
-                                                        <div className="h-2 bg-[#1a1a1a] rounded-full overflow-hidden">
-                                                            <div className="h-full bg-orange-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                                                        <div className="h-2 bg-popover rounded-full overflow-hidden">
+                                                            <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                                                         </div>
                                                     </div>
                                                 );
@@ -194,45 +194,45 @@ export default function AdminPage() {
                                 onChange={e => { setUserSearch(e.target.value); setUserPage(0); }}
                                 onKeyDown={e => e.key === 'Enter' && loadUsers()}
                                 placeholder="Search username..."
-                                className="bg-[#2d2d2d] border border-white/15 rounded-lg px-4 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-orange-500 flex-1 sm:max-w-xs"
+                                className="bg-card border border-border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary flex-1 sm:max-w-xs"
                             />
-                            <button onClick={loadUsers} className="w-full sm:w-auto px-6 py-2.5 bg-orange-500 hover:bg-orange-600 rounded-lg text-sm font-semibold transition shadow-lg shadow-orange-500/10">Search</button>
+                            <button onClick={loadUsers} className="w-full sm:w-auto px-6 py-2.5 bg-primary hover:bg-primary/90 rounded-lg text-sm font-semibold transition shadow-lg shadow-primary/10">Search</button>
                         </div>
                         
                         {/* Mobile User Cards */}
                         <div className="md:hidden space-y-4">
                             {users.map(u => (
-                                <div key={u.id} className="bg-[#2d2d2d] rounded-xl border border-white/10 p-4 space-y-3">
+                                <div key={u.id} className="bg-card rounded-xl border border-border p-4 space-y-3">
                                     <div className="flex justify-between items-start">
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-bold text-gray-100 truncate">{u.username}</p>
-                                            <p className="text-xs text-gray-500 truncate">{u.email}</p>
+                                            <p className="text-sm font-bold text-foreground truncate">{u.username}</p>
+                                            <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                                         </div>
-                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${u.role === 'ADMIN' ? 'bg-orange-500/20 text-orange-400' : 'bg-gray-700 text-gray-400'}`}>
+                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${u.role === 'ADMIN' ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
                                             {u.role}
                                         </span>
                                     </div>
-                                    <div className="grid grid-cols-3 gap-2 py-2 border-y border-white/5">
+                                    <div className="grid grid-cols-3 gap-2 py-2 border-y border-border">
                                         <div className="text-center">
-                                            <p className="text-xs text-gray-500 uppercase font-bold tracking-tighter">Rep</p>
-                                            <p className="text-sm font-semibold text-gray-300">{u.reputation}</p>
+                                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-tighter">Rep</p>
+                                            <p className="text-sm font-semibold text-muted-foreground">{u.reputation}</p>
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-xs text-gray-500 uppercase font-bold tracking-tighter">Posts</p>
-                                            <p className="text-sm font-semibold text-gray-300">{u.postCount}</p>
+                                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-tighter">Posts</p>
+                                            <p className="text-sm font-semibold text-muted-foreground">{u.postCount}</p>
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-xs text-gray-500 uppercase font-bold tracking-tighter">Cmts</p>
-                                            <p className="text-sm font-semibold text-gray-300">{u.commentCount}</p>
+                                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-tighter">Cmts</p>
+                                            <p className="text-sm font-semibold text-muted-foreground">{u.commentCount}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-2 pt-1">
                                         <button onClick={() => handleToggleRole(u.id)}
-                                            className="flex-1 text-xs px-2 py-2 bg-[#3a3a3a] hover:bg-orange-500 rounded-lg transition text-gray-300 hover:text-white font-medium">
+                                            className="flex-1 text-xs px-2 py-2 bg-accent hover:bg-primary rounded-lg transition text-muted-foreground hover:text-white font-medium">
                                             {u.role === 'ADMIN' ? 'Revoke Admin' : 'Make Admin'}
                                         </button>
                                         <button onClick={() => handleDeleteUser(u.id, u.username)}
-                                            className="text-xs px-3 py-2 bg-red-900/20 hover:bg-red-700 rounded-lg transition text-red-400 hover:text-white font-medium">
+                                            className="text-xs px-3 py-2 bg-destructive/10 hover:bg-destructive rounded-lg transition text-destructive hover:text-white font-medium">
                                             Delete
                                         </button>
                                     </div>
@@ -241,35 +241,35 @@ export default function AdminPage() {
                         </div>
 
                         {/* Desktop Table */}
-                        <div className="hidden md:block bg-[#2d2d2d] rounded-xl border border-white/10 overflow-hidden">
+                        <div className="hidden md:block bg-card rounded-xl border border-border overflow-hidden">
                             <table className="w-full text-sm">
-                                <thead className="bg-[#1a1a1a] border-b border-white/10">
+                                <thead className="bg-popover border-b border-border">
                                     <tr>
                                         {['Username', 'Email', 'Role', 'Rep', 'Posts', 'Comments', 'Actions'].map(h => (
-                                            <th key={h} className="text-left px-4 py-3 text-gray-400 font-medium">{h}</th>
+                                            <th key={h} className="text-left px-4 py-3 text-muted-foreground font-medium">{h}</th>
                                         ))}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-white/5">
+                                <tbody className="divide-y divide-border">
                                     {users.map(u => (
                                         <tr key={u.id} className="hover:bg-white/5">
-                                            <td className="px-4 py-3 text-gray-100">{u.username}</td>
-                                            <td className="px-4 py-3 text-gray-400 truncate max-w-[180px]">{u.email}</td>
+                                            <td className="px-4 py-3 text-foreground">{u.username}</td>
+                                            <td className="px-4 py-3 text-muted-foreground truncate max-w-[180px]">{u.email}</td>
                                             <td className="px-4 py-3">
-                                                <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${u.role === 'ADMIN' ? 'bg-orange-100 text-orange-700' : 'bg-gray-700 text-gray-300'}`}>
+                                                <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${u.role === 'ADMIN' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
                                                     {u.role}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3 text-gray-400">{u.reputation}</td>
-                                            <td className="px-4 py-3 text-gray-400">{u.postCount}</td>
-                                            <td className="px-4 py-3 text-gray-400">{u.commentCount}</td>
+                                            <td className="px-4 py-3 text-muted-foreground">{u.reputation}</td>
+                                            <td className="px-4 py-3 text-muted-foreground">{u.postCount}</td>
+                                            <td className="px-4 py-3 text-muted-foreground">{u.commentCount}</td>
                                             <td className="px-4 py-3 flex gap-2">
                                                 <button onClick={() => handleToggleRole(u.id)}
-                                                    className="text-xs px-2 py-1 bg-[#3a3a3a] hover:bg-orange-500 rounded transition text-gray-300 hover:text-white">
+                                                    className="text-xs px-2 py-1 bg-accent hover:bg-primary rounded transition text-muted-foreground hover:text-white">
                                                     {u.role === 'ADMIN' ? 'Revoke Admin' : 'Make Admin'}
                                                 </button>
                                                 <button onClick={() => handleDeleteUser(u.id, u.username)}
-                                                    className="text-xs px-2 py-1 bg-red-900/40 hover:bg-red-700 rounded transition text-red-400 hover:text-white">
+                                                    className="text-xs px-2 py-1 bg-destructive/20 hover:bg-destructive rounded transition text-destructive hover:text-white">
                                                     Delete
                                                 </button>
                                             </td>
@@ -282,7 +282,7 @@ export default function AdminPage() {
                             <div className="flex flex-wrap gap-2 mt-6 justify-center sm:justify-start">
                                 {Array.from({ length: userTotalPages }, (_, i) => (
                                     <button key={i} onClick={() => setUserPage(i)}
-                                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition ${userPage === i ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'bg-[#2d2d2d] text-gray-400 hover:text-white'}`}>
+                                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition ${userPage === i ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-card text-muted-foreground hover:text-white'}`}>
                                         {i + 1}
                                     </button>
                                 ))}
@@ -296,41 +296,41 @@ export default function AdminPage() {
                     <div className="space-y-4">
                         {editCat && (
                             <div className="fixed inset-0 bg-black/70 z-[110] flex items-center justify-center p-4 backdrop-blur-sm">
-                                <div className="bg-[#2d2d2d] rounded-2xl border border-white/15 p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
-                                    <h2 className="text-lg font-bold text-white mb-4">Edit Category</h2>
+                                <div className="bg-card rounded-2xl border border-border p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+                                    <h2 className="text-lg font-bold text-foreground mb-4">Edit Category</h2>
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Name</label>
+                                            <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1.5 ml-1">Name</label>
                                             <input value={editName} onChange={e => setEditName(e.target.value)}
-                                                className="w-full bg-[#1a1a1a] border border-white/15 rounded-lg px-4 py-2.5 text-gray-100 focus:outline-none focus:border-orange-500 transition-colors" />
+                                                className="w-full bg-popover border border-border rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary transition-colors" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Description</label>
+                                            <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1.5 ml-1">Description</label>
                                             <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={4}
-                                                className="w-full bg-[#1a1a1a] border border-white/15 rounded-lg px-4 py-2.5 text-gray-100 focus:outline-none focus:border-orange-500 resize-none transition-colors" />
+                                                className="w-full bg-popover border border-border rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary resize-none transition-colors" />
                                         </div>
                                     </div>
                                     <div className="flex gap-3 mt-6">
-                                        <button onClick={saveEditCat} className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 rounded-lg text-sm font-bold transition text-white">Save Changes</button>
-                                        <button onClick={() => setEditCat(null)} className="flex-1 py-2.5 bg-[#3a3a3a] hover:bg-[#444] rounded-lg text-sm font-bold transition text-gray-300">Cancel</button>
+                                        <button onClick={saveEditCat} className="flex-1 py-2.5 bg-primary hover:bg-primary/90 rounded-lg text-sm font-bold transition text-white">Save Changes</button>
+                                        <button onClick={() => setEditCat(null)} className="flex-1 py-2.5 bg-accent hover:bg-accent/80 rounded-lg text-sm font-bold transition text-muted-foreground">Cancel</button>
                                     </div>
                                 </div>
                             </div>
                         )}
                         <div className="grid gap-3">
                             {categories.map(cat => (
-                                <div key={cat.id} className={`bg-[#2d2d2d] rounded-xl border border-white/10 px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:bg-white/[0.02] ${cat.archived ? 'opacity-50 grayscale-[0.5]' : ''}`}>
+                                <div key={cat.id} className={`bg-card rounded-xl border border-border px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:bg-white/[0.02] ${cat.archived ? 'opacity-50 grayscale-[0.5]' : ''}`}>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <p className="text-gray-100 font-bold tracking-tight">{cat.name}</p>
-                                            {cat.archived && <span className="text-[10px] bg-red-900/50 text-red-400 px-2 py-0.5 rounded-full font-bold uppercase">Archived</span>}
+                                            <p className="text-foreground font-bold tracking-tight">{cat.name}</p>
+                                            {cat.archived && <span className="text-[10px] bg-destructive/30 text-destructive px-2 py-0.5 rounded-full font-bold uppercase">Archived</span>}
                                         </div>
-                                        <p className="text-sm text-gray-400 line-clamp-2 sm:line-clamp-none">{cat.description}</p>
+                                        <p className="text-sm text-muted-foreground line-clamp-2 sm:line-clamp-none">{cat.description}</p>
                                     </div>
-                                    <div className="flex gap-2 sm:shrink-0 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0">
+                                    <div className="flex gap-2 sm:shrink-0 border-t sm:border-t-0 border-border pt-3 sm:pt-0">
                                         {!cat.archived && (
                                             <button onClick={() => openEditCat(cat)}
-                                                className="flex-1 sm:flex-none text-xs px-4 py-2 bg-[#3a3a3a] hover:bg-orange-500 rounded-lg transition text-gray-300 hover:text-white font-medium">
+                                                className="flex-1 sm:flex-none text-xs px-4 py-2 bg-accent hover:bg-primary rounded-lg transition text-muted-foreground hover:text-white font-medium">
                                                 Edit
                                             </button>
                                         )}
@@ -341,7 +341,7 @@ export default function AdminPage() {
                                             </button>
                                         ) : (
                                             <button onClick={() => handleArchiveCat(cat.id)}
-                                                className="flex-1 sm:flex-none text-xs px-4 py-2 bg-red-900/40 hover:bg-red-700 rounded-lg transition text-red-400 hover:text-white font-medium">
+                                                className="flex-1 sm:flex-none text-xs px-4 py-2 bg-destructive/20 hover:bg-destructive rounded-lg transition text-destructive hover:text-white font-medium">
                                                 Archive
                                             </button>
                                         )}
@@ -355,28 +355,28 @@ export default function AdminPage() {
                 {/* Branding Tab */}
                 {tab === 'branding' && (
                     <div className="max-w-lg">
-                        <div className="bg-[#2d2d2d] rounded-xl border border-white/10 p-6 space-y-4">
+                        <div className="bg-card rounded-xl border border-border p-6 space-y-4">
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1">Site Name</label>
+                                <label className="block text-sm text-muted-foreground mb-1">Site Name</label>
                                 <input value={brandName} onChange={e => setBrandName(e.target.value)}
-                                    className="w-full bg-[#1a1a1a] border border-white/15 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-orange-500" />
+                                    className="w-full bg-popover border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:border-primary" />
                             </div>
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1">Tagline</label>
+                                <label className="block text-sm text-muted-foreground mb-1">Tagline</label>
                                 <input value={brandTagline} onChange={e => setBrandTagline(e.target.value)}
-                                    className="w-full bg-[#1a1a1a] border border-white/15 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-orange-500" />
+                                    className="w-full bg-popover border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:border-primary" />
                             </div>
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1">Primary Color</label>
+                                <label className="block text-sm text-muted-foreground mb-1">Primary Color</label>
                                 <div className="flex gap-3 items-center">
                                     <input type="color" value={brandColor} onChange={e => setBrandColor(e.target.value)}
-                                        className="h-10 w-14 rounded-lg border border-white/15 cursor-pointer bg-transparent" />
+                                        className="h-10 w-14 rounded-lg border border-border cursor-pointer bg-transparent" />
                                     <input value={brandColor} onChange={e => setBrandColor(e.target.value)}
-                                        className="flex-1 bg-[#1a1a1a] border border-white/15 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:border-orange-500 font-mono text-sm" />
+                                        className="flex-1 bg-popover border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:border-primary font-mono text-sm" />
                                 </div>
                             </div>
                             <button onClick={handleSaveBranding} disabled={brandSaving}
-                                className="w-full py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 rounded-lg text-sm font-semibold transition">
+                                className="w-full py-2 bg-primary hover:bg-primary/90 disabled:opacity-50 rounded-lg text-sm font-semibold transition">
                                 {brandSaving ? 'Saving...' : 'Save Branding'}
                             </button>
                         </div>
