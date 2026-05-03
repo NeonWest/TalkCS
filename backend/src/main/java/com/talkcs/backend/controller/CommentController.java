@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -19,8 +18,11 @@ public class CommentController{
     private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping
-    public ResponseEntity<List<CommentResponse>> getCommentsByPostId(@RequestParam Long postId) {
-        return ResponseEntity.ok(commentservice.getCommentsByPostId(postId));
+    public ResponseEntity<Map<String, Object>> getCommentsByPostId(
+            @RequestParam Long postId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(commentservice.getCommentsByPostId(postId, page, size));
     }
     
     @PostMapping

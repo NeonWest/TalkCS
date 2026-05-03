@@ -6,7 +6,7 @@ import { getPostById, updatePost, deletePost, acceptAnswer, unacceptAnswer, book
 import { getComments, createComment, updateComment, deleteComment } from '../api/comments';
 import { voteOnPost, voteOnComment, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
-import type { CommentResponse } from '../api/comments';
+import type { CommentResponse, PaginatedComments } from '../api/comments';
 import Navbar from '../components/Navbar';
 import MDEditor from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
@@ -66,6 +66,7 @@ function CommentItem({
     const [editingSubmit, setEditingSubmit] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [voting, setVoting] = useState(false);
+    const [showReplies, setShowReplies] = useState(isAccepted);
 
     const handleReply = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -142,6 +143,9 @@ function CommentItem({
                         >
                             {comment.authorUsername}
                         </button>
+                        {comment.authorRole === 'PROFESSOR' && (
+                            <span className="px-1.5 py-0.5 bg-blue-500/15 text-blue-500 rounded text-xs font-semibold">Professor</span>
+                        )}
                         {comment.authorLevel && (
                             <span className="px-1.5 py-0.5 bg-primary/15 text-primary rounded text-xs">{comment.authorLevel}</span>
                         )}
@@ -276,7 +280,15 @@ function CommentItem({
                 )}
             </div>
 
-            {comment.children?.map(child => (
+            {comment.children && comment.children.length > 0 && (
+                <button
+                    onClick={() => setShowReplies(v => !v)}
+                    className="ml-2 mt-1 text-xs text-primary hover:text-primary/70 transition font-medium"
+                >
+                    {showReplies ? 'Hide replies' : 'Show replies'}
+                </button>
+            )}
+            {showReplies && comment.children?.map(child => (
                 <CommentItem
                     key={child.id}
                     comment={child}
@@ -315,6 +327,9 @@ export default function PostPage() {
 
     const [post, setPost] = useState<Post | null>(null);
     const [comments, setComments] = useState<CommentResponse[]>([]);
+    const [commentPage, setCommentPage] = useState(0);
+    const [totalCommentPages, setTotalCommentPages] = useState(1);
+    const [totalComments, setTotalComments] = useState(0);
     const [loading, setLoading] = useState(true);
     const [commentBody, setCommentBody] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -329,10 +344,16 @@ export default function PostPage() {
     const [bookmarked, setBookmarked] = useState(false);
     const [bookmarking, setBookmarking] = useState(false);
 
+    const applyCommentData = (data: PaginatedComments) => {
+        setComments(data.comments);
+        setTotalCommentPages(data.totalPages);
+        setTotalComments(data.totalItems);
+    };
+
     useEffect(() => {
         Promise.all([
             getPostById(postId).then(p => { setPost(p); setBookmarked(p.bookmarkedByCurrentUser ?? false); }),
-            getComments(postId).then(setComments),
+            getComments(postId, 0).then(applyCommentData),
         ]).finally(() => setLoading(false));
     }, [postId]);
 
@@ -341,20 +362,30 @@ export default function PostPage() {
     };
 
     const refreshComments = async () => {
-        const updated = await getComments(postId);
-        setComments(updated);
+        const data = await getComments(postId, commentPage);
+        applyCommentData(data);
+    };
+
+    const handlePageChange = async (page: number) => {
+        setCommentPage(page);
+        const data = await getComments(postId, page);
+        applyCommentData(data);
+        document.getElementById('comments-section')?.scrollIntoView({ behavior: 'smooth' });
     };
 
     useCommentUpdates(id, token, refreshComments);
 
-    // Add a new top-level comment to the list
     const handleComment = async (e: React.FormEvent) => {
         e.preventDefault();
         setCommentError('');
         setSubmitting(true);
         try {
             await createComment({ body: commentBody, postId });
-            await refreshComments();
+            const firstPage = await getComments(postId, 0);
+            const lastPage = firstPage.totalPages - 1;
+            const lastData = lastPage === 0 ? firstPage : await getComments(postId, lastPage);
+            setCommentPage(lastPage);
+            applyCommentData(lastData);
             setCommentBody('');
         } catch {
             setCommentError('Failed to post comment.');
@@ -579,11 +610,11 @@ export default function PostPage() {
                         </div>
 
                         {/* Comments */}
-                        <div className="mb-6">
+                        <div id="comments-section" className="mb-6">
                             <h2 className="text-xl font-bold text-muted-foreground tracking-wide mb-2">
-                                {comments.length} Comment{comments.length !== 1 ? 's' : ''}
+                                {totalComments} Comment{totalComments !== 1 ? 's' : ''}
                             </h2>
-                            {comments.length === 0 ? (
+                            {totalComments === 0 ? (
                                 <p className="text-base text-muted-foreground">No comments yet.</p>
                             ) : (
                                 comments.map(c => (
@@ -604,6 +635,53 @@ export default function PostPage() {
                                         onUnacceptAnswer={handleUnacceptAnswer}
                                     />
                                 ))
+                            )}
+                            {totalCommentPages > 1 && (
+                                <div className="flex items-center justify-center gap-1 mt-6">
+                                    <button
+                                        onClick={() => void handlePageChange(commentPage - 1)}
+                                        disabled={commentPage === 0}
+                                        className="px-2 py-1 rounded text-sm text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition"
+                                    >
+                                        ‹
+                                    </button>
+                                    {(() => {
+                                        const pages: (number | 'ellipsis')[] = [];
+                                        if (totalCommentPages <= 7) {
+                                            for (let i = 0; i < totalCommentPages; i++) pages.push(i);
+                                        } else if (commentPage <= 3) {
+                                            pages.push(0, 1, 2, 3, 4, 'ellipsis', totalCommentPages - 1);
+                                        } else if (commentPage >= totalCommentPages - 4) {
+                                            pages.push(0, 'ellipsis', totalCommentPages - 5, totalCommentPages - 4, totalCommentPages - 3, totalCommentPages - 2, totalCommentPages - 1);
+                                        } else {
+                                            pages.push(0, 'ellipsis', commentPage - 1, commentPage, commentPage + 1, 'ellipsis', totalCommentPages - 1);
+                                        }
+                                        return pages.map((page, i) =>
+                                            page === 'ellipsis' ? (
+                                                <span key={`e-${i}`} className="px-1 text-muted-foreground text-sm select-none">…</span>
+                                            ) : (
+                                                <button
+                                                    key={page}
+                                                    onClick={() => void handlePageChange(page)}
+                                                    className={`min-w-[32px] px-2 py-1 rounded text-sm transition ${
+                                                        page === commentPage
+                                                            ? 'bg-primary text-white font-semibold'
+                                                            : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                                                    }`}
+                                                >
+                                                    {page + 1}
+                                                </button>
+                                            )
+                                        );
+                                    })()}
+                                    <button
+                                        onClick={() => void handlePageChange(commentPage + 1)}
+                                        disabled={commentPage === totalCommentPages - 1}
+                                        className="px-2 py-1 rounded text-sm text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition"
+                                    >
+                                        ›
+                                    </button>
+                                </div>
                             )}
                             {commentError && <p className="text-xs text-destructive mt-3">{commentError}</p>}
                         </div>

@@ -113,10 +113,10 @@ public class ResourceService {
         Resource resource = resourceRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Resource not found"));
 
-        boolean isAdmin = auth.getAuthorities().stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isPrivileged = auth.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_PROFESSOR"));
 
-        if (!resource.getUploader().getEmail().equals(email) && !isAdmin) {
+        if (!resource.getUploader().getEmail().equals(email) && !isPrivileged) {
             throw new RuntimeException("Unauthorized");
         }
 

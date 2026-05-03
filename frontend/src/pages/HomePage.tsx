@@ -19,7 +19,7 @@ export default function HomePage() {
     const [editName, setEditName] = useState('');
     const [editDesc, setEditDesc] = useState('');
 
-    const isAdmin = user?.role === 'ADMIN';
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'PROFESSOR';
 
     // Queries
     const { data: categories = [], isLoading: loadingCategories } = useQuery({

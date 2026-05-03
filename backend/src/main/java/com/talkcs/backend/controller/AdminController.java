@@ -31,8 +31,8 @@ public class AdminController {
     }
 
     @PutMapping("/users/{id}/role")
-    public ResponseEntity<UserAdminResponse> toggleRole(@PathVariable Long id) {
-        return ResponseEntity.ok(adminService.toggleRole(id));
+    public ResponseEntity<UserAdminResponse> setRole(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
+        return ResponseEntity.ok(adminService.setRole(id, body.get("role")));
     }
 
     @DeleteMapping("/users/{id}")

@@ -39,7 +39,7 @@ interface Category { id: number; name: string; }
 
 export default function CalendarPage() {
     const { user } = useAuth();
-    const isAdmin = user?.role === 'ADMIN';
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'PROFESSOR';
 
     const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [loading, setLoading] = useState(false);

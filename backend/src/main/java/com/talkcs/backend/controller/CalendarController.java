@@ -49,7 +49,7 @@ public class CalendarController {
     }
 
     @GetMapping("/proposals")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     public ResponseEntity<List<CalendarEventProposalResponse>> getPendingProposals() {
         return ResponseEntity.ok(calendarService.getPendingProposals());
     }
@@ -60,13 +60,13 @@ public class CalendarController {
     }
 
     @PutMapping("/proposals/{id}/approve")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     public ResponseEntity<CalendarEventResponse> approveProposal(@PathVariable Long id) {
         return ResponseEntity.ok(calendarService.approveProposal(id));
     }
 
     @PutMapping("/proposals/{id}/reject")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROFESSOR')")
     public ResponseEntity<CalendarEventProposalResponse> rejectProposal(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> body) {

@@ -75,10 +75,12 @@ public class AdminService {
     }
 
     @Transactional
-    public UserAdminResponse toggleRole(Long userId) {
+    public UserAdminResponse setRole(Long userId, String role) {
+        if (!List.of("STUDENT", "PROFESSOR", "ADMIN").contains(role))
+            throw new RuntimeException("Invalid role: " + role);
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setRole(user.getRole().equals("ADMIN") ? "STUDENT" : "ADMIN");
+        user.setRole(role);
         userRepository.save(user);
         return UserAdminResponse.builder()
             .id(user.getId())

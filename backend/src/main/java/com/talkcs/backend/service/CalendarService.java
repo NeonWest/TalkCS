@@ -73,7 +73,7 @@ public class CalendarService {
     public CalendarEventResponse createEvent(CalendarEventRequest req, String email) {
         User createdBy = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
-        boolean isAdmin = "ADMIN".equals(createdBy.getRole());
+        boolean isPrivileged = "ADMIN".equals(createdBy.getRole()) || "PROFESSOR".equals(createdBy.getRole());
 
         Category category = resolveCategory(req.getCategoryId());
 
@@ -86,7 +86,7 @@ public class CalendarService {
             .createdBy(createdBy)
             .eventType(EventType.valueOf(req.getEventType().toUpperCase()))
             .createdAt(LocalDateTime.now())
-            .publicEvent(isAdmin)
+            .publicEvent(isPrivileged)
             .build();
 
         return CalendarEventResponse.from(calendarEventRepository.save(event));
@@ -162,9 +162,9 @@ public class CalendarService {
         User currentUser = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!event.getCreatedBy().getId().equals(currentUser.getId()) && !"ADMIN".equals(currentUser.getRole())) {
-            throw new RuntimeException("Unauthorized");
-        }
+        boolean canEdit = event.getCreatedBy().getId().equals(currentUser.getId())
+            || "ADMIN".equals(currentUser.getRole()) || "PROFESSOR".equals(currentUser.getRole());
+        if (!canEdit) throw new RuntimeException("Unauthorized");
 
         event.setTitle(req.getTitle());
         event.setDescription(req.getDescription());
@@ -182,9 +182,9 @@ public class CalendarService {
         User currentUser = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!event.getCreatedBy().getId().equals(currentUser.getId()) && !"ADMIN".equals(currentUser.getRole())) {
-            throw new RuntimeException("Unauthorized");
-        }
+        boolean canDelete = event.getCreatedBy().getId().equals(currentUser.getId())
+            || "ADMIN".equals(currentUser.getRole()) || "PROFESSOR".equals(currentUser.getRole());
+        if (!canDelete) throw new RuntimeException("Unauthorized");
 
         calendarEventRepository.deleteById(id);
     }
