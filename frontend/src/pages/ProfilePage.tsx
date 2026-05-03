@@ -114,7 +114,9 @@ export default function ProfilePage() {
                                         <p className="text-sm text-muted-foreground mt-1">{profile.bio}</p>
                                     )}
                                     <div className="mt-2 flex items-center gap-3 flex-wrap">
-                                        <span className="inline-block text-xs bg-primary/10 text-primary px-3 py-1 rounded-full font-semibold">{profile.role}</span>
+                                        <span className={`inline-block text-xs px-3 py-1 rounded-full font-semibold ${profile.role === 'PROFESSOR' ? 'bg-blue-500/10 text-blue-500' : 'bg-primary/10 text-primary'}`}>
+                                            {profile.role === 'PROFESSOR' ? 'Professor' : profile.role}
+                                        </span>
                                         <span className="inline-block text-xs bg-primary/20 text-primary px-3 py-1 rounded-full font-semibold">Lv.{profile.level} {profile.levelTitle}</span>
                                         <span className="text-muted-foreground text-sm">Joined {new Date(profile.createdAt).toLocaleDateString()}</span>
                                     </div>

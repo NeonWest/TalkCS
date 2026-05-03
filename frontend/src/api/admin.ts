@@ -35,8 +35,8 @@ export const getAdminStats = async (): Promise<AdminStats> =>
 export const getAdminUsers = async (page: number, search?: string): Promise<{ content: UserAdmin[]; totalPages: number; totalElements: number }> =>
     (await api.get('/api/admin/users', { params: { page, search } })).data;
 
-export const toggleUserRole = async (id: number): Promise<UserAdmin> =>
-    (await api.put<UserAdmin>(`/api/admin/users/${id}/role`)).data;
+export const setUserRole = async (id: number, role: string): Promise<UserAdmin> =>
+    (await api.put<UserAdmin>(`/api/admin/users/${id}/role`, { role })).data;
 
 export const deleteAdminUser = async (id: number): Promise<void> =>
     api.delete(`/api/admin/users/${id}`);

@@ -17,4 +17,5 @@ public class CommentResponse{
     private int voteScore;
     private int userVote;
     private String authorLevel;
+    private String authorRole;
 }

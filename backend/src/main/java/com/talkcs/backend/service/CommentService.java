@@ -4,10 +4,15 @@ import com.talkcs.backend.dto.*;
 import com.talkcs.backend.repository.*;
 import com.talkcs.backend.model.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.context.*;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.security.core.Authentication;
 
 
@@ -22,19 +27,29 @@ public class CommentService{
     private final MentionService mentionService;
     private final NotificationService notificationService;
 
-    public List<CommentResponse> getCommentsByPostId(Long Id){
-        return commentrepository.findByPostIdAndParentIsNull(Id)
-        .stream()
+    public Map<String, Object> getCommentsByPostId(Long Id, int page, int size){
+        PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").ascending());
+        Page<Comment> commentPage = commentrepository.findByPostIdAndParentIsNull(Id, pageable);
+        List<CommentResponse> comments = commentPage.getContent().stream()
         .map(comment -> CommentResponse.builder()
         .id(comment.getId())
         .body(comment.getBody())
         .createdAt(comment.getCreatedAt())
         .authorUsername(comment.getAuthor().getUsername())
         .authorLevel(UserService.getLevelTitle(comment.getAuthor().getReputation()))
+        .authorRole(comment.getAuthor().getRole())
         .children(getChildren(comment.getId()))
         .voteScore(getCommentVoteScore(comment.getId()))
         .userVote(getCommentUserVote(comment.getId()))
         .build()).toList();
+        Map<String, Object> result = new HashMap<>();
+        result.put("comments", comments);
+        result.put("currentPage", commentPage.getNumber());
+        result.put("totalPages", commentPage.getTotalPages());
+        result.put("totalItems", commentPage.getTotalElements());
+        result.put("hasNext", commentPage.hasNext());
+        result.put("hasPrevious", commentPage.hasPrevious());
+        return result;
     }
 
     private List<CommentResponse> getChildren(Long Id){
@@ -46,6 +61,7 @@ public class CommentService{
         .createdAt(children.getCreatedAt())
         .authorUsername(children.getAuthor().getUsername())
         .authorLevel(UserService.getLevelTitle(children.getAuthor().getReputation()))
+        .authorRole(children.getAuthor().getRole())
         .children(getChildren(children.getId()))
         .voteScore(getCommentVoteScore(children.getId()))
         .userVote(getCommentUserVote(children.getId()))
@@ -95,14 +111,12 @@ public class CommentService{
         .body(saved.getBody())
         .authorUsername(saved.getAuthor().getUsername())
         .authorLevel(UserService.getLevelTitle(saved.getAuthor().getReputation()))
+        .authorRole(saved.getAuthor().getRole())
         .createdAt(saved.getCreatedAt())
         .children(getChildren(saved.getId()))
         .voteScore(getCommentVoteScore(saved.getId()))
         .userVote(getCommentUserVote(saved.getId()))
         .build();
-
-        
-
     }
 
     public CommentResponse editComment(Long id, CommentRequest request) {
@@ -118,6 +132,7 @@ public class CommentService{
         .body(saved.getBody())
         .authorUsername(saved.getAuthor().getUsername())
         .authorLevel(UserService.getLevelTitle(saved.getAuthor().getReputation()))
+        .authorRole(saved.getAuthor().getRole())
         .createdAt(saved.getCreatedAt())
         .children(getChildren(saved.getId()))
         .voteScore(getCommentVoteScore(saved.getId()))

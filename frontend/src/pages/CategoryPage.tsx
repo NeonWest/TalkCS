@@ -503,7 +503,7 @@ export default function CategoryPage() {
                                                 >
                                                     Download
                                                 </button>
-                                                {(user?.username === resource.uploaderUsername || user?.role === 'ADMIN') && (
+                                                {(user?.username === resource.uploaderUsername || user?.role === 'ADMIN' || user?.role === 'PROFESSOR') && (
                                                     <button
                                                         onClick={(e) => void handleDeleteResource(resource, e)}
                                                         disabled={deletingResourceId === resource.id}

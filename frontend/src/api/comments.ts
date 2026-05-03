@@ -9,6 +9,7 @@ export interface CommentResponse {
     userVote: number;
     children: CommentResponse[];
     authorLevel?: string;
+    authorRole?: string;
 }
 
 export interface CommentRequest {
@@ -17,8 +18,17 @@ export interface CommentRequest {
     parentId?: number;
 }
 
-export const getComments = async (postId: number): Promise<CommentResponse[]> => {
-    return (await api.get<CommentResponse[]>(`/api/comments?postId=${postId}`)).data;
+export interface PaginatedComments {
+    comments: CommentResponse[];
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+}
+
+export const getComments = async (postId: number, page = 0, size = 10): Promise<PaginatedComments> => {
+    return (await api.get<PaginatedComments>(`/api/comments?postId=${postId}&page=${page}&size=${size}`)).data;
 };
 
 export const createComment = async (data: CommentRequest): Promise<CommentResponse> => {

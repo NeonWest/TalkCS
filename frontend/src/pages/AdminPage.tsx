@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getAdminStats, getAdminUsers, toggleUserRole, deleteAdminUser, getSiteConfig, updateSiteConfig } from '../api/admin';
+import { getAdminStats, getAdminUsers, setUserRole, deleteAdminUser, getSiteConfig, updateSiteConfig } from '../api/admin';
 import { getAllCategoriesAdmin, updateCategory, deleteCategory, restoreCategory } from '../api/categories';
 import type { AdminStats, UserAdmin, SiteConfig } from '../api/admin';
 import type { Category } from '../api/categories';
@@ -68,8 +68,8 @@ export default function AdminPage() {
         }
     }, [tab, config]);
 
-    const handleToggleRole = async (id: number) => {
-        const updated = await toggleUserRole(id);
+    const handleSetRole = async (id: number, role: string) => {
+        const updated = await setUserRole(id, role);
         setUsers(prev => prev.map(u => u.id === id ? updated : u));
     };
 
@@ -210,7 +210,7 @@ export default function AdminPage() {
                                             <p className="text-sm font-bold text-foreground truncate">{u.username}</p>
                                             <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                                         </div>
-                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${u.role === 'ADMIN' ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${u.role === 'ADMIN' ? 'bg-primary/20 text-primary' : u.role === 'PROFESSOR' ? 'bg-blue-500/20 text-blue-500' : 'bg-muted text-muted-foreground'}`}>
                                             {u.role}
                                         </span>
                                     </div>
@@ -229,10 +229,14 @@ export default function AdminPage() {
                                         </div>
                                     </div>
                                     <div className="flex gap-2 pt-1">
-                                        <button onClick={() => handleToggleRole(u.id)}
-                                            className="flex-1 text-xs px-2 py-2 bg-accent hover:bg-primary rounded-lg transition text-muted-foreground hover:text-primary-foreground font-medium">
-                                            {u.role === 'ADMIN' ? 'Revoke Admin' : 'Make Admin'}
-                                        </button>
+                                        <select
+                                            value={u.role}
+                                            onChange={e => handleSetRole(u.id, e.target.value)}
+                                            className="flex-1 text-xs px-2 py-2 bg-accent rounded-lg transition text-muted-foreground font-medium border border-border">
+                                            <option value="STUDENT">Student</option>
+                                            <option value="PROFESSOR">Professor</option>
+                                            <option value="ADMIN">Admin</option>
+                                        </select>
                                         <button onClick={() => handleDeleteUser(u.id, u.username)}
                                             className="text-xs px-3 py-2 bg-destructive/10 hover:bg-destructive rounded-lg transition text-destructive hover:text-primary-foreground font-medium">
                                             Delete
@@ -258,7 +262,7 @@ export default function AdminPage() {
                                             <td className="px-4 py-3 text-foreground">{u.username}</td>
                                             <td className="px-4 py-3 text-muted-foreground truncate max-w-[180px]">{u.email}</td>
                                             <td className="px-4 py-3">
-                                                <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${u.role === 'ADMIN' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                                <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${u.role === 'ADMIN' ? 'bg-primary/10 text-primary' : u.role === 'PROFESSOR' ? 'bg-blue-500/10 text-blue-500' : 'bg-muted text-muted-foreground'}`}>
                                                     {u.role}
                                                 </span>
                                             </td>
@@ -267,10 +271,14 @@ export default function AdminPage() {
                                             <td className="px-4 py-3 text-muted-foreground">{u.commentCount}</td>
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center gap-1">
-                                                    <button onClick={() => handleToggleRole(u.id)}
-                                                        className="text-xs px-2 py-1 bg-accent hover:bg-primary rounded transition text-muted-foreground hover:text-primary-foreground">
-                                                        {u.role === 'ADMIN' ? 'Revoke Admin' : 'Make Admin'}
-                                                    </button>
+                                                    <select
+                                                        value={u.role}
+                                                        onChange={e => handleSetRole(u.id, e.target.value)}
+                                                        className="text-xs px-2 py-1 bg-accent rounded transition text-muted-foreground border border-border">
+                                                        <option value="STUDENT">Student</option>
+                                                        <option value="PROFESSOR">Professor</option>
+                                                        <option value="ADMIN">Admin</option>
+                                                    </select>
                                                     <Button
                                                         size="icon"
                                                         variant="ghost"
