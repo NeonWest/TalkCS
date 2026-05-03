@@ -19,15 +19,10 @@ public class BadgeController {
     public List<BadgeResponse> getBadges(@PathVariable String username) {
         var user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
-        return badgeService.getUserBadges(user.getId()).stream()
-            .map(ub -> BadgeResponse.builder()
-                .id(ub.getBadge().getId())
-                .name(ub.getBadge().getName())
-                .description(ub.getBadge().getDescription())
-                .iconKey(ub.getBadge().getIconKey())
-                .type(ub.getBadge().getType())
-                .awardedAt(ub.getAwardedAt())
-                .build())
-            .toList();
+        
+        var milestones = badgeService.getAllMilestoneBadgesForUser(user.getId());
+        var specials = badgeService.getSpecialBadgesForUser(user.getId());
+        
+        return java.util.stream.Stream.concat(milestones.stream(), specials.stream()).toList();
     }
 }

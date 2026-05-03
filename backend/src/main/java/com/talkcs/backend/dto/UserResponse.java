@@ -16,6 +16,7 @@ public class UserResponse {
     private int reputation;
     private int level;
     private String levelTitle;
+    private String nextLevelTitle;
     private Integer nextLevelRepRequired;
     private long followerCount;
     private long followingCount;

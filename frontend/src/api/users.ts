@@ -11,6 +11,7 @@ export interface UserProfile {
     reputation: number;
     level: number;
     levelTitle: string;
+    nextLevelTitle: string | null;
     nextLevelRepRequired: number | null;
     followerCount: number;
     followingCount: number;

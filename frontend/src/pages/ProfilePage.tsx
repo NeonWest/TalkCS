@@ -1,22 +1,13 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import { getUserProfile, getUserPosts, followUser, unfollowUser, updateProfile, uploadAvatar } from '../api/users';
 import { getUserBookmarks } from '../api/posts';
 import type { Post } from '../api/posts';
 import { voteOnPost } from '../api/votes';
-import { getUserBadges } from '../api/badges';
 import type { UserProfile } from '../api/users';
-import type { Badge } from '../api/badges';
 import Navbar from '../components/Navbar';
-
-const BADGE_ICONS: Record<string, string> = {
-    post1: '📝', post10: '✍️', post50: '🖊️', post100: '📚',
-    cmt1: '💬', cmt10: '🗣️', cmt50: '💭', cmt100: '🎙️',
-    rep50: '⭐', rep200: '🌟', rep500: '🏅', rep1000: '🏆',
-    accepted1: '✅',
-};
-function badgeIcon(key: string) { return BADGE_ICONS[key] ?? '🎖️'; }
+import { ChevronRight, Award } from 'lucide-react';
 
 export default function ProfilePage() {
     const { username } = useParams<{ username: string }>();
@@ -28,7 +19,6 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [votingPostId, setVotingPostId] = useState<number | null>(null);
-    const [badges, setBadges] = useState<Badge[]>([]);
     const [bookmarks, setBookmarks] = useState<Post[]>([]);
     const [activeTab, setActiveTab] = useState<'posts' | 'saved'>('posts');
     const [following, setFollowing] = useState(false);
@@ -60,7 +50,6 @@ export default function ProfilePage() {
                 setFollowerCount(p.followerCount);
             }),
             getUserPosts(username).then(setPosts),
-            getUserBadges(username).then(setBadges),
             getUserBookmarks(username).then(setBookmarks),
         ])
             .catch(() => setError('Failed to load profile.'))
@@ -125,7 +114,7 @@ export default function ProfilePage() {
                                         <div className="mt-3">
                                             <div className="flex justify-between text-xs text-muted-foreground mb-1">
                                                 <span>{profile.reputation} rep</span>
-                                                <span>{profile.nextLevelRepRequired} for next level</span>
+                                                <span>{profile.nextLevelRepRequired} rep for {profile.nextLevelTitle}</span>
                                             </div>
                                             <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                                                 <div
@@ -187,47 +176,19 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-                        {/* Milestone Badges */}
-                        {badges.filter(b => b.type === 'MILESTONE').length > 0 && (
-                            <div>
-                                <h2 className="text-xl font-bold text-foreground mb-3 tracking-wide">Badges</h2>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                    {badges.filter(b => b.type === 'MILESTONE').map(badge => (
-                                        <div key={badge.id} className="bg-card rounded-xl border border-border px-4 py-3 flex items-start gap-3">
-                                            <span className="text-2xl">{badgeIcon(badge.iconKey)}</span>
-                                            <div>
-                                                <p className="text-sm font-semibold text-foreground">{badge.name}</p>
-                                                <p className="text-xs text-muted-foreground">{badge.description}</p>
-                                            </div>
-                                        </div>
-                                    ))}
+                        {/* Badges Link */}
+                        <Link to={`/profile/${username}/badges`} className="bg-card rounded-xl border border-border p-4 flex items-center justify-between hover:border-primary/50 transition shadow-sm group">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                    <Award size={20} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-foreground">Achievements & Badges</p>
+                                    <p className="text-xs text-muted-foreground">View all earned and milestone badges</p>
                                 </div>
                             </div>
-                        )}
-
-                        {/* Expertise Badges */}
-                        {badges.filter(b => b.type === 'SPECIAL').length > 0 && (
-                            <div>
-                                <h2 className="text-xl font-bold text-foreground mb-3 tracking-wide">Expertise</h2>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                    {badges.filter(b => b.type === 'SPECIAL').map(badge => {
-                                        const tier = badge.name.includes('Gold') ? 'Gold'
-                                            : badge.name.includes('Silver') ? 'Silver' : 'Bronze';
-                                        const tierColor = tier === 'Gold' ? 'text-yellow-400'
-                                            : tier === 'Silver' ? 'text-muted-foreground' : 'text-primary';
-                                        return (
-                                            <div key={badge.id} className="bg-card rounded-xl border border-border px-4 py-3 flex items-start gap-3">
-                                                <span className="text-2xl">{tier === 'Gold' ? '🥇' : tier === 'Silver' ? '🥈' : '🥉'}</span>
-                                                <div>
-                                                    <p className={`text-sm font-semibold ${tierColor}`}>{badge.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{badge.description}</p>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
+                            <ChevronRight size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                        </Link>
 
                         {/* Posts / Saved Tabs */}
                         <div>

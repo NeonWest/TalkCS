@@ -50,6 +50,42 @@ public class BadgeService {
         return userBadgeRepository.findByUserId(userId);
     }
 
+    public List<com.talkcs.backend.dto.BadgeResponse> getAllMilestoneBadgesForUser(Long userId) {
+        List<UserBadge> earnedUserBadges = userBadgeRepository.findByUserId(userId);
+        List<Badge> allMilestones = badgeRepository.findByType(BadgeType.MILESTONE);
+
+        return allMilestones.stream().map(badge -> {
+            var userBadge = earnedUserBadges.stream()
+                .filter(ub -> ub.getBadge().getId().equals(badge.getId()))
+                .findFirst();
+
+            return com.talkcs.backend.dto.BadgeResponse.builder()
+                .id(badge.getId())
+                .name(badge.getName())
+                .description(badge.getDescription())
+                .iconKey(badge.getIconKey())
+                .type(badge.getType())
+                .earned(userBadge.isPresent())
+                .awardedAt(userBadge.map(UserBadge::getAwardedAt).orElse(null))
+                .build();
+        }).toList();
+    }
+
+    public List<com.talkcs.backend.dto.BadgeResponse> getSpecialBadgesForUser(Long userId) {
+        return userBadgeRepository.findByUserId(userId).stream()
+            .filter(ub -> ub.getBadge().getType() == BadgeType.SPECIAL)
+            .map(ub -> com.talkcs.backend.dto.BadgeResponse.builder()
+                .id(ub.getBadge().getId())
+                .name(ub.getBadge().getName())
+                .description(ub.getBadge().getDescription())
+                .iconKey(ub.getBadge().getIconKey())
+                .type(ub.getBadge().getType())
+                .earned(true)
+                .awardedAt(ub.getAwardedAt())
+                .build())
+            .toList();
+    }
+
     public void checkExpertiseBadges(User user, Category category) {
         int rep = categoryReputationRepository
             .findByUserIdAndCategoryId(user.getId(), category.getId())
