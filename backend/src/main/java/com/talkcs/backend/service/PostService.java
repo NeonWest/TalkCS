@@ -43,7 +43,13 @@ public class PostService{
         };
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Post> postPage = postrepository.findByCategoryId(categoryId, pageable);
+        Page<Post> postPage;
+        if (categoryId != null) {
+            postPage = postrepository.findByCategoryId(categoryId, pageable);
+        } else {
+            postPage = postrepository.findAll(pageable);
+        }
+        
         List<PostResponse> posts = postPage.getContent().stream()
             .map(this::toResponse)
             .toList();
@@ -221,6 +227,7 @@ public class PostService{
         return PostResponse.builder()
             .id(post.getId())
             .categoryId(post.getCategory().getId())
+            .categoryName(post.getCategory().getName())
             .title(post.getTitle())
             .body(post.getBody())
             .authorUsername(post.getAuthor().getUsername())

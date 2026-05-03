@@ -22,7 +22,7 @@ public class PostController{
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllPostsByCategoryId(
-        @RequestParam Long categoryId,
+        @RequestParam(required = false) Long categoryId,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "newest") String sortBy) {

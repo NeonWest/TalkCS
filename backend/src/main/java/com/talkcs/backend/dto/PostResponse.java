@@ -12,6 +12,7 @@ import java.util.List;
 public class PostResponse{
     private Long id;
     private Long categoryId;
+    private String categoryName;
     private String title;
     private String body;
     private LocalDateTime createdAt;

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Bell } from "lucide-react";
+import { Bell, Clock } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -99,73 +99,68 @@ export default function NotificationBell() {
         <Button
           size="icon"
           variant="ghost"
-          className="relative text-foreground hover:bg-black/10 dark:hover:bg-accent hover:text-foreground transition-colors"
+          className="relative text-foreground hover:bg-primary/10 hover:text-primary transition-all duration-300 rounded-xl"
           aria-label="Open notifications"
         >
-          <Bell size={18} strokeWidth={2} aria-hidden="true" />
+          <Bell size={18} strokeWidth={2.5} aria-hidden="true" className="group-hover:scale-110 transition-transform" />
           {unreadCount > 0 && (
-            <Badge className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-primary hover:bg-primary/90 text-primary-foreground border-none text-[10px]">
+            <Badge className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-primary hover:bg-primary/90 text-primary-foreground border-none text-[10px] animate-in zoom-in duration-300">
               {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-1 bg-popover border-border text-popover-foreground shadow-2xl" align="end" sideOffset={8}>
-        <div className="flex items-baseline justify-between gap-4 px-3 py-2">
-          <div className="text-sm font-semibold">Notifications</div>
+      <PopoverContent className="w-85 p-2 bg-card border-border text-card-foreground shadow-2xl rounded-2xl backdrop-blur-xl" align="end" sideOffset={12}>
+        <div className="flex items-baseline justify-between gap-4 px-4 py-3">
+          <div className="text-sm font-black uppercase tracking-widest text-foreground">Notifications</div>
           {unreadCount > 0 && (
             <button
-              className="text-xs font-medium text-primary hover:underline"
+              className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline"
               onClick={() => markAllReadMutation.mutate()}
               disabled={markAllReadMutation.isPending}
             >
-              Mark all as read
+              Mark all read
             </button>
           )}
         </div>
-        <div
-          role="separator"
-          aria-orientation="horizontal"
-          className="-mx-1 my-1 h-px bg-border"
-        ></div>
-        <div className="max-h-[400px] overflow-y-auto">
+        <div className="max-h-[420px] overflow-y-auto no-scrollbar space-y-1">
           {isLoading ? (
-            <div className="px-3 py-8 text-center text-sm text-muted-foreground animate-pulse">
-              Loading...
+            <div className="px-3 py-12 text-center text-xs font-bold text-muted-foreground animate-pulse">
+              Syncing...
             </div>
           ) : items.length === 0 ? (
-            <div className="px-3 py-8 text-center text-sm text-muted-foreground">
-              No notifications yet
+            <div className="px-3 py-12 text-center text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              No new alerts
             </div>
           ) : (
             items.map((item) => (
               <div
                 key={item.id}
                 className={cn(
-                  "rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent cursor-pointer",
-                  !item.isRead && "bg-primary/5"
+                  "rounded-xl px-4 py-3 text-sm transition-all hover:bg-accent cursor-pointer group/item",
+                  !item.isRead && "bg-primary/5 border-l-2 border-primary"
                 )}
                 onClick={() => handleNotificationClick(item)}
               >
-                <div className="relative flex items-start pe-3 gap-3">
-                    <span className="text-lg shrink-0 mt-0.5" role="img" aria-label={item.type}>
+                <div className="relative flex items-start gap-4">
+                    <span className="text-xl shrink-0" role="img" aria-label={item.type}>
                         {TYPE_ICON[item.type] ?? '🔔'}
                     </span>
                   <div className="flex-1 space-y-1">
                     <p className={cn(
-                        "text-sm leading-snug",
+                        "text-sm font-medium leading-snug",
                         item.isRead ? "text-muted-foreground" : "text-foreground"
                     )}>
                       {item.message}
                     </p>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter flex items-center gap-1">
+                      <Clock size={10} />
                       {timeAgo(item.createdAt)}
                     </div>
                   </div>
                   {!item.isRead && (
                     <div className="absolute end-0 self-center">
-                      <span className="sr-only">Unread</span>
-                      <Dot className="text-primary" />
+                      <Dot className="text-primary animate-pulse" />
                     </div>
                   )}
                 </div>
