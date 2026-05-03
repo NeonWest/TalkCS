@@ -1,17 +1,15 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import { usePostUpdates } from '../hooks/usePostUpdates';
 import { getCategoryById } from '../api/categories';
-import { getPosts, createPost, updatePost, deletePost, getSimilarPosts } from '../api/posts';
-import type { SimilarPost } from '../api/posts';
+import { getPosts, updatePost, deletePost } from '../api/posts';
 import { getResources, uploadResource, deleteResource, voteOnResource } from '../api/resources';
 import { voteOnPost, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
 import type { ResourceItem } from '../api/resources';
-import Navbar from '../components/Navbar';
+import { useUI } from '../context/useUI';
 import MarkdownEditor from '../components/MarkdownEditor';
-import { suggestTags } from '../api/tags';
 import { getUpcomingEvents, type CalendarEvent } from '../api/calendar';
 import { Button } from '../components/ui/button';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -53,12 +51,9 @@ export default function CategoryPage() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [resources, setResources] = useState<ResourceItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showModal, setShowModal] = useState(false);
+    const { openPostComposer } = useUI();
     const [showResourceModal, setShowResourceModal] = useState(false);
-    const [form, setForm] = useState({ title: '', body: '', tags: [] as string[] });
-    const [formTagInput, setFormTagInput] = useState('');
     const [resourceForm, setResourceForm] = useState({ title: '', description: '', file: null as File | null });
-    const [creating, setCreating] = useState(false);
     const [uploadingResource, setUploadingResource] = useState(false);
     const [editingPost, setEditingPost] = useState<Post | null>(null);
     const [editForm, setEditForm] = useState({ title: '', body: '', tags: [] as string[] });
@@ -75,10 +70,6 @@ export default function CategoryPage() {
     const [hasNext, setHasNext] = useState(false);
     const [hasPrevious, setHasPrevious] = useState(false);
     const [sortBy, setSortBy] = useState<'newest' | 'votes' | 'comments'>('newest');
-    const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
-    const [similarPosts, setSimilarPosts] = useState<SimilarPost[]>([]);
-    const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const similarTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const PAGE_SIZE = 10;
 
@@ -126,49 +117,6 @@ export default function CategoryPage() {
 
         loader.finally(() => setLoading(false));
     }, [categoryId, currentPage, sortBy, activeTab]);
-
-    useEffect(() => {
-        if (!showModal) return;
-        if (suggestTimer.current) clearTimeout(suggestTimer.current);
-        suggestTimer.current = setTimeout(async () => {
-            if (!form.title && !form.body) { setTagSuggestions([]); return; }
-            try {
-                const suggestions = await suggestTags(form.title, form.body);
-                setTagSuggestions(suggestions.filter(s => !form.tags.includes(s)));
-            } catch { /* ignore */ }
-        }, 500);
-        return () => { if (suggestTimer.current) clearTimeout(suggestTimer.current); };
-    }, [form.title, form.body, form.tags, showModal]);
-
-    useEffect(() => {
-        if (!showModal) return;
-        if (similarTimer.current) clearTimeout(similarTimer.current);
-        similarTimer.current = setTimeout(async () => {
-            if (!form.title.trim()) { setSimilarPosts([]); return; }
-            try {
-                const results = await getSimilarPosts(form.title, form.body, categoryId, form.tags);
-                setSimilarPosts(results);
-            } catch { /* ignore */ }
-        }, 500);
-        return () => { if (similarTimer.current) clearTimeout(similarTimer.current); };
-    }, [form.title, form.body, form.tags, showModal, categoryId]);
-
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setCreating(true);
-        try {
-            const created = await createPost({ ...form, categoryId });
-            setPosts(prev => [created, ...prev]);
-            setForm({ title: '', body: '', tags: [] });
-            setFormTagInput('');
-            setShowModal(false);
-        } catch {
-            setError('Failed to create post.');
-        } finally {
-            setCreating(false);
-        }
-    };
 
     const handleUploadResource = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -288,7 +236,6 @@ export default function CategoryPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
 
             <main className="max-w-5xl mx-auto px-4 py-6 flex flex-col lg:flex-row lg:gap-6">
                 <div className="flex-1 min-w-0">
@@ -299,7 +246,7 @@ export default function CategoryPage() {
                         <p className="text-xs sm:text-sm text-muted-foreground mt-1">{categoryDescription || 'General discussion space'}</p>
                         {isAuthenticated && (
                             <button
-                                onClick={() => activeTab === 'posts' ? setShowModal(true) : setShowResourceModal(true)}
+                                onClick={() => activeTab === 'posts' ? openPostComposer(categoryId) : setShowResourceModal(true)}
                                 className="w-full sm:w-auto mt-4 text-sm bg-primary text-white hover:bg-primary/90 px-6 py-2 rounded-xl transition font-bold shadow-lg shadow-primary/20"
                             >
                                 {activeTab === 'posts' ? '+ New Post' : '+ Upload Resource'}
@@ -554,118 +501,6 @@ export default function CategoryPage() {
                     </div>
                 </aside>
             </main>
-
-            {showModal && (
-                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
-                    <div className="bg-card text-foreground rounded-xl shadow-xl w-full max-w-2xl p-6 border border-border">
-                        <h3 className="text-lg font-semibold text-foreground mb-4">New Post</h3>
-                        <form onSubmit={handleCreate} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-muted-foreground mb-2">Title</label>
-                                <input
-                                    id="post-title"
-                                    type="text"
-                                    value={form.title}
-                                    onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                                    required
-                                    className="w-full bg-muted border border-border rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary"
-                                    placeholder="What's your question or topic?"
-                                />
-                            </div>
-                            {similarPosts.length > 0 && (
-                                <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-3">
-                                    <p className="text-xs font-semibold text-primary mb-2">Similar questions — yours may already be answered:</p>
-                                    <ul className="space-y-1">
-                                        {similarPosts.map(p => (
-                                            <li key={p.id}>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => navigate(`/post/${p.id}`)}
-                                                    className="text-sm text-primary/80 hover:text-primary/60 hover:underline text-left"
-                                                >
-                                                    {p.title}
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                            <div>
-                                <label className="block text-sm font-medium text-muted-foreground mb-2">Body</label>
-                                <MarkdownEditor
-                                    value={form.body}
-                                    onChange={v => setForm(p => ({ ...p, body: v }))}
-                                    rows={5}
-                                    placeholder="Share details, context, or your thoughts..."
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-muted-foreground mb-2">Tags</label>
-                                <div className="flex flex-wrap gap-1.5 mb-2">
-                                    {form.tags.map(tag => (
-                                        <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-primary/20 text-primary rounded-full text-xs">
-                                            {tag}
-                                            <button type="button" onClick={() => setForm(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }))} className="hover:text-white">×</button>
-                                        </span>
-                                    ))}
-                                </div>
-                                <input
-                                    type="text"
-                                    value={formTagInput}
-                                    onChange={e => setFormTagInput(e.target.value)}
-                                    onKeyDown={e => {
-                                        if ((e.key === 'Enter' || e.key === ',') && formTagInput.trim()) {
-                                            e.preventDefault();
-                                            const tag = formTagInput.trim().toLowerCase();
-                                            if (!form.tags.includes(tag)) setForm(p => ({ ...p, tags: [...p.tags, tag] }));
-                                            setFormTagInput('');
-                                        }
-                                    }}
-                                    placeholder="Type a tag and press Enter"
-                                    className="w-full bg-muted border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                />
-                                {tagSuggestions.length > 0 && (
-                                    <div className="mt-2 flex flex-wrap gap-1.5">
-                                        <span className="text-xs text-muted-foreground self-center">Suggestions:</span>
-                                        {tagSuggestions.map(s => (
-                                            <button
-                                                key={s} type="button"
-                                                onClick={() => {
-                                                    if (!form.tags.includes(s)) setForm(p => ({ ...p, tags: [...p.tags, s] }));
-                                                    setTagSuggestions(prev => prev.filter(t => t !== s));
-                                                }}
-                                                className="px-2 py-0.5 bg-muted hover:bg-primary/30 text-muted-foreground hover:text-primary rounded-full text-xs transition"
-                                            >+ {s}</button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            {error && <p className="text-sm text-destructive">{error}</p>}
-                            <div className="flex justify-end gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setShowModal(false);
-                                        setError('');
-                                        setTagSuggestions([]);
-                                        setSimilarPosts([]);
-                                    }}
-                                    className="text-sm px-4 py-2 rounded-lg border border-border text-muted-foreground hover:bg-accent/50 transition"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={creating}
-                                    className="text-sm px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium transition disabled:opacity-50"
-                                >
-                                    {creating ? 'Posting...' : 'Post'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
 
             {editingPost && (
                 <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">

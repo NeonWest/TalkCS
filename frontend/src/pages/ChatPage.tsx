@@ -8,7 +8,6 @@ import {
     type ChatConversation, type ChatMessage,
 } from '../api/chat';
 import { searchUsers, type LeaderboardUser } from '../api/users';
-import Navbar from '../components/Navbar';
 
 export default function ChatPage() {
     const { user, token } = useAuth();
@@ -203,7 +202,6 @@ export default function ChatPage() {
 
     return (
         <div className="h-screen bg-popover text-foreground flex flex-col overflow-hidden">
-            <Navbar />
 
             <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full border-x border-border bg-background">
                 {/* Sidebar */}

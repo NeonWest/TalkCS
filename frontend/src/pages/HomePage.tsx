@@ -1,23 +1,40 @@
 import { useState } from 'react';
 import { useAuth } from '../context/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../api/categories';
 import { getPosts, getTrendingPosts } from '../api/posts';
 import type { Category } from '../api/categories';
-import Navbar from '../components/Navbar';
+import { useUI } from '../context/useUI';
+import { 
+    MessageSquare,
+    TrendingUp, 
+    Hash, 
+    Plus, 
+    MoreHorizontal, 
+    Clock, 
+    Trash2,
+    Zap,
+    Users,
+    Bookmark,
+    LayoutGrid,
+    Flame,
+    ChevronDown
+} from 'lucide-react';
 
 export default function HomePage() {
-    const { user } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
     const [showModal, setShowModal] = useState(false);
+    const { openPostComposer } = useUI();
     const [form, setForm] = useState({ name: '', description: '' });
     const [editCat, setEditCat] = useState<Category | null>(null);
     const [editName, setEditName] = useState('');
     const [editDesc, setEditDesc] = useState('');
+    const [sortBy, setSortBy] = useState('newest');
 
     const isAdmin = user?.role === 'ADMIN' || user?.role === 'PROFESSOR';
 
@@ -27,29 +44,24 @@ export default function HomePage() {
         queryFn: getCategories,
     });
 
+    const { 
+        data: infinitePosts, 
+        isLoading: loadingPosts,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage
+    } = useInfiniteQuery({
+        queryKey: ['globalPosts', sortBy],
+        queryFn: ({ pageParam = 0 }) => getPosts(undefined, pageParam, 10, sortBy),
+        getNextPageParam: (lastPage) => lastPage.hasNext ? lastPage.currentPage + 1 : undefined,
+        initialPageParam: 0,
+    });
+
+    const allPosts = infinitePosts?.pages.flatMap(page => page.posts) || [];
+
     const { data: trending = [] } = useQuery({
         queryKey: ['trendingPosts'],
         queryFn: () => getTrendingPosts(8),
-    });
-
-    // Helper query for post counts (parallel fetches managed by Query)
-    const { data: postCounts = {} } = useQuery({
-        queryKey: ['postCounts', categories.map(c => c.id)],
-        queryFn: async () => {
-            const counts: Record<number, number> = {};
-            await Promise.all(
-                categories.map(async (cat) => {
-                    try {
-                        const paged = await getPosts(cat.id, 0, 1);
-                        counts[cat.id] = paged.totalItems;
-                    } catch {
-                        counts[cat.id] = 0;
-                    }
-                })
-            );
-            return counts;
-        },
-        enabled: categories.length > 0,
     });
 
     // Mutations
@@ -61,7 +73,7 @@ export default function HomePage() {
             setShowModal(false);
             setForm({ name: '', description: '' });
         },
-        onError: () => toast.error('Failed to create category. It may already exist.')
+        onError: () => toast.error('Failed to create category.')
     });
 
     const updateMutation = useMutation({
@@ -83,19 +95,6 @@ export default function HomePage() {
         onError: () => toast.error('Failed to archive category')
     });
 
-    const openEditCat = (e: React.MouseEvent, cat: Category) => {
-        e.stopPropagation();
-        setEditCat(cat);
-        setEditName(cat.name);
-        setEditDesc(cat.description);
-    };
-
-    const handleSaveEdit = () => {
-        if (editCat) {
-            updateMutation.mutate({ id: editCat.id, data: { name: editName, description: editDesc } });
-        }
-    };
-
     const handleArchiveCat = (e: React.MouseEvent, id: number) => {
         e.stopPropagation();
         toast.info('Are you sure?', {
@@ -106,131 +105,323 @@ export default function HomePage() {
         });
     };
 
+    const handleSaveEdit = () => {
+        if (editCat) {
+            updateMutation.mutate({ id: editCat.id, data: { name: editName, description: editDesc } });
+        }
+    };
+
     const handleCreate = (e: React.FormEvent) => {
         e.preventDefault();
         createMutation.mutate(form);
     };
 
     return (
-        <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
+        <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
 
-            <main className="max-w-5xl mx-auto px-4 py-6 flex gap-6 items-start">
-                <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 mt-1">
-                        <div>
-                            <h2 className="text-xl font-bold text-foreground">Forum Categories</h2>
-                            <p className="text-sm text-muted-foreground mt-1">Browse topics and start a discussion</p>
-                        </div>
-                        {isAdmin && (
-                            <button
-                                onClick={() => setShowModal(true)}
-                                className="w-full sm:w-auto text-sm bg-transparent border border-border hover:border-foreground/50 text-foreground px-4 py-1.5 rounded-xl transition font-semibold"
-                            >
-                                + New Category
-                            </button>
-                        )}
-                    </div>
-
-                    {loadingCategories ? (
+            <main className="max-w-7xl mx-auto px-4 py-8">
+                <div className="flex flex-col lg:flex-row gap-10 items-start">
+                    
+                    {/* Left Column: Explorer */}
+                    <aside className="hidden lg:block w-72 shrink-0 space-y-8 sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar overscroll-contain pb-10">
                         <div className="space-y-4">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="h-20 bg-card/50 rounded-xl animate-pulse" />
-                            ))}
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-4">Navigation</h3>
+                            <nav className="space-y-1">
+                                <button className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/10 transition-all">
+                                    <Zap size={18} />
+                                    Global Feed
+                                </button>
+                                <button onClick={() => navigate('/leaderboard')} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-muted-foreground hover:bg-secondary font-semibold transition-all group">
+                                    <TrendingUp size={18} className="group-hover:text-primary transition-colors" />
+                                    Leaderboard
+                                </button>
+                                <button onClick={() => navigate('/chat')} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-muted-foreground hover:bg-secondary font-semibold transition-all group">
+                                    <MessageSquare size={18} className="group-hover:text-primary transition-colors" />
+                                    Messages
+                                </button>
+                            </nav>
                         </div>
-                    ) : categories.length === 0 ? (
-                        <div className="bg-muted/50 rounded-xl shadow-sm p-12 text-center text-muted-foreground border border-border">
-                            No categories yet.{isAdmin && ' Create the first one!'}
+
+                        <div className="space-y-4 pt-4 border-t border-border">
+                            <div className="flex items-center justify-between px-4">
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">Categories</h3>
+                                {isAdmin && (
+                                    <button onClick={() => setShowModal(true)} className="text-primary hover:bg-primary/10 p-1.5 rounded-full transition">
+                                        <Plus size={16} />
+                                    </button>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                {loadingCategories ? (
+                                    Array(5).fill(0).map((_, i) => (
+                                        <div key={i} className="h-10 mx-4 bg-muted/50 rounded-xl animate-pulse mb-2" />
+                                    ))
+                                ) : (
+                                    categories.map(cat => (
+                                        <div key={cat.id} className="group relative px-2">
+                                            <button
+                                                onClick={() => navigate(`/category/${cat.id}`)}
+                                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-all group"
+                                            >
+                                                <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center group-hover:bg-primary/20 group-hover:text-primary transition-colors">
+                                                    <Hash size={14} />
+                                                </div>
+                                                <span className="truncate flex-1 text-left">{cat.name}</span>
+                                            </button>
+                                            {isAdmin && (
+                                                <div className="absolute right-4 top-2.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                                                    <button onClick={(e) => { e.stopPropagation(); setEditCat(cat); setEditName(cat.name); setEditDesc(cat.description); }} className="p-1.5 hover:text-primary bg-background rounded-lg shadow-sm border border-border"><MoreHorizontal size={14} /></button>
+                                                    <button onClick={(e) => handleArchiveCat(e, cat.id)} className="p-1.5 hover:text-destructive bg-background rounded-lg shadow-sm border border-border"><Trash2 size={14} /></button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
-                    ) : (
-                        <div className="grid gap-4">
-                            {categories.map((cat, idx) => (
-                                <div
-                                    key={cat.id}
-                                    onClick={() => navigate(`/category/${cat.id}`)}
-                                    className={`bg-card rounded-xl shadow-sm border border-border/50 px-4 py-3 hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${idx % 3 === 0 ? 'border-l-4 border-l-primary' : idx % 3 === 1 ? 'border-l-4 border-l-primary/80' : 'border-l-4 border-l-primary/60'}`}
+                    </aside>
+
+                    {/* Middle Column: Global Feed */}
+                    <section className="flex-1 min-w-0 space-y-8">
+                        {/* Filters */}
+                        <div className="flex items-center justify-between bg-card/30 p-1.5 rounded-[1.25rem] border border-border/50 backdrop-blur-sm">
+                            <div className="flex items-center gap-1">
+                                <button 
+                                    onClick={() => setSortBy('newest')}
+                                    className={`flex items-center gap-2 px-6 py-2.5 rounded-[1rem] text-sm font-bold transition-all ${sortBy === 'newest' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-muted-foreground hover:bg-accent'}`}
                                 >
-                                    <div className="flex items-start gap-4 min-w-0">
-                                        <div className="h-9 w-9 rounded-lg bg-secondary text-foreground text-sm flex items-center justify-center font-bold shrink-0">
-                                            {cat.name.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-base font-semibold text-foreground truncate">{cat.name}</p>
-                                            <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2 sm:line-clamp-none">{cat.description}</p>
-                                        </div>
+                                    <Clock size={16} />
+                                    Newest
+                                </button>
+                                <button 
+                                    onClick={() => setSortBy('votes')}
+                                    className={`flex items-center gap-2 px-6 py-2.5 rounded-[1rem] text-sm font-bold transition-all ${sortBy === 'votes' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-muted-foreground hover:bg-accent'}`}
+                                >
+                                    <Flame size={16} />
+                                    Popular
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-2 pr-2">
+                                <button className="p-2.5 rounded-xl hover:bg-accent text-muted-foreground transition">
+                                    <LayoutGrid size={20} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Posts List */}
+                        <div className="space-y-6">
+                            {isAuthenticated && (
+                                <div className="bg-card/40 backdrop-blur-md rounded-[2rem] border border-border p-5 flex items-center gap-4 group cursor-pointer hover:border-primary/40 transition-all shadow-sm hover:shadow-xl hover:shadow-primary/5" onClick={() => openPostComposer()}>
+                                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all shadow-inner shadow-primary/5">
+                                        <Plus size={24} strokeWidth={3} />
                                     </div>
-                                    <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-                                        <div className="w-14 text-center">
-                                            <p className="text-lg text-primary font-semibold leading-none">{postCounts[cat.id] ?? 0}</p>
-                                            <p className="text-xs text-muted-foreground mt-0.5">posts</p>
-                                        </div>
-                                        {isAdmin && (
-                                            <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-                                                <button onClick={e => openEditCat(e, cat)}
-                                                    className="text-xs px-2 py-1 bg-secondary hover:bg-primary rounded transition text-muted-foreground hover:text-white">
-                                                    Edit
-                                                </button>
-                                                <button onClick={e => handleArchiveCat(e, cat.id)}
-                                                    className="text-xs px-2 py-1 bg-destructive/20 hover:bg-destructive rounded transition text-destructive hover:text-white">
-                                                    Archive
-                                                </button>
-                                            </div>
-                                        )}
+                                    <div className="flex-1 bg-secondary/20 rounded-2xl px-6 py-3 text-sm font-bold text-muted-foreground group-hover:bg-secondary/40 transition-all border border-transparent group-hover:border-border/50">
+                                        What's on your mind today? Start a discussion...
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                            )}
+                            {loadingPosts ? (
+                                Array(5).fill(0).map((_, i) => (
+                                    <div key={i} className="h-56 bg-card/50 rounded-[2rem] border border-border animate-pulse" />
+                                ))
+                            ) : allPosts.length === 0 ? (
+                                <div className="bg-card/30 backdrop-blur-xl rounded-[2.5rem] border-2 border-dashed border-border p-20 text-center space-y-4">
+                                    <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto text-muted-foreground">
+                                        <MessageSquare size={40} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-xl font-bold">No discussions found</h3>
+                                        <p className="text-muted-foreground">Be the pioneer and start the first conversation!</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    {allPosts.map(post => (
+                                        <article 
+                                            key={post.id}
+                                            onClick={() => navigate(`/post/${post.id}`)}
+                                            className="group bg-card hover:bg-accent/10 rounded-[2.5rem] border border-border p-6 transition-all cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 relative"
+                                        >
+                                            <div className="flex gap-6">
+                                                {/* Voting Sidebar on card */}
+                                                <div className="hidden sm:flex flex-col items-center justify-center gap-2 bg-secondary/50 rounded-2xl px-3 py-4 self-start group-hover:bg-primary/10 transition-colors">
+                                                    <button className="text-muted-foreground hover:text-primary transition-colors"><Plus size={18} /></button>
+                                                    <span className="text-base font-black text-foreground">{post.voteScore}</span>
+                                                    <button className="text-muted-foreground hover:text-blue-500 transition-colors"><MoreHorizontal size={18} /></button>
+                                                </div>
 
-                <aside className="w-64 shrink-0 hidden lg:block">
-                    <div className="bg-card rounded-xl border border-border p-4">
-                        <h3 className="text-sm font-bold text-foreground mb-3">🔥 Trending This Week</h3>
-                        {trending.length === 0 ? (
-                            <p className="text-xs text-muted-foreground">No trending posts yet.</p>
-                        ) : (
-                            <div className="space-y-2">
+                                                <div className="flex-1 min-w-0 space-y-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-2xl bg-primary/20 flex items-center justify-center text-primary font-black shadow-inner shadow-primary/10">
+                                                                {post.authorUsername.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-sm font-bold text-foreground hover:underline decoration-primary decoration-2 underline-offset-4">{post.authorUsername}</span>
+                                                                    <span className="px-2 py-0.5 rounded-lg bg-secondary text-[10px] font-black text-muted-foreground uppercase">{post.authorLevel}</span>
+                                                                </div>
+                                                                <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                                                                    <Clock size={10} />
+                                                                    {new Date(post.createdAt).toLocaleDateString()}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <span className="bg-primary/10 text-primary text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest border border-primary/20">
+                                                            {post.categoryName}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <h3 className="text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-tight">
+                                                            {post.title}
+                                                        </h3>
+                                                        <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed font-medium">
+                                                            {post.body.replace(/[#*`]/g, '')}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-6 pt-2">
+                                                        <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
+                                                            <div className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-primary/20 group-hover:text-primary transition-all">
+                                                                <MessageSquare size={16} />
+                                                            </div>
+                                                            <span className="text-xs font-black">{post.commentCount} Comments</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
+                                                            <div className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-blue-500/20 group-hover:text-blue-500 transition-all">
+                                                                <Bookmark size={16} />
+                                                            </div>
+                                                            <span className="text-xs font-black">Save</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    ))}
+
+                                    {hasNextPage && (
+                                        <div className="pt-8 pb-12 flex justify-center">
+                                            <button
+                                                onClick={() => fetchNextPage()}
+                                                disabled={isFetchingNextPage}
+                                                className="group flex items-center gap-3 bg-secondary/30 hover:bg-primary/10 border border-border hover:border-primary/30 px-10 py-4 rounded-[2rem] transition-all font-black text-sm text-muted-foreground hover:text-primary shadow-lg hover:shadow-primary/5 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                                            >
+                                                {isFetchingNextPage ? (
+                                                    <>
+                                                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                                        Discovering more...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ChevronDown size={18} className="group-hover:translate-y-0.5 transition-transform" />
+                                                        Load More Discussions
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* Right Column: Community & Trending */}
+                    <aside className="hidden lg:block w-80 shrink-0 space-y-8 sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar overscroll-contain pb-10">
+                        <div className="bg-card/50 backdrop-blur-xl rounded-[2rem] border border-border p-6 shadow-xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 flex items-center gap-2 mb-6">
+                                <TrendingUp size={16} className="text-primary" />
+                                Trending Topics
+                            </h3>
+                            <div className="space-y-6">
                                 {trending.map((post, i) => (
-                                    <button key={post.id} onClick={() => navigate(`/post/${post.id}`)}
-                                        className="w-full text-left group">
-                                        <div className="flex gap-2 items-start">
-                                            <span className="text-xs text-primary font-bold w-4 shrink-0 mt-0.5">#{i + 1}</span>
-                                            <p className="text-xs text-muted-foreground group-hover:text-foreground transition line-clamp-2 leading-snug">{post.title}</p>
+                                    <button 
+                                        key={post.id} 
+                                        onClick={() => navigate(`/post/${post.id}`)}
+                                        className="w-full text-left group flex gap-4 items-start"
+                                    >
+                                        <span className="text-2xl font-black text-primary/10 group-hover:text-primary/40 transition-colors">
+                                            #{i + 1}
+                                        </span>
+                                        <div className="min-w-0 space-y-1">
+                                            <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                                                {post.title}
+                                            </p>
+                                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-bold">
+                                                <span className="flex items-center gap-1"><MessageSquare size={10} /> {post.commentCount}</span>
+                                                <span>•</span>
+                                                <span className="flex items-center gap-1"><TrendingUp size={10} /> {post.voteScore} pts</span>
+                                            </div>
                                         </div>
                                     </button>
                                 ))}
                             </div>
-                        )}
-                    </div>
-                </aside>
+                        </div>
+
+                        <div className="bg-gradient-to-br from-primary to-orange-600 rounded-[2rem] p-6 text-primary-foreground shadow-2xl shadow-primary/30 relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                            <Users className="absolute bottom-[-10px] right-[-10px] w-24 h-24 opacity-20 transform -rotate-12" />
+                            <h4 className="text-lg font-black mb-2 relative z-10">TalkCS Community</h4>
+                            <p className="text-xs font-bold text-white/80 mb-6 leading-relaxed relative z-10">
+                                Connect with over 2,000+ developers sharing insights and building the future.
+                            </p>
+                            <button className="w-full py-3 bg-white text-primary rounded-xl font-black text-xs shadow-lg relative z-10 hover:bg-secondary transition-colors">
+                                Join Discord
+                            </button>
+                        </div>
+
+                        <div className="px-6 text-[11px] text-muted-foreground/60 flex flex-wrap gap-x-4 gap-y-2 font-bold uppercase tracking-widest">
+                            <a href="#" className="hover:text-primary transition">About</a>
+                            <a href="#" className="hover:text-primary transition">Privacy</a>
+                            <a href="#" className="hover:text-primary transition">Terms</a>
+                            <span className="w-full mt-2">© 2026 TalkCS Engine</span>
+                        </div>
+                    </aside>
+                </div>
             </main>
 
-            {/* Create category modal */}
+            {/* Modals for Category Management */}
+
             {showModal && (
-                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-                    <div className="bg-card text-foreground rounded-xl shadow-xl w-full max-w-md p-6 mx-4 border border-border">
-                        <h3 className="text-lg font-semibold text-foreground mb-4">New Category</h3>
-                        <form onSubmit={handleCreate} className="space-y-3">
-                            <input
-                                type="text"
-                                value={form.name}
-                                onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                                required
-                                className="w-full bg-muted border border-border/50 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                placeholder="Name"
-                            />
-                            <input
-                                type="text"
-                                value={form.description}
-                                onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-                                required
-                                className="w-full bg-muted border border-border/50 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                placeholder="Description"
-                            />
-                            <div className="flex justify-end gap-2 pt-1">
-                                <button type="button" onClick={() => setShowModal(false)} className="text-sm px-4 py-2 text-muted-foreground">Cancel</button>
-                                <button type="submit" disabled={createMutation.isPending} className="bg-primary px-4 py-2 rounded-lg text-primary-foreground font-medium disabled:opacity-50">
-                                    {createMutation.isPending ? 'Creating...' : 'Create'}
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center z-50 p-4">
+                    <div className="bg-card text-foreground rounded-[2.5rem] shadow-2xl w-full max-w-md p-8 border border-border animate-in zoom-in-95 duration-300">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary">
+                                <Plus size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black text-foreground">New Category</h3>
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Organize the community</p>
+                            </div>
+                        </div>
+                        <form onSubmit={handleCreate} className="space-y-6">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Name</label>
+                                <input
+                                    type="text"
+                                    value={form.name}
+                                    onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                                    required
+                                    className="w-full bg-secondary/50 border border-border rounded-2xl px-5 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                                    placeholder="e.g. Frontend Architecture"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Description</label>
+                                <textarea
+                                    value={form.description}
+                                    onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+                                    required
+                                    rows={3}
+                                    className="w-full bg-secondary/50 border border-border rounded-2xl px-5 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary transition-all resize-none"
+                                    placeholder="Tell everyone what this category is for..."
+                                />
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button type="button" onClick={() => setShowModal(false)} className="px-6 py-3 text-sm font-bold text-muted-foreground hover:bg-secondary rounded-2xl transition">Cancel</button>
+                                <button type="submit" disabled={createMutation.isPending} className="bg-primary px-8 py-3 rounded-2xl text-primary-foreground font-black shadow-xl shadow-primary/20 disabled:opacity-50">
+                                    {createMutation.isPending ? 'Creating...' : 'Create Category'}
                                 </button>
                             </div>
                         </form>
@@ -239,20 +430,26 @@ export default function HomePage() {
             )}
 
             {editCat && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-                    <div className="bg-card text-foreground rounded-xl shadow-xl w-full max-w-md p-6 mx-4 border border-border">
-                        <h3 className="text-lg font-semibold mb-4">Edit Category</h3>
-                        <div className="space-y-3">
-                            <input value={editName} onChange={e => setEditName(e.target.value)}
-                                className="w-full bg-popover border border-border/50 rounded-lg px-3 py-2 text-foreground focus:outline-none focus:border-primary" />
-                            <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={3}
-                                className="w-full bg-popover border border-border/50 rounded-lg px-3 py-2 text-foreground focus:outline-none focus:border-primary resize-none" />
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center z-50 p-4">
+                    <div className="bg-card text-foreground rounded-[2.5rem] shadow-2xl w-full max-w-md p-8 border border-border animate-in zoom-in-95 duration-300">
+                        <h3 className="text-2xl font-black mb-8">Edit Category</h3>
+                        <div className="space-y-6">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Name</label>
+                                <input value={editName} onChange={e => setEditName(e.target.value)}
+                                    className="w-full bg-secondary/50 border border-border rounded-2xl px-5 py-3 font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Description</label>
+                                <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={3}
+                                    className="w-full bg-secondary/50 border border-border rounded-2xl px-5 py-3 font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+                            </div>
                         </div>
-                        <div className="flex gap-3 mt-4">
-                            <button onClick={handleSaveEdit} disabled={updateMutation.isPending} className="flex-1 py-2 bg-primary hover:bg-primary/90 rounded-lg text-sm font-semibold transition disabled:opacity-50">
-                                {updateMutation.isPending ? 'Saving...' : 'Save'}
+                        <div className="flex gap-4 mt-10">
+                            <button onClick={handleSaveEdit} disabled={updateMutation.isPending} className="flex-1 py-3.5 bg-primary rounded-2xl text-sm font-black text-primary-foreground shadow-xl shadow-primary/20 transition disabled:opacity-50">
+                                {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
                             </button>
-                            <button onClick={() => setEditCat(null)} className="flex-1 py-2 bg-accent hover:bg-accent/80 rounded-lg text-sm font-semibold transition">Cancel</button>
+                            <button onClick={() => setEditCat(null)} className="flex-1 py-3.5 bg-secondary hover:bg-secondary/80 rounded-2xl text-sm font-black transition">Cancel</button>
                         </div>
                     </div>
                 </div>

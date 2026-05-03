@@ -7,7 +7,6 @@ import { getComments, createComment, updateComment, deleteComment } from '../api
 import { voteOnPost, voteOnComment, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
 import type { CommentResponse, PaginatedComments } from '../api/comments';
-import Navbar from '../components/Navbar';
 import MDEditor from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
 import MarkdownEditor from '../components/MarkdownEditor';
@@ -493,7 +492,6 @@ export default function PostPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
 
             <main className="max-w-4xl mx-auto px-4 py-6">
                 {loading ? (

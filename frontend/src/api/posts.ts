@@ -4,6 +4,8 @@ export type PostStatus = 'OPEN' | 'SOLVED' | 'CLOSED';
 
 export interface Post {
     id: number;
+    categoryId: number;
+    categoryName: string;
     title: string;
     body: string;
     createdAt: string;
@@ -35,12 +37,16 @@ export interface PaginatedPosts {
 }
 
 export const getPosts = async (
-    categoryId: number,
+    categoryId?: number,
     page = 0,
     size = 10,
     sortBy = 'newest'
 ): Promise<PaginatedPosts> => {
-    return (await api.get<PaginatedPosts>(`/api/posts?categoryId=${categoryId}&page=${page}&size=${size}&sortBy=${sortBy}`)).data;
+    let url = `/api/posts?page=${page}&size=${size}&sortBy=${sortBy}`;
+    if (categoryId !== undefined && categoryId !== null) {
+        url += `&categoryId=${categoryId}`;
+    }
+    return (await api.get<PaginatedPosts>(url)).data;
 };
 
 export const createPost = async (data: PostRequest): Promise<Post> => {

@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../context/useAuth';
-import Navbar from '../components/Navbar';
 import {
     getCalendarEvents,
     createCalendarEvent,
@@ -177,7 +176,6 @@ export default function CalendarPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
             <main className="max-w-6xl mx-auto px-4 py-6">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-3xl font-bold text-primary">Community Calendar</h1>

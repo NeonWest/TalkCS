@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Search } from 'lucide-react';
 
 export default function NavbarSearch() {
     const navigate = useNavigate();
@@ -15,20 +16,17 @@ export default function NavbarSearch() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="hidden md:flex items-center gap-2 flex-1 min-w-0 mx-4">
+        <form onSubmit={handleSubmit} className="relative flex items-center w-full group">
+            <div className="absolute left-3.5 text-muted-foreground group-focus-within:text-primary transition-colors pointer-events-none">
+                <Search size={16} />
+            </div>
             <input
                 type="text"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                placeholder="Search posts, categories, users"
-                className="w-full bg-input border border-border rounded px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Search community..."
+                className="w-full bg-secondary/50 border border-border/50 rounded-xl pl-11 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 focus:bg-background transition-all"
             />
-            <button
-                type="submit"
-                className="text-sm px-3 py-1.5 rounded bg-primary hover:bg-primary/90 text-primary-foreground transition"
-            >
-                Search
-            </button>
         </form>
     );
 }
