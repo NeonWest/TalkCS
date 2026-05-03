@@ -15,17 +15,27 @@ export default function SearchPage() {
 
     useEffect(() => {
         const trimmed = query.trim();
+        
         if (!trimmed) {
             setResults({ posts: [], categories: [], users: [] });
+            setLoading(false);
             return;
         }
 
-        setError('');
-        setLoading(true);
-        search(trimmed)
-            .then(setResults)
-            .catch(() => setError('Failed to load search results.'))
-            .finally(() => setLoading(false));
+        const performSearch = async () => {
+            setError('');
+            setLoading(true);
+            try {
+                const data = await search(trimmed);
+                setResults(data);
+            } catch {
+                setError('Failed to load search results.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        performSearch();
     }, [query]);
 
     const totalResults = results.posts.length + results.categories.length + results.users.length;

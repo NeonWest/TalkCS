@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -65,7 +65,7 @@ export default function HomePage() {
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, data }: { id: number, data: any }) => updateCategory(id, data),
+        mutationFn: ({ id, data }: { id: number, data: { name: string, description: string } }) => updateCategory(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['categories'] });
             toast.success('Category updated');
@@ -139,7 +139,7 @@ export default function HomePage() {
                             ))}
                         </div>
                     ) : categories.length === 0 ? (
-                        <div className="bg-black/20 rounded-xl shadow-sm p-12 text-center text-muted-foreground border border-border">
+                        <div className="bg-muted/50 rounded-xl shadow-sm p-12 text-center text-muted-foreground border border-border">
                             No categories yet.{isAdmin && ' Create the first one!'}
                         </div>
                     ) : (

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import Navbar from '../components/Navbar';
 import {
     getCalendarEvents,
@@ -52,16 +52,15 @@ export default function CalendarPage() {
         getCategories().then(data => setCategories(data)).catch(() => {});
     }, []);
 
-    const fetchEvents = () => {
-        setLoading(true);
-        const now = new Date();
-        getCalendarEvents(now.getFullYear(), now.getMonth() + 1)
-            .then(data => setEvents(data.events))
-            .catch(() => setEvents([]))
-            .finally(() => setLoading(false));
-    };
-
     useEffect(() => {
+        const fetchEvents = () => {
+            setLoading(true);
+            const now = new Date();
+            getCalendarEvents(now.getFullYear(), now.getMonth() + 1)
+                .then(data => setEvents(data.events))
+                .catch(() => setEvents([]))
+                .finally(() => setLoading(false));
+        };
         fetchEvents();
     }, []);
 
@@ -259,7 +258,6 @@ export default function CalendarPage() {
                         availableTags={['EXAM', 'DEADLINE', 'LECTURE', 'OTHER']}
                         defaultView="month"
                         isAdmin={isAdmin}
-                        className="shadow-2xl"
                     />
                 )}
             </main>

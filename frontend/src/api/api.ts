@@ -17,4 +17,22 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// Automatically handle 401 Unauthorized errors
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            // Token is invalid or expired
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            
+            // Force reload to clear React state and redirect to login via ProtectedRoute
+            if (!window.location.pathname.includes('/login')) {
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default api;

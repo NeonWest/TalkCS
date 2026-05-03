@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import NavbarSearch from './NavbarSearch';
 import NotificationBell from './NotificationBell';
 import ChatIcon from './ChatIcon';
@@ -28,7 +28,7 @@ export default function Navbar() {
                 <div className="flex items-center gap-4 min-w-0 flex-1">
                     <button
                         onClick={() => navigate('/')}
-                        className="font-bold text-foreground hover:text-white text-xl leading-none transition cursor-pointer tracking-tight flex items-center gap-2 shrink-0"
+                        className="font-bold text-foreground hover:text-foreground/70 text-xl leading-none transition cursor-pointer tracking-tight flex items-center gap-2 shrink-0"
                     >
                         <span className="h-2.5 w-2.5 rounded-full bg-primary" />
                         TalkCS
@@ -45,7 +45,7 @@ export default function Navbar() {
                                 <button 
                                     onClick={() => navigate('/leaderboard')} 
                                     className={`text-sm transition px-2 py-1 rounded-lg ${
-                                        onLeaderboard ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                                        onLeaderboard ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                                     }`}
                                 >
                                     Leaderboard
@@ -53,7 +53,7 @@ export default function Navbar() {
                                 <button 
                                     onClick={() => navigate('/calendar')} 
                                     className={`text-sm transition px-2 py-1 rounded-lg ${
-                                        onCalendar ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                                        onCalendar ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                                     }`}
                                 >
                                     Calendar
@@ -79,7 +79,7 @@ export default function Navbar() {
                             <button
                                 onClick={() => user?.username && navigate(`/profile/${user.username}`)}
                                 disabled={!user?.username}
-                                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-border rounded-full pl-1.5 pr-1.5 sm:pr-3 py-1 transition disabled:opacity-50"
+                                className="flex items-center gap-2 bg-accent/30 hover:bg-accent/60 border border-border rounded-full pl-1.5 pr-1.5 sm:pr-3 py-1 transition disabled:opacity-50"
                             >
                                 <span className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-white shrink-0">
                                     {user?.username?.charAt(0).toUpperCase() ?? '?'}
@@ -152,14 +152,14 @@ export default function Navbar() {
                             <nav className="space-y-1">
                                 <button 
                                     onClick={() => { navigate('/leaderboard'); setIsMenuOpen(false); }}
-                                    className={`w-full text-left px-4 py-3 rounded-xl transition flex items-center justify-between ${onLeaderboard ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-white/5'}`}
+                                    className={`w-full text-left px-4 py-3 rounded-xl transition flex items-center justify-between ${onLeaderboard ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-accent/50'}`}
                                 >
                                     <span className="font-medium">Leaderboard</span>
                                     <span>🏆</span>
                                 </button>
                                 <button 
                                     onClick={() => { navigate('/calendar'); setIsMenuOpen(false); }}
-                                    className={`w-full text-left px-4 py-3 rounded-xl transition flex items-center justify-between ${onCalendar ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-white/5'}`}
+                                    className={`w-full text-left px-4 py-3 rounded-xl transition flex items-center justify-between ${onCalendar ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-accent/50'}`}
                                 >
                                     <span className="font-medium">Calendar</span>
                                     <span>📅</span>
@@ -189,13 +189,13 @@ export default function Navbar() {
                         </div>
 
                         {user && (
-                            <div className="p-4 bg-white/5 border-t border-border">
+                            <div className="p-4 bg-accent/30 border-t border-border">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center font-bold text-white">
                                         {user.username.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-bold text-white truncate">{user.username}</p>
+                                        <p className="text-sm font-bold text-foreground truncate">{user.username}</p>
                                         <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{user.role}</p>
                                     </div>
                                 </div>

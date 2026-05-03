@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { getUserProfile, getUserPosts, followUser, unfollowUser, updateProfile, uploadAvatar } from '../api/users';
 import { getUserBookmarks } from '../api/posts';
 import type { Post } from '../api/posts';
@@ -93,7 +93,7 @@ export default function ProfilePage() {
                                         />
                                     ) : (
                                         <div className="w-16 h-16 sm:w-14 sm:h-14 rounded-full bg-primary flex items-center justify-center">
-                                            <span className="text-white text-xl sm:text-lg font-bold">{profile.username.charAt(0).toUpperCase()}</span>
+                                            <span className="text-primary-foreground text-xl sm:text-lg font-bold">{profile.username.charAt(0).toUpperCase()}</span>
                                         </div>
                                     )}
                                 </div>
@@ -125,7 +125,7 @@ export default function ProfilePage() {
                                                 <span>{profile.reputation} rep</span>
                                                 <span>{profile.nextLevelRepRequired} for next level</span>
                                             </div>
-                                            <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                                                 <div
                                                     className="h-full bg-primary rounded-full transition-all"
                                                     style={{ width: `${Math.min(100, (profile.reputation / profile.nextLevelRepRequired) * 100)}%` }}
@@ -154,7 +154,7 @@ export default function ProfilePage() {
                                             } finally { setFollowLoading(false); }
                                         }}
                                         disabled={followLoading}
-                                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition disabled:opacity-50 ${following ? 'bg-white/10 text-muted-foreground hover:bg-white/20' : 'bg-primary hover:bg-primary/90 text-white'}`}
+                                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition disabled:opacity-50 ${following ? 'bg-muted text-muted-foreground hover:bg-muted/70' : 'bg-primary hover:bg-primary/90 text-primary-foreground'}`}
                                     >
                                         {followLoading ? '...' : following ? 'Unfollow' : 'Follow'}
                                     </button>
@@ -232,7 +232,7 @@ export default function ProfilePage() {
                             <div className="flex gap-2 mb-3">
                                 {(['posts', 'saved'] as const).map(tab => (
                                     <button key={tab} onClick={() => setActiveTab(tab)}
-                                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === tab ? 'bg-primary text-white' : 'border border-border text-muted-foreground hover:bg-white/10'}`}>
+                                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === tab ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-accent/50'}`}>
                                         {tab === 'posts' ? 'Recent Posts' : 'Saved Posts'}
                                     </button>
                                 ))}
@@ -293,7 +293,7 @@ export default function ProfilePage() {
                                 onChange={e => setEditBio(e.target.value)}
                                 rows={3}
                                 placeholder="Tell others about yourself…"
-                                className="w-full bg-popover text-white placeholder-muted-foreground rounded-lg px-3 py-2 text-sm border border-border focus:outline-none focus:border-primary/50 resize-none"
+                                className="w-full bg-popover text-foreground placeholder:text-muted-foreground rounded-lg px-3 py-2 text-sm border border-border focus:outline-none focus:border-primary/50 resize-none"
                             />
                         </div>
 
@@ -328,7 +328,7 @@ export default function ProfilePage() {
                             </button>
                             <button
                                 onClick={() => setShowEditModal(false)}
-                                className="px-4 py-2 text-sm text-muted-foreground hover:text-white transition"
+                                className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition"
                             >
                                 Cancel
                             </button>

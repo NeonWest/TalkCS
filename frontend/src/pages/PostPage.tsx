@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { useCommentUpdates } from '../hooks/useCommentUpdates';
-import { getPostById, updatePost, deletePost, acceptAnswer, bookmarkPost, unbookmarkPost } from '../api/posts';
+import { getPostById, updatePost, deletePost, acceptAnswer, unacceptAnswer, bookmarkPost, unbookmarkPost } from '../api/posts';
 import { getComments, createComment, updateComment, deleteComment } from '../api/comments';
 import { voteOnPost, voteOnComment, getVoteErrorMessage } from '../api/votes';
 import type { Post } from '../api/posts';
@@ -11,6 +11,9 @@ import Navbar from '../components/Navbar';
 import MDEditor from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
 import MarkdownEditor from '../components/MarkdownEditor';
+import { Button } from '../components/ui/button';
+import { Bookmark, Pencil, Trash2, Reply, X, CheckCheck } from 'lucide-react';
+import { useTheme } from '../context/useTheme';
 
 function linkMentions(text: string): string {
     return text.replace(/@(\w+)/g, '[@$1](/profile/$1)');
@@ -31,6 +34,7 @@ function CommentItem({
     onVoteComment,
     onAuthorClick,
     onAcceptAnswer,
+    onUnacceptAnswer,
 }: {
     comment: CommentResponse;
     postId: number;
@@ -45,10 +49,13 @@ function CommentItem({
     onVoteComment: (commentId: number, value: 1 | -1) => Promise<void>;
     onAuthorClick: (username: string) => void;
     onAcceptAnswer: (commentId: number) => Promise<void>;
+    onUnacceptAnswer: () => Promise<void>;
 }) {
     const canEdit = currentUsername === comment.authorUsername;
     const canDelete = canEdit || isAdmin;
     const isAccepted = acceptedAnswerId === comment.id;
+    const { theme } = useTheme();
+    const colorMode = theme === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
 
     const [replying, setReplying] = useState(false);
     const [editing, setEditing] = useState(false);
@@ -131,7 +138,7 @@ function CommentItem({
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => onAuthorClick(comment.authorUsername)}
-                            className="text-base font-semibold text-foreground hover:text-white transition"
+                            className="text-base font-semibold text-foreground hover:text-foreground/70 transition"
                         >
                             {comment.authorUsername}
                         </button>
@@ -157,40 +164,49 @@ function CommentItem({
                             </button>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        {isPostAuthor && depth === 0 && !isAccepted && (
-                            <button
-                                onClick={() => void onAcceptAnswer(comment.id)}
-                                className="text-sm text-green-400 hover:text-green-300 transition"
+                    <div className="flex items-center gap-0.5">
+                        {isPostAuthor && depth === 0 && (
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => void (isAccepted ? onUnacceptAnswer() : onAcceptAnswer(comment.id))}
+                                title={isAccepted ? 'Unaccept answer' : 'Accept as answer'}
+                                className={`hover:bg-black/10 dark:hover:bg-accent transition-colors h-7 w-7 ${isAccepted ? 'text-green-500 hover:text-muted-foreground' : 'text-muted-foreground hover:text-green-500'}`}
                             >
-                                ✓ Accept
-                            </button>
+                                <CheckCheck size={14} strokeWidth={2} />
+                            </Button>
                         )}
-                    {(canEdit || canDelete) && (
-                        <>
-                            {canEdit && (
-                                <button
-                                    onClick={() => {
-                                        setEditBody(comment.body);
-                                        setEditing(v => !v);
-                                        setReplying(false);
-                                    }}
-                                    className="text-sm text-blue-400 hover:text-blue-300 transition"
-                                >
-                                    {editing ? 'Cancel' : 'Edit'}
-                                </button>
-                            )}
-                            {canDelete && (
-                                <button
-                                    onClick={() => void handleDelete()}
-                                    disabled={deleting}
-                                    className="text-sm text-red-400 hover:text-red-300 transition disabled:opacity-50"
-                                >
-                                    {deleting ? 'Deleting...' : 'Delete'}
-                                </button>
-                            )}
-                        </>
-                    )}
+                        {(canEdit || canDelete) && (
+                            <>
+                                {canEdit && (
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => {
+                                            setEditBody(comment.body);
+                                            setEditing(v => !v);
+                                            setReplying(false);
+                                        }}
+                                        title={editing ? 'Cancel edit' : 'Edit comment'}
+                                        className="hover:bg-black/10 dark:hover:bg-accent text-muted-foreground hover:text-foreground transition-colors h-7 w-7"
+                                    >
+                                        {editing ? <X size={14} strokeWidth={2} /> : <Pencil size={14} strokeWidth={2} />}
+                                    </Button>
+                                )}
+                                {canDelete && (
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        onClick={() => void handleDelete()}
+                                        disabled={deleting}
+                                        title="Delete comment"
+                                        className="hover:bg-black/10 dark:hover:bg-accent text-muted-foreground hover:text-destructive transition-colors h-7 w-7 disabled:opacity-50"
+                                    >
+                                        <Trash2 size={14} strokeWidth={2} />
+                                    </Button>
+                                )}
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -206,7 +222,7 @@ function CommentItem({
                             <button
                                 type="button"
                                 onClick={() => setEditing(false)}
-                                className="text-sm px-3 py-1.5 rounded border border-border text-muted-foreground hover:bg-white/10 transition"
+                                className="text-sm px-3 py-1.5 rounded border border-border text-muted-foreground hover:bg-accent/50 transition"
                             >
                                 Cancel
                             </button>
@@ -221,18 +237,18 @@ function CommentItem({
                     </form>
                 ) : (
                     <>
-                        <div className="text-sm text-foreground" data-color-mode="dark">
+                        <div className="text-sm text-foreground" data-color-mode={colorMode}>
                         <MDEditor.Markdown source={linkMentions(comment.body)} style={{ background: 'transparent', color: 'inherit' }} />
                     </div>
-                        <button
-                            onClick={() => {
-                                setReplying(r => !r);
-                                setEditing(false);
-                            }}
-                            className="text-sm text-blue-400 hover:text-blue-300 mt-2 transition"
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => { setReplying(r => !r); setEditing(false); }}
+                            title={replying ? 'Cancel reply' : 'Reply'}
+                            className="hover:bg-black/10 dark:hover:bg-accent text-muted-foreground hover:text-foreground transition-colors h-7 w-7 mt-1"
                         >
-                            {replying ? 'Cancel' : 'Reply'}
-                        </button>
+                            {replying ? <X size={14} strokeWidth={2} /> : <Reply size={14} strokeWidth={2} />}
+                        </Button>
                     </>
                 )}
 
@@ -276,6 +292,7 @@ function CommentItem({
                     onVoteComment={onVoteComment}
                     onAuthorClick={onAuthorClick}
                     onAcceptAnswer={onAcceptAnswer}
+                    onUnacceptAnswer={onUnacceptAnswer}
                 />
             ))}
         </div>
@@ -293,6 +310,8 @@ export default function PostPage() {
     const stateCategoryId = (location.state as { categoryId?: number } | null)?.categoryId;
     const categoryId = Number.isFinite(queryCategoryId) && queryCategoryId > 0 ? queryCategoryId : stateCategoryId;
     const isAdmin = user?.role === 'ADMIN';
+    const { theme } = useTheme();
+    const colorMode = theme === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
 
     const [post, setPost] = useState<Post | null>(null);
     const [comments, setComments] = useState<CommentResponse[]>([]);
@@ -362,6 +381,12 @@ export default function PostPage() {
     const handleAcceptAnswer = async (commentId: number) => {
         if (!post) return;
         const updated = await acceptAnswer(post.id, commentId);
+        setPost(updated);
+    };
+
+    const handleUnacceptAnswer = async () => {
+        if (!post) return;
+        const updated = await unacceptAnswer(post.id);
         setPost(updated);
     };
 
@@ -476,7 +501,7 @@ export default function PostPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 sm:gap-4 shrink-0 border-t sm:border-t-0 border-border pt-3 sm:pt-0">
-                                    <div className="flex items-center gap-1 bg-black/10 sm:bg-transparent px-2 py-1 rounded-lg">
+                                    <div className="flex items-center gap-1 bg-muted/60 sm:bg-transparent px-2 py-1 rounded-lg">
                                         <button
                                             onClick={() => void handleVotePost(1)}
                                             disabled={votingPost}
@@ -494,7 +519,9 @@ export default function PostPage() {
                                         </button>
                                     </div>
                                     {isAuthenticated && (
-                                        <button
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
                                             onClick={async () => {
                                                 setBookmarking(true);
                                                 try {
@@ -504,34 +531,40 @@ export default function PostPage() {
                                             }}
                                             disabled={bookmarking}
                                             title={bookmarked ? 'Remove bookmark' : 'Bookmark'}
-                                            className={`text-lg transition disabled:opacity-50 ${bookmarked ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                            className={`hover:bg-black/10 dark:hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50 ${bookmarked ? 'text-primary' : 'text-muted-foreground'}`}
                                         >
-                                            🔖
-                                        </button>
+                                            <Bookmark size={18} strokeWidth={2} fill={bookmarked ? 'currentColor' : 'none'} />
+                                        </Button>
                                     )}
                                     {canDeletePost && (
-                                        <div className="flex items-center gap-2 border-l border-border pl-2 sm:pl-0 sm:border-l-0">
-                                        {canEditPost && (
-                                            <button
-                                                onClick={openPostEditModal}
-                                                className="text-xs sm:text-sm text-blue-400 hover:text-blue-300 transition"
+                                        <div className="flex items-center gap-1 border-l border-border pl-2">
+                                            {canEditPost && (
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    onClick={openPostEditModal}
+                                                    title="Edit post"
+                                                    className="hover:bg-black/10 dark:hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                                                >
+                                                    <Pencil size={16} strokeWidth={2} />
+                                                </Button>
+                                            )}
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                onClick={() => void handleDeletePost()}
+                                                disabled={deletingPost}
+                                                title="Delete post"
+                                                className="hover:bg-black/10 dark:hover:bg-accent text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
                                             >
-                                                Edit
-                                            </button>
-                                        )}
-                                        <button
-                                            onClick={() => void handleDeletePost()}
-                                            disabled={deletingPost}
-                                            className="text-xs sm:text-sm text-destructive hover:text-destructive/80 transition disabled:opacity-50"
-                                        >
-                                            {deletingPost ? 'Deleting...' : 'Delete'}
-                                        </button>
+                                                <Trash2 size={16} strokeWidth={2} />
+                                            </Button>
                                         </div>
                                     )}
                                 </div>
                             </div>
                             <div className="border-t border-border pt-3">
-                                <div className="text-base leading-relaxed text-foreground" data-color-mode="dark">
+                                <div className="text-base leading-relaxed text-foreground" data-color-mode={colorMode}>
                                     <MDEditor.Markdown source={linkMentions(post.body)} style={{ background: 'transparent', color: 'inherit' }} />
                                 </div>
                                 {post.tags && post.tags.length > 0 && (
@@ -568,6 +601,7 @@ export default function PostPage() {
                                         onVoteComment={handleVoteComment}
                                         onAuthorClick={navigateToProfile}
                                         onAcceptAnswer={handleAcceptAnswer}
+                                        onUnacceptAnswer={handleUnacceptAnswer}
                                     />
                                 ))
                             )}
@@ -630,7 +664,7 @@ export default function PostPage() {
                                     {postForm.tags.map(tag => (
                                         <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-primary/20 text-primary rounded-full text-xs">
                                             {tag}
-                                            <button type="button" onClick={() => setPostForm(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }))} className="hover:text-white">×</button>
+                                            <button type="button" onClick={() => setPostForm(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }))} className="hover:text-foreground/70">×</button>
                                         </span>
                                     ))}
                                 </div>
@@ -655,7 +689,7 @@ export default function PostPage() {
                                 <button
                                     type="button"
                                     onClick={() => { setShowEditPostModal(false); setPostError(''); }}
-                                    className="text-sm px-4 py-2 rounded border border-border text-muted-foreground hover:bg-white/10 transition"
+                                    className="text-sm px-4 py-2 rounded border border-border text-muted-foreground hover:bg-accent/50 transition"
                                 >
                                     Cancel
                                 </button>
