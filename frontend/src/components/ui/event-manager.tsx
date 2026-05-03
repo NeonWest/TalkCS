@@ -1261,7 +1261,7 @@ function MonthView({
             <div
               key={index}
               className={cn(
-                "min-h-[100px] border-b border-r border-border p-1 transition-colors last:border-r-0 sm:min-h-[120px] sm:p-2",
+                "min-h-[100px] border-b border-r border-border p-1 transition-colors last:border-r-0 [&:nth-last-child(-n+7)]:border-b-0 sm:min-h-[120px] sm:p-2",
                 !isCurrentMonth && "bg-muted/30",
                 "hover:bg-accent/50",
               )}

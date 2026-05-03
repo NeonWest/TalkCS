@@ -1,5 +1,6 @@
 import MDEditor from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
+import { useTheme } from '../context/useTheme';
 
 interface Props {
     value: string;
@@ -10,8 +11,13 @@ interface Props {
 }
 
 export default function MarkdownEditor({ value, onChange, placeholder = 'Write...', className = '' }: Props) {
+    const { theme } = useTheme();
+    const colorMode = theme === 'system'
+        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        : theme;
+
     return (
-        <div className={className} data-color-mode="dark">
+        <div className={className} data-color-mode={colorMode}>
             <MDEditor
                 value={value}
                 onChange={v => onChange(v ?? '')}
@@ -20,7 +26,7 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write..
                 visibleDragbar={false}
                 textareaProps={{ placeholder }}
                 height={200}
-                style={{ background: '#242424', borderRadius: '8px' }}
+                style={{ borderRadius: '8px' }}
             />
         </div>
     );

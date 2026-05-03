@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { usePostUpdates } from '../hooks/usePostUpdates';
 import { getCategoryById } from '../api/categories';
 import { getPosts, createPost, updatePost, deletePost, getSimilarPosts } from '../api/posts';
@@ -13,6 +13,8 @@ import Navbar from '../components/Navbar';
 import MarkdownEditor from '../components/MarkdownEditor';
 import { suggestTags } from '../api/tags';
 import { getUpcomingEvents, type CalendarEvent } from '../api/calendar';
+import { Button } from '../components/ui/button';
+import { Pencil, Trash2 } from 'lucide-react';
 
 function stripMarkdown(text: string, maxLen = 150): string {
     const stripped = text
@@ -136,7 +138,7 @@ export default function CategoryPage() {
             } catch { /* ignore */ }
         }, 500);
         return () => { if (suggestTimer.current) clearTimeout(suggestTimer.current); };
-    }, [form.title, form.body, showModal]);
+    }, [form.title, form.body, form.tags, showModal]);
 
     useEffect(() => {
         if (!showModal) return;
@@ -149,7 +151,7 @@ export default function CategoryPage() {
             } catch { /* ignore */ }
         }, 500);
         return () => { if (similarTimer.current) clearTimeout(similarTimer.current); };
-    }, [form.title, form.body, showModal]);
+    }, [form.title, form.body, form.tags, showModal, categoryId]);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -382,7 +384,7 @@ export default function CategoryPage() {
                                                                     e.stopPropagation();
                                                                     navigate(`/profile/${post.authorUsername}`);
                                                                 }}
-                                                                className="text-foreground hover:text-white transition font-bold"
+                                                                className="text-foreground hover:text-foreground/70 transition font-bold"
                                                             >
                                                                 {post.authorUsername}
                                                             </button>
@@ -393,7 +395,7 @@ export default function CategoryPage() {
                                                         <span className="font-bold text-primary/80">{post.commentCount} comments</span>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-2 shrink-0 bg-black/10 px-2 py-1 rounded-lg">
+                                                <div className="flex items-center gap-2 shrink-0 bg-muted/60 px-2 py-1 rounded-lg">
                                                     <button
                                                         onClick={(e) => void handleVotePost(post.id, 1, e)}
                                                         disabled={votingPostId === post.id}
@@ -413,28 +415,28 @@ export default function CategoryPage() {
                                             </div>
 
                                             {(user?.username === post.authorUsername || user?.role === 'ADMIN') && (
-                                                <div className="mt-4 pt-3 border-t border-border flex items-center gap-4">
+                                                <div className="mt-4 pt-3 border-t border-border flex items-center gap-1">
                                                     {user?.username === post.authorUsername && (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                openEditModal(post);
-                                                            }}
-                                                            className="text-xs font-bold text-blue-400 hover:text-blue-300 transition uppercase tracking-wider"
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            onClick={(e) => { e.stopPropagation(); openEditModal(post); }}
+                                                            title="Edit post"
+                                                            className="hover:bg-black/10 dark:hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
                                                         >
-                                                            Edit Post
-                                                        </button>
+                                                            <Pencil size={15} strokeWidth={2} />
+                                                        </Button>
                                                     )}
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            void handleDelete(post);
-                                                        }}
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        onClick={(e) => { e.stopPropagation(); void handleDelete(post); }}
                                                         disabled={deletingPostId === post.id}
-                                                        className="text-xs font-bold text-destructive hover:text-destructive/80 transition disabled:opacity-50 uppercase tracking-wider"
+                                                        title="Delete post"
+                                                        className="hover:bg-black/10 dark:hover:bg-accent text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
                                                     >
-                                                        {deletingPostId === post.id ? 'Deleting...' : 'Delete'}
-                                                    </button>
+                                                        <Trash2 size={15} strokeWidth={2} />
+                                                    </Button>
                                                 </div>
                                             )}
                                         </div>
@@ -445,7 +447,7 @@ export default function CategoryPage() {
                                     <button
                                         onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
                                         disabled={!hasPrevious}
-                                        className="text-sm px-3 py-1.5 rounded border border-border text-muted-foreground hover:bg-white/10 transition disabled:opacity-50"
+                                        className="text-sm px-3 py-1.5 rounded border border-border text-muted-foreground hover:bg-accent/50 transition disabled:opacity-50"
                                     >
                                         Previous
                                     </button>
@@ -455,7 +457,7 @@ export default function CategoryPage() {
                                     <button
                                         onClick={() => setCurrentPage(prev => prev + 1)}
                                         disabled={!hasNext}
-                                        className="text-sm px-3 py-1.5 rounded border border-border text-muted-foreground hover:bg-white/10 transition disabled:opacity-50"
+                                        className="text-sm px-3 py-1.5 rounded border border-border text-muted-foreground hover:bg-accent/50 transition disabled:opacity-50"
                                     >
                                         Next
                                     </button>
@@ -497,7 +499,7 @@ export default function CategoryPage() {
                                                 </button>
                                                 <button
                                                     onClick={(e) => handleDownloadResource(resource.id, e)}
-                                                    className="text-xs px-3 py-1.5 rounded border border-border text-foreground hover:bg-white/10 transition"
+                                                    className="text-xs px-3 py-1.5 rounded border border-border text-foreground hover:bg-accent/50 transition"
                                                 >
                                                     Download
                                                 </button>
@@ -535,7 +537,7 @@ export default function CategoryPage() {
                         ) : (
                             <div className="space-y-3">
                                 {upcomingEvents.map(ev => (
-                                    <div key={ev.id} className="bg-white/5 rounded-lg p-2.5 border-l-4 border-primary transition hover:bg-white/[0.08]">
+                                    <div key={ev.id} className="bg-muted/40 rounded-lg p-2.5 border-l-4 border-primary transition hover:bg-muted/70">
                                         <p className="text-xs font-bold text-foreground leading-snug truncate mb-1">{ev.title}</p>
                                         <div className="flex items-center justify-between text-[10px]">
                                             <span className="text-muted-foreground">{ev.startDate}</span>
@@ -547,7 +549,7 @@ export default function CategoryPage() {
                         )}
                         <button
                             onClick={() => navigate('/calendar')}
-                            className="mt-4 w-full py-2 text-xs font-bold text-muted-foreground hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition border border-border"
+                            className="mt-4 w-full py-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted/70 rounded-lg transition border border-border"
                         >+ Add your own event</button>
                     </div>
                 </aside>
@@ -632,7 +634,7 @@ export default function CategoryPage() {
                                                     if (!form.tags.includes(s)) setForm(p => ({ ...p, tags: [...p.tags, s] }));
                                                     setTagSuggestions(prev => prev.filter(t => t !== s));
                                                 }}
-                                                className="px-2 py-0.5 bg-white/10 hover:bg-primary/30 text-muted-foreground hover:text-primary rounded-full text-xs transition"
+                                                className="px-2 py-0.5 bg-muted hover:bg-primary/30 text-muted-foreground hover:text-primary rounded-full text-xs transition"
                                             >+ {s}</button>
                                         ))}
                                     </div>
@@ -648,7 +650,7 @@ export default function CategoryPage() {
                                         setTagSuggestions([]);
                                         setSimilarPosts([]);
                                     }}
-                                    className="text-sm px-4 py-2 rounded-lg border border-border text-muted-foreground hover:bg-white/10 transition"
+                                    className="text-sm px-4 py-2 rounded-lg border border-border text-muted-foreground hover:bg-accent/50 transition"
                                 >
                                     Cancel
                                 </button>
@@ -724,7 +726,7 @@ export default function CategoryPage() {
                                         setEditingPost(null);
                                         setError('');
                                     }}
-                                    className="text-sm px-4 py-2 rounded-lg border border-border text-muted-foreground hover:bg-white/10 transition"
+                                    className="text-sm px-4 py-2 rounded-lg border border-border text-muted-foreground hover:bg-accent/50 transition"
                                 >
                                     Cancel
                                 </button>
@@ -784,7 +786,7 @@ export default function CategoryPage() {
                                         setShowResourceModal(false);
                                         setError('');
                                     }}
-                                    className="text-sm px-4 py-2 rounded-lg border border-border text-muted-foreground hover:bg-white/10 transition"
+                                    className="text-sm px-4 py-2 rounded-lg border border-border text-muted-foreground hover:bg-accent/50 transition"
                                 >
                                     Cancel
                                 </button>

@@ -95,4 +95,9 @@ public class PostController{
     public ResponseEntity<PostResponse> acceptAnswer(@PathVariable Long id, @PathVariable Long commentId) {
         return ResponseEntity.ok(postservice.acceptAnswer(id, commentId));
     }
+
+    @DeleteMapping("/{id}/accept")
+    public ResponseEntity<PostResponse> unacceptAnswer(@PathVariable Long id) {
+        return ResponseEntity.ok(postservice.unacceptAnswer(id));
+    }
 }

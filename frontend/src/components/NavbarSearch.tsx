@@ -21,11 +21,11 @@ export default function NavbarSearch() {
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
                 placeholder="Search posts, categories, users"
-                className="w-full bg-[#242424] border border-white/15 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full bg-input border border-border rounded px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <button
                 type="submit"
-                className="text-sm px-3 py-1.5 rounded bg-orange-500 hover:bg-orange-600 text-white transition"
+                className="text-sm px-3 py-1.5 rounded bg-primary hover:bg-primary/90 text-primary-foreground transition"
             >
                 Search
             </button>

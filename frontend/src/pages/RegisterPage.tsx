@@ -2,7 +2,8 @@ import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { register as registerApi } from '../api/auth';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
+import axios from 'axios';
 
 interface RegisterFormData {
     username: string;
@@ -26,8 +27,14 @@ export default function RegisterPage() {
             const response = await registerApi(data);
             login(response.data);
             navigate('/');
-        } catch (err: any) {
-            setError(err.response?.data || 'Registration failed. Please try again.');
+        } catch (err: unknown) {
+            let message = 'Registration failed. Please try again.';
+            if (axios.isAxiosError(err) && err.response?.data) {
+                message = typeof err.response.data === 'string' 
+                    ? err.response.data 
+                    : JSON.stringify(err.response.data);
+            }
+            setError(message);
         } finally {
             setLoading(false);
         }

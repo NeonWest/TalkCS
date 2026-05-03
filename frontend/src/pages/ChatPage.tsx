@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import {
     getConversations, getMessages, openConversation,
     type ChatConversation, type ChatMessage,
@@ -213,7 +213,7 @@ export default function ChatPage() {
                             <h1 className="text-xl font-bold">Messages</h1>
                             <button 
                                 onClick={() => setIsSearching(!isSearching)}
-                                className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition text-primary"
+                                className="p-2 bg-accent/30 hover:bg-accent/60 rounded-full transition text-primary"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -232,7 +232,7 @@ export default function ChatPage() {
                                             onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                                             onKeyDown={e => e.key === 'Enter' && void handleOpenConversation()}
                                             placeholder="Enter username..."
-                                            className="w-full bg-white/5 text-sm text-foreground placeholder-muted-foreground rounded-xl px-4 py-2 border border-border focus:outline-none focus:border-primary/50 transition-all"
+                                            className="w-full bg-muted text-sm text-foreground placeholder:text-muted-foreground rounded-xl px-4 py-2 border border-border focus:outline-none focus:border-primary/50 transition-all"
                                         />
                                         {isSearchingUsers && (
                                             <div className="absolute right-3 top-2.5">
@@ -255,13 +255,13 @@ export default function ChatPage() {
                                                 <button
                                                     key={sUser.id}
                                                     onClick={() => handleOpenConversation(sUser.username)}
-                                                    className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-white/5 transition-colors text-left group"
+                                                    className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-accent/50 transition-colors text-left group"
                                                 >
                                                     <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
                                                         {sUser.username[0].toUpperCase()}
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-medium text-foreground group-hover:text-white">{sUser.username}</p>
+                                                        <p className="text-sm font-medium text-foreground group-hover:text-foreground/70">{sUser.username}</p>
                                                         <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{sUser.role}</p>
                                                     </div>
                                                 </button>
@@ -281,7 +281,7 @@ export default function ChatPage() {
                             </div>
                         ) : conversations.length === 0 ? (
                             <div className="px-6 py-12 text-center">
-                                <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 text-muted-foreground">
+                                <div className="w-12 h-12 bg-accent/40 rounded-2xl flex items-center justify-center mx-auto mb-4 text-muted-foreground">
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                     </svg>
@@ -298,11 +298,11 @@ export default function ChatPage() {
                                         className={`w-full text-left p-3 flex items-center gap-3 rounded-2xl transition-all duration-200
                                             ${activeConvId === conv.id 
                                                 ? 'bg-primary/15 shadow-sm ring-1 ring-primary/20' 
-                                                : 'hover:bg-white/5 active:scale-[0.98]'}`}
+                                                : 'hover:bg-accent/50 active:scale-[0.98]'}`}
                                     >
                                         <div className="relative shrink-0">
                                             <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold shadow-sm
-                                                ${activeConvId === conv.id ? 'bg-primary text-white' : 'bg-white/10 text-primary'}`}>
+                                                ${activeConvId === conv.id ? 'bg-primary text-primary-foreground' : 'bg-accent/50 text-primary'}`}>
                                                 {conv.otherUsername[0].toUpperCase()}
                                             </div>
                                             {conv.unreadCount > 0 && (
@@ -334,7 +334,7 @@ export default function ChatPage() {
                 <div className={`${!showMobileList ? 'flex' : 'hidden'} md:flex flex-1 flex flex-col bg-background overflow-hidden`}>
                     {!activeConvId ? (
                         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
-                            <div className="w-20 h-20 bg-white/5 rounded-[40px] flex items-center justify-center mb-6 text-muted-foreground">
+                            <div className="w-20 h-20 bg-accent/40 rounded-[40px] flex items-center justify-center mb-6 text-muted-foreground">
                                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                 </svg>
@@ -355,7 +355,7 @@ export default function ChatPage() {
                                 <div className="flex items-center gap-3 md:gap-4">
                                     <button 
                                         onClick={() => setShowMobileList(true)}
-                                        className="md:hidden p-2 -ml-2 text-muted-foreground hover:text-white"
+                                        className="md:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground"
                                     >
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -375,7 +375,7 @@ export default function ChatPage() {
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button onClick={() => navigate(`/profile/${activeConv?.otherUsername}`)} className="p-2 text-muted-foreground hover:text-white transition rounded-full hover:bg-white/5">
+                                    <button onClick={() => navigate(`/profile/${activeConv?.otherUsername}`)} className="p-2 text-muted-foreground hover:text-foreground transition rounded-full hover:bg-accent/50">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
@@ -393,7 +393,7 @@ export default function ChatPage() {
                                     return (
                                         <div key={msg.id} className={`flex items-end gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'} ${!showAvatar ? 'mt-[-12px]' : ''}`}>
                                             <div className={`w-6 h-6 rounded-full shrink-0 mb-1 flex items-center justify-center text-[10px] font-bold
-                                                ${!showAvatar ? 'opacity-0' : 'bg-white/10 text-primary'}`}>
+                                                ${!showAvatar ? 'opacity-0' : 'bg-accent/50 text-primary'}`}>
                                                 {msg.senderUsername[0].toUpperCase()}
                                             </div>
                                             <div className={`max-w-[75%] lg:max-w-[60%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
@@ -418,15 +418,23 @@ export default function ChatPage() {
 
                             {/* Message Input */}
                             <div className="p-4 bg-popover border-t border-border">
-                                <div className="max-w-4xl mx-auto flex gap-3 items-end">
+                                <form 
+                                    onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+                                    className="max-w-4xl mx-auto flex gap-3 items-end"
+                                >
                                     <div className="flex-1 relative group">
                                         <textarea
                                             rows={1}
                                             value={input}
                                             onChange={e => setInput(e.target.value)}
-                                            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
+                                            onKeyDown={e => {
+                                                if (e.key === 'Enter' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    handleSend();
+                                                }
+                                            }}
                                             placeholder="Message..."
-                                            className="w-full bg-white/5 text-foreground placeholder-muted-foreground rounded-[20px] pl-5 pr-12 py-3 text-sm border border-border focus:outline-none focus:border-primary/50 transition-all resize-none max-h-32 custom-scrollbar group-hover:bg-white/[0.07]"
+                                            className="w-full bg-muted/50 text-foreground placeholder-muted-foreground rounded-[20px] pl-5 pr-12 py-3 text-sm border border-border focus:outline-none focus:border-primary/50 transition-all resize-none max-h-32 custom-scrollbar group-hover:bg-muted"
                                             onInput={(e) => {
                                                 const target = e.target as HTMLTextAreaElement;
                                                 target.style.height = 'auto';
@@ -434,7 +442,12 @@ export default function ChatPage() {
                                             }}
                                         />
                                         <button
-                                            onClick={handleSend}
+                                            type="submit"
+                                            onMouseDown={(e) => {
+                                                // This is the CRITICAL fix for mobile keyboard closing.
+                                                // Preventing default on mousedown keeps focus on the textarea.
+                                                if (input.trim()) e.preventDefault();
+                                            }}
                                             disabled={!input.trim()}
                                             className="absolute right-2 bottom-2 p-2 text-primary hover:text-primary/90 disabled:opacity-0 disabled:scale-90 transition-all duration-200"
                                         >
@@ -443,7 +456,7 @@ export default function ChatPage() {
                                             </svg>
                                         </button>
                                     </div>
-                                </div>
+                                </form>
                             </div>
                         </>
                     )}
@@ -458,11 +471,12 @@ export default function ChatPage() {
                     background: transparent;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(255, 255, 255, 0.05);
+                    background: var(--border);
                     border-radius: 10px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: rgba(255, 255, 255, 0.1);
+                    background: var(--primary);
+                    opacity: 0.5;
                 }
             `}</style>
         </div>

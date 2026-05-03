@@ -67,6 +67,10 @@ export const acceptAnswer = async (postId: number, commentId: number): Promise<P
     return (await api.put<Post>(`/api/posts/${postId}/accept/${commentId}`)).data;
 };
 
+export const unacceptAnswer = async (postId: number): Promise<Post> => {
+    return (await api.delete<Post>(`/api/posts/${postId}/accept`)).data;
+};
+
 export const bookmarkPost = async (id: number): Promise<void> => { await api.post(`/api/posts/${id}/bookmark`); };
 export const unbookmarkPost = async (id: number): Promise<void> => { await api.delete(`/api/posts/${id}/bookmark`); };
 export const getUserBookmarks = async (username: string): Promise<Post[]> =>

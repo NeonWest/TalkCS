@@ -4,6 +4,8 @@ import { getAllCategoriesAdmin, updateCategory, deleteCategory, restoreCategory 
 import type { AdminStats, UserAdmin, SiteConfig } from '../api/admin';
 import type { Category } from '../api/categories';
 import Navbar from '../components/Navbar';
+import { Button } from '../components/ui/button';
+import { Pencil, Trash2 } from 'lucide-react';
 
 type Tab = 'stats' | 'users' | 'categories' | 'branding';
 
@@ -36,7 +38,7 @@ export default function AdminPage() {
         if (tab === 'stats' && !stats) {
             getAdminStats().then(setStats).catch(console.error);
         }
-    }, [tab]);
+    }, [tab, stats]);
 
     const loadUsers = useCallback(() => {
         getAdminUsers(userPage, userSearch || undefined).then(r => {
@@ -64,7 +66,7 @@ export default function AdminPage() {
                 setBrandColor(c.primaryColor);
             }).catch(console.error);
         }
-    }, [tab]);
+    }, [tab, config]);
 
     const handleToggleRole = async (id: number) => {
         const updated = await toggleUserRole(id);
@@ -128,7 +130,7 @@ export default function AdminPage() {
                 <div className="flex gap-1 mb-6 bg-background rounded-xl p-1 w-full sm:w-fit border border-border overflow-x-auto no-scrollbar whitespace-nowrap">
                     {tabs.map(t => (
                         <button key={t.key} onClick={() => setTab(t.key)}
-                            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition ${tab === t.key ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'}`}>
+                            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition ${tab === t.key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
                             {t.label}
                         </button>
                     ))}
@@ -228,11 +230,11 @@ export default function AdminPage() {
                                     </div>
                                     <div className="flex gap-2 pt-1">
                                         <button onClick={() => handleToggleRole(u.id)}
-                                            className="flex-1 text-xs px-2 py-2 bg-accent hover:bg-primary rounded-lg transition text-muted-foreground hover:text-white font-medium">
+                                            className="flex-1 text-xs px-2 py-2 bg-accent hover:bg-primary rounded-lg transition text-muted-foreground hover:text-primary-foreground font-medium">
                                             {u.role === 'ADMIN' ? 'Revoke Admin' : 'Make Admin'}
                                         </button>
                                         <button onClick={() => handleDeleteUser(u.id, u.username)}
-                                            className="text-xs px-3 py-2 bg-destructive/10 hover:bg-destructive rounded-lg transition text-destructive hover:text-white font-medium">
+                                            className="text-xs px-3 py-2 bg-destructive/10 hover:bg-destructive rounded-lg transition text-destructive hover:text-primary-foreground font-medium">
                                             Delete
                                         </button>
                                     </div>
@@ -252,7 +254,7 @@ export default function AdminPage() {
                                 </thead>
                                 <tbody className="divide-y divide-border">
                                     {users.map(u => (
-                                        <tr key={u.id} className="hover:bg-white/5">
+                                        <tr key={u.id} className="hover:bg-accent/30">
                                             <td className="px-4 py-3 text-foreground">{u.username}</td>
                                             <td className="px-4 py-3 text-muted-foreground truncate max-w-[180px]">{u.email}</td>
                                             <td className="px-4 py-3">
@@ -263,15 +265,22 @@ export default function AdminPage() {
                                             <td className="px-4 py-3 text-muted-foreground">{u.reputation}</td>
                                             <td className="px-4 py-3 text-muted-foreground">{u.postCount}</td>
                                             <td className="px-4 py-3 text-muted-foreground">{u.commentCount}</td>
-                                            <td className="px-4 py-3 flex gap-2">
-                                                <button onClick={() => handleToggleRole(u.id)}
-                                                    className="text-xs px-2 py-1 bg-accent hover:bg-primary rounded transition text-muted-foreground hover:text-white">
-                                                    {u.role === 'ADMIN' ? 'Revoke Admin' : 'Make Admin'}
-                                                </button>
-                                                <button onClick={() => handleDeleteUser(u.id, u.username)}
-                                                    className="text-xs px-2 py-1 bg-destructive/20 hover:bg-destructive rounded transition text-destructive hover:text-white">
-                                                    Delete
-                                                </button>
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center gap-1">
+                                                    <button onClick={() => handleToggleRole(u.id)}
+                                                        className="text-xs px-2 py-1 bg-accent hover:bg-primary rounded transition text-muted-foreground hover:text-primary-foreground">
+                                                        {u.role === 'ADMIN' ? 'Revoke Admin' : 'Make Admin'}
+                                                    </button>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        onClick={() => handleDeleteUser(u.id, u.username)}
+                                                        title={`Delete ${u.username}`}
+                                                        className="hover:bg-black/10 dark:hover:bg-accent text-muted-foreground hover:text-destructive transition-colors"
+                                                    >
+                                                        <Trash2 size={15} strokeWidth={2} />
+                                                    </Button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -282,7 +291,7 @@ export default function AdminPage() {
                             <div className="flex flex-wrap gap-2 mt-6 justify-center sm:justify-start">
                                 {Array.from({ length: userTotalPages }, (_, i) => (
                                     <button key={i} onClick={() => setUserPage(i)}
-                                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition ${userPage === i ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-card text-muted-foreground hover:text-white'}`}>
+                                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition ${userPage === i ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'bg-card text-muted-foreground hover:text-foreground'}`}>
                                         {i + 1}
                                     </button>
                                 ))}
@@ -311,7 +320,7 @@ export default function AdminPage() {
                                         </div>
                                     </div>
                                     <div className="flex gap-3 mt-6">
-                                        <button onClick={saveEditCat} className="flex-1 py-2.5 bg-primary hover:bg-primary/90 rounded-lg text-sm font-bold transition text-white">Save Changes</button>
+                                        <button onClick={saveEditCat} className="flex-1 py-2.5 bg-primary hover:bg-primary/90 rounded-lg text-sm font-bold transition text-primary-foreground">Save Changes</button>
                                         <button onClick={() => setEditCat(null)} className="flex-1 py-2.5 bg-accent hover:bg-accent/80 rounded-lg text-sm font-bold transition text-muted-foreground">Cancel</button>
                                     </div>
                                 </div>
@@ -319,7 +328,7 @@ export default function AdminPage() {
                         )}
                         <div className="grid gap-3">
                             {categories.map(cat => (
-                                <div key={cat.id} className={`bg-card rounded-xl border border-border px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:bg-white/[0.02] ${cat.archived ? 'opacity-50 grayscale-[0.5]' : ''}`}>
+                                <div key={cat.id} className={`bg-card rounded-xl border border-border px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:bg-accent/20 ${cat.archived ? 'opacity-50 grayscale-[0.5]' : ''}`}>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
                                             <p className="text-foreground font-bold tracking-tight">{cat.name}</p>
@@ -327,24 +336,27 @@ export default function AdminPage() {
                                         </div>
                                         <p className="text-sm text-muted-foreground line-clamp-2 sm:line-clamp-none">{cat.description}</p>
                                     </div>
-                                    <div className="flex gap-2 sm:shrink-0 border-t sm:border-t-0 border-border pt-3 sm:pt-0">
+                                    <div className="flex items-center gap-1 sm:shrink-0 border-t sm:border-t-0 border-border pt-3 sm:pt-0">
                                         {!cat.archived && (
-                                            <button onClick={() => openEditCat(cat)}
-                                                className="flex-1 sm:flex-none text-xs px-4 py-2 bg-accent hover:bg-primary rounded-lg transition text-muted-foreground hover:text-white font-medium">
-                                                Edit
-                                            </button>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                onClick={() => openEditCat(cat)}
+                                                title="Edit category"
+                                                className="hover:bg-black/10 dark:hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                                            >
+                                                <Pencil size={15} strokeWidth={2} />
+                                            </Button>
                                         )}
-                                        {cat.archived ? (
-                                            <button onClick={() => handleRestoreCat(cat.id)}
-                                                className="flex-1 sm:flex-none text-xs px-4 py-2 bg-green-900/40 hover:bg-green-700 rounded-lg transition text-green-400 hover:text-white font-medium">
-                                                Restore
-                                            </button>
-                                        ) : (
-                                            <button onClick={() => handleArchiveCat(cat.id)}
-                                                className="flex-1 sm:flex-none text-xs px-4 py-2 bg-destructive/20 hover:bg-destructive rounded-lg transition text-destructive hover:text-white font-medium">
-                                                Archive
-                                            </button>
-                                        )}
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            onClick={() => cat.archived ? handleRestoreCat(cat.id) : handleArchiveCat(cat.id)}
+                                            title={cat.archived ? 'Restore category' : 'Archive category'}
+                                            className={`hover:bg-black/10 dark:hover:bg-accent transition-colors ${cat.archived ? 'text-green-500 hover:text-green-400' : 'text-muted-foreground hover:text-destructive'}`}
+                                        >
+                                            <Trash2 size={15} strokeWidth={2} />
+                                        </Button>
                                     </div>
                                 </div>
                             ))}

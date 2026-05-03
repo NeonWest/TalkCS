@@ -194,6 +194,29 @@ public class PostService{
         return toResponse(post);
     }
 
+    public PostResponse unacceptAnswer(Long postId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Post post = postrepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
+        if (!post.getAuthor().getEmail().equals(email))
+            throw new RuntimeException("Only post author can unaccept answers");
+        if (post.getAcceptedAnswer() == null)
+            return toResponse(post);
+
+        User commenter = post.getAcceptedAnswer().getAuthor();
+        commenter.setReputation(Math.max(0, commenter.getReputation() - 15));
+        userrepository.save(commenter);
+
+        User poster = post.getAuthor();
+        poster.setReputation(Math.max(0, poster.getReputation() - 2));
+        userrepository.save(poster);
+
+        post.setAcceptedAnswer(null);
+        post.setStatus(PostStatus.OPEN);
+        postrepository.save(post);
+
+        return toResponse(post);
+    }
+
     private PostResponse toResponse(Post post) {
         return PostResponse.builder()
             .id(post.getId())

@@ -10,11 +10,16 @@ export default function ChatIcon() {
     const navigate = useNavigate();
     const [count, setCount] = useState(0);
 
-    const fetchCount = async () => {
-        try { setCount(await getUnreadChatCount()); } catch {}
-    };
-
     useEffect(() => {
+        const fetchCount = async () => {
+            try { 
+                const countVal = await getUnreadChatCount();
+                setCount(countVal); 
+            } catch (error) {
+                console.error("Failed to fetch unread chat count:", error);
+            }
+        };
+        
         fetchCount();
         const id = setInterval(fetchCount, 30000);
         return () => clearInterval(id);
