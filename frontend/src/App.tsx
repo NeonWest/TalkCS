@@ -15,6 +15,7 @@ import LeaderboardPage from './pages/LeaderboardPage';
 import ChatPage from './pages/ChatPage';
 import AdminPage from './pages/AdminPage';
 import CalendarPage from './pages/CalendarPage';
+import BadgesPage from './pages/BadgesPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 
@@ -43,6 +44,7 @@ function App() {
               <Route path="/category/:id" element={<ProtectedRoute><CategoryPage /></ProtectedRoute>} />
               <Route path="/post/:id" element={<ProtectedRoute><PostPage /></ProtectedRoute>} />
               <Route path="/profile/:username" element={<ProfilePage />} />
+              <Route path="/profile/:username/badges" element={<ProtectedRoute><BadgesPage /></ProtectedRoute>} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
               <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />

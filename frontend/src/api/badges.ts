@@ -6,8 +6,9 @@ export interface Badge {
     description: string;
     iconKey: string;
     type: 'MILESTONE' | 'SPECIAL';
-    awardedAt: string;
-}
+    earned: boolean;
+    awardedAt: string | null;
+    }
 
 export const getUserBadges = async (username: string): Promise<Badge[]> => {
     return (await api.get<Badge[]>(`/api/users/${username}/badges`)).data;

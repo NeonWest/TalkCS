@@ -59,6 +59,7 @@ public class UserService {
             .reputation(rep)
             .level(getLevelNumber(rep))
             .levelTitle(getLevelTitle(rep))
+            .nextLevelTitle(getNextLevelTitle(rep))
             .nextLevelRepRequired(getNextLevelRep(rep))
             .followerCount(followRepository.countByFollowingId(user.getId()))
             .followingCount(followRepository.countByFollowerId(user.getId()))
@@ -111,6 +112,14 @@ public class UserService {
         return "Newcomer";
     }
 
+    public static String getNextLevelTitle(int rep) {
+        if (rep >= 1000) return null;
+        if (rep >= 500)  return "Expert";
+        if (rep >= 200)  return "Trusted";
+        if (rep >= 50)   return "Regular";
+        return "Contributor";
+    }
+
     public static Integer getNextLevelRep(int rep) {
         if (rep >= 1000) return null;
         if (rep >= 500)  return 1000;
@@ -128,6 +137,7 @@ public class UserService {
                 .reputation(u.getReputation())
                 .level(getLevelNumber(u.getReputation()))
                 .levelTitle(getLevelTitle(u.getReputation()))
+                .nextLevelTitle(getNextLevelTitle(u.getReputation()))
                 .nextLevelRepRequired(getNextLevelRep(u.getReputation()))
                 .role(u.getRole())
                 .build())

@@ -11,5 +11,6 @@ public class BadgeResponse {
     private String description;
     private String iconKey;
     private BadgeType type;
+    private boolean earned;
     private LocalDateTime awardedAt;
 }
