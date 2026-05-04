@@ -240,9 +240,9 @@ function CommentItem({
                     </form>
                 ) : (
                     <>
-                        <div className="text-sm text-foreground" data-color-mode={colorMode}>
-                        <MDEditor.Markdown source={linkMentions(comment.body)} style={{ background: 'transparent', color: 'inherit' }} />
-                    </div>
+                        <div className="text-sm text-foreground overflow-x-auto" data-color-mode={colorMode}>
+                            <MDEditor.Markdown source={linkMentions(comment.body)} style={{ background: 'transparent', color: 'inherit' }} />
+                        </div>
                         <Button
                             size="icon"
                             variant="ghost"
@@ -593,7 +593,7 @@ export default function PostPage() {
                                 </div>
                             </div>
                             <div className="border-t border-border pt-3">
-                                <div className="text-base leading-relaxed text-foreground" data-color-mode={colorMode}>
+                                <div className="text-base leading-relaxed text-foreground overflow-x-auto" data-color-mode={colorMode}>
                                     <MDEditor.Markdown source={linkMentions(post.body)} style={{ background: 'transparent', color: 'inherit' }} />
                                 </div>
                                 {post.tags && post.tags.length > 0 && (
@@ -711,8 +711,8 @@ export default function PostPage() {
 
             {/* Edit post modal */}
             {showEditPostModal && (
-                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-                    <div className="bg-card text-foreground rounded-xl shadow-xl w-full max-lg p-6 mx-4 border border-border">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-card text-foreground rounded-xl shadow-xl w-full max-w-lg p-6 border border-border animate-in zoom-in-95 duration-200">
                         <h3 className="text-base font-semibold text-foreground mb-4">Edit Post</h3>
                         <form onSubmit={handleEditPost} className="space-y-3">
                             <div>

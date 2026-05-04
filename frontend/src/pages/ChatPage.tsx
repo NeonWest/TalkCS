@@ -201,7 +201,7 @@ export default function ChatPage() {
     const activeConv = conversations.find(c => c.id === activeConvId);
 
     return (
-        <div className="h-screen bg-popover text-foreground flex flex-col overflow-hidden">
+        <div className="h-[calc(100dvh-5rem)] bg-popover text-foreground flex flex-col overflow-hidden">
 
             <div className="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full border-x border-border bg-background">
                 {/* Sidebar */}

@@ -66,7 +66,7 @@ export default function CategoryPage() {
     const [votingResourceId, setVotingResourceId] = useState<number | null>(null);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState<'posts' | 'resources'>(
-        (location.state as any)?.activeTab === 'resources' ? 'resources' : 'posts'
+        (location.state as { activeTab?: string })?.activeTab === 'resources' ? 'resources' : 'posts'
     );
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
@@ -425,40 +425,42 @@ export default function CategoryPage() {
                         )}
 
                         {activeTab === 'resources' && (
-                            <div className="space-y-2.5">
+                            <div className="space-y-3">
                                 {resources.map(resource => (
-                                    <div key={resource.id} className="bg-card rounded-xl shadow-sm border border-border px-4 py-3">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-lg font-semibold text-primary truncate">{resource.title}</p>
-                                                <p className="text-sm text-muted-foreground mt-1">{resource.description}</p>
-                                                <div className="text-sm text-muted-foreground mt-2 flex items-center gap-2.5 flex-wrap">
-                                                    <span className="font-medium text-foreground">{resource.uploaderUsername}</span>
-                                                    <span>•</span>
-                                                    <span>{resource.fileName}</span>
-                                                    <span>•</span>
+                                    <div key={resource.id} className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-5">
+                                        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                                            <div className="flex-1 min-w-0 w-full">
+                                                <p className="text-lg font-bold text-primary truncate mb-1">{resource.title}</p>
+                                                <p className="text-sm text-muted-foreground line-clamp-2">{resource.description}</p>
+                                                <div className="text-xs text-muted-foreground mt-3 flex items-center gap-2.5 flex-wrap">
+                                                    <span className="font-bold text-foreground">{resource.uploaderUsername}</span>
+                                                    <span className="hidden xs:inline">•</span>
+                                                    <span className="truncate max-w-[150px]">{resource.fileName}</span>
+                                                    <span className="hidden xs:inline">•</span>
                                                     <span>{new Date(resource.createdAt).toLocaleDateString()}</span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2 shrink-0">
-                                                <button
-                                                    onClick={(e) => void handleVoteResource(resource.id, 1, e)}
-                                                    disabled={votingResourceId === resource.id}
-                                                    className={`text-sm transition ${resource.userVote === 1 ? 'text-primary' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}
-                                                >
-                                                    ▲
-                                                </button>
-                                                <span className="text-sm font-semibold text-foreground w-6 text-center">{resource.voteScore ?? 0}</span>
-                                                <button
-                                                    onClick={(e) => void handleVoteResource(resource.id, -1, e)}
-                                                    disabled={votingResourceId === resource.id}
-                                                    className={`text-sm transition ${resource.userVote === -1 ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}
-                                                >
-                                                    ▼
-                                                </button>
+                                            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto border-t sm:border-t-0 border-border pt-3 sm:pt-0">
+                                                <div className="flex items-center gap-1.5 bg-muted/60 px-2 py-1.5 rounded-lg">
+                                                    <button
+                                                        onClick={(e) => void handleVoteResource(resource.id, 1, e)}
+                                                        disabled={votingResourceId === resource.id}
+                                                        className={`text-sm transition ${resource.userVote === 1 ? 'text-primary' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}
+                                                    >
+                                                        ▲
+                                                    </button>
+                                                    <span className="text-sm font-bold text-foreground w-6 text-center">{resource.voteScore ?? 0}</span>
+                                                    <button
+                                                        onClick={(e) => void handleVoteResource(resource.id, -1, e)}
+                                                        disabled={votingResourceId === resource.id}
+                                                        className={`text-sm transition ${resource.userVote === -1 ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'} disabled:opacity-50`}
+                                                    >
+                                                        ▼
+                                                    </button>
+                                                </div>
                                                 <button
                                                     onClick={(e) => handleDownloadResource(resource.id, e)}
-                                                    className="text-xs px-3 py-1.5 rounded border border-border text-foreground hover:bg-accent/50 transition"
+                                                    className="flex-1 sm:flex-none text-xs px-4 py-2 rounded-lg bg-accent hover:bg-accent/80 text-foreground font-bold transition border border-border"
                                                 >
                                                     Download
                                                 </button>
@@ -466,9 +468,9 @@ export default function CategoryPage() {
                                                     <button
                                                         onClick={(e) => void handleDeleteResource(resource, e)}
                                                         disabled={deletingResourceId === resource.id}
-                                                        className="text-xs px-3 py-1.5 rounded border border-destructive/40 text-destructive hover:bg-destructive/10 transition disabled:opacity-50"
+                                                        className="text-xs px-3 py-2 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/10 transition font-bold disabled:opacity-50"
                                                     >
-                                                        {deletingResourceId === resource.id ? 'Deleting...' : 'Delete'}
+                                                        {deletingResourceId === resource.id ? '...' : 'Delete'}
                                                     </button>
                                                 )}
                                             </div>

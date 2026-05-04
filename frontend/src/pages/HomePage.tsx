@@ -260,59 +260,68 @@ export default function HomePage() {
                                         <article 
                                             key={post.id}
                                             onClick={() => navigate(`/post/${post.id}`)}
-                                            className="group bg-card hover:bg-accent/10 rounded-[2.5rem] border border-border p-6 transition-all cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 relative"
+                                            className="group bg-card hover:bg-accent/10 rounded-2xl sm:rounded-[2.5rem] border border-border p-4 sm:p-6 transition-all cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 relative"
                                         >
-                                            <div className="flex gap-6">
-                                                {/* Voting Sidebar on card */}
+                                            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                                                {/* Voting Sidebar on card - Desktop */}
                                                 <div className="hidden sm:flex flex-col items-center justify-center gap-2 bg-secondary/50 rounded-2xl px-3 py-4 self-start group-hover:bg-primary/10 transition-colors">
                                                     <button className="text-muted-foreground hover:text-primary transition-colors"><Plus size={18} /></button>
                                                     <span className="text-base font-black text-foreground">{post.voteScore}</span>
                                                     <button className="text-muted-foreground hover:text-blue-500 transition-colors"><MoreHorizontal size={18} /></button>
                                                 </div>
 
-                                                <div className="flex-1 min-w-0 space-y-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-2xl bg-primary/20 flex items-center justify-center text-primary font-black shadow-inner shadow-primary/10">
+                                                <div className="flex-1 min-w-0 space-y-3 sm:space-y-4">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <div className="flex items-center gap-3 min-w-0">
+                                                            <div className="w-8 h-8 sm:w-10 sm:h-10 shrink-0 rounded-xl sm:rounded-2xl bg-primary/20 flex items-center justify-center text-primary font-black shadow-inner shadow-primary/10 text-xs sm:text-base">
                                                                 {post.authorUsername.charAt(0).toUpperCase()}
                                                             </div>
-                                                            <div className="flex flex-col">
+                                                            <div className="flex flex-col min-w-0">
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="text-sm font-bold text-foreground hover:underline decoration-primary decoration-2 underline-offset-4">{post.authorUsername}</span>
-                                                                    <span className="px-2 py-0.5 rounded-lg bg-secondary text-[10px] font-black text-muted-foreground uppercase">{post.authorLevel}</span>
+                                                                    <span className="text-xs sm:text-sm font-bold text-foreground truncate hover:underline decoration-primary decoration-2 underline-offset-4">{post.authorUsername}</span>
+                                                                    <span className="px-1.5 py-0.5 rounded-lg bg-secondary text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase shrink-0">{post.authorLevel}</span>
                                                                 </div>
-                                                                <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                                                                <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium flex items-center gap-1">
                                                                     <Clock size={10} />
                                                                     {new Date(post.createdAt).toLocaleDateString()}
                                                                 </span>
                                                             </div>
                                                         </div>
-                                                        <span className="bg-primary/10 text-primary text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest border border-primary/20">
+                                                        <span className="bg-primary/10 text-primary text-[8px] sm:text-[10px] font-black px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl uppercase tracking-widest border border-primary/20 shrink-0">
                                                             {post.categoryName}
                                                         </span>
                                                     </div>
 
-                                                    <div className="space-y-2">
-                                                        <h3 className="text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-tight">
+                                                    <div className="space-y-1 sm:space-y-2">
+                                                        <h3 className="text-lg sm:text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-tight line-clamp-2">
                                                             {post.title}
                                                         </h3>
-                                                        <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed font-medium">
+                                                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3 leading-relaxed font-medium">
                                                             {post.body.replace(/[#*`]/g, '')}
                                                         </p>
                                                     </div>
 
-                                                    <div className="flex items-center gap-6 pt-2">
-                                                        <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
-                                                            <div className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-primary/20 group-hover:text-primary transition-all">
-                                                                <MessageSquare size={16} />
+                                                    <div className="flex items-center justify-between sm:justify-start gap-4 sm:gap-6 pt-2 border-t sm:border-t-0 border-border/50">
+                                                        <div className="flex items-center gap-4 sm:gap-6">
+                                                            <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
+                                                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center group-hover:bg-primary/20 group-hover:text-primary transition-all">
+                                                                    <MessageSquare size={14} className="sm:size-16" />
+                                                                </div>
+                                                                <span className="text-[10px] sm:text-xs font-black">{post.commentCount} <span className="hidden xs:inline">Comments</span></span>
                                                             </div>
-                                                            <span className="text-xs font-black">{post.commentCount} Comments</span>
+                                                            <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
+                                                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center group-hover:bg-blue-500/20 group-hover:text-blue-500 transition-all">
+                                                                    <Bookmark size={14} className="sm:size-16" />
+                                                                </div>
+                                                                <span className="text-[10px] sm:text-xs font-black">Save</span>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
-                                                            <div className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-blue-500/20 group-hover:text-blue-500 transition-all">
-                                                                <Bookmark size={16} />
-                                                            </div>
-                                                            <span className="text-xs font-black">Save</span>
+
+                                                        {/* Voting row on card - Mobile */}
+                                                        <div className="flex sm:hidden items-center gap-2 bg-secondary/50 rounded-xl px-2 py-1">
+                                                            <button className="text-muted-foreground hover:text-primary transition-colors p-1"><Plus size={14} /></button>
+                                                            <span className="text-xs font-black text-foreground">{post.voteScore}</span>
+                                                            <button className="text-muted-foreground hover:text-blue-500 transition-colors p-1"><MoreHorizontal size={14} /></button>
                                                         </div>
                                                     </div>
                                                 </div>
