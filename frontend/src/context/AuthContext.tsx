@@ -3,15 +3,24 @@ import type { ReactNode } from 'react';
 import type { AuthResponse } from '../api/auth';
 import { AuthContext } from './AuthContextDefinition';
 import api from '../api/api';
+import { isTokenExpired } from '../lib/utils';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<AuthResponse | null>(() => {
-        const stored = localStorage.getItem('user');
-        return stored ? JSON.parse(stored) : null;
+    const [token, setToken] = useState<string | null>(() => {
+        const storedToken = localStorage.getItem('token');
+        if (storedToken && isTokenExpired(storedToken)) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            return null;
+        }
+        return storedToken;
     });
 
-    const [token, setToken] = useState<string | null>(() => {
-        return localStorage.getItem('token');
+    const [user, setUser] = useState<AuthResponse | null>(() => {
+        const storedToken = localStorage.getItem('token');
+        if (!storedToken) return null;
+        const stored = localStorage.getItem('user');
+        return stored ? JSON.parse(stored) : null;
     });
 
     const logout = () => {

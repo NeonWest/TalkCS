@@ -1,6 +1,8 @@
 package com.talkcs.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDateTime;
 
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
@@ -30,5 +32,6 @@ public class Vote {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "resource_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Resource resource;
 }

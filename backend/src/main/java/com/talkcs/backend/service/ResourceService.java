@@ -32,7 +32,7 @@ public class ResourceService {
     private final CategoryRepository categoryRepository;
     private final VoteRepository voteRepository;
 
-    private static final String UPLOAD_DIR = "backend/uploads/";
+    private static final String UPLOAD_DIR = "uploads/";
 
     private int getVoteScore(Long resourceId) {
         return voteRepository.countByResourceIdAndValue(resourceId, 1) -
@@ -58,6 +58,7 @@ public class ResourceService {
     private ResourceResponse toResponse(Resource resource) {
         return ResourceResponse.builder()
             .id(resource.getId())
+            .categoryId(resource.getCategory().getId())
             .title(resource.getTitle())
             .description(resource.getDescription())
             .fileName(resource.getFileName())
@@ -72,6 +73,14 @@ public class ResourceService {
 
     public List<ResourceResponse> getResourcesByCategory(Long categoryId) {
         return resourceRepository.findByCategoryId(categoryId)
+            .stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
+    public List<ResourceResponse> getTrendingResources(int limit) {
+        LocalDateTime since = LocalDateTime.now().minusDays(365); // Last year for resources
+        return resourceRepository.findTopResources(since, org.springframework.data.domain.PageRequest.of(0, limit))
             .stream()
             .map(this::toResponse)
             .toList();
