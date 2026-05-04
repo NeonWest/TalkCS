@@ -56,6 +56,11 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getCurrentUser() {
+        return ResponseEntity.ok(userservice.getCurrentUserProfile());
+    }
+
     @PutMapping("/me")
     public ResponseEntity<UserResponse> updateProfile(@RequestBody UpdateProfileRequest request) {
         return ResponseEntity.ok(userservice.updateProfile(request.getBio()));

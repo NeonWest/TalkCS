@@ -2,6 +2,7 @@ import api from './api';
 
 export interface ResourceItem {
     id: number;
+    categoryId: number;
     title: string;
     description: string;
     fileName: string;
@@ -15,6 +16,10 @@ export interface ResourceItem {
 
 export const getResources = async (categoryId: number): Promise<ResourceItem[]> => {
     return (await api.get<ResourceItem[]>(`/api/resources?categoryId=${categoryId}`)).data;
+};
+
+export const getTrendingResources = async (limit: number = 5): Promise<ResourceItem[]> => {
+    return (await api.get<ResourceItem[]>(`/api/resources/trending?limit=${limit}`)).data;
 };
 
 export const uploadResource = async (

@@ -4,8 +4,10 @@ import com.talkcs.backend.dto.ResourceResponse;
 import com.talkcs.backend.model.Resource;
 import com.talkcs.backend.service.ResourceService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.PathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,8 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -30,6 +32,11 @@ public class ResourceController {
     @GetMapping
     public ResponseEntity<List<ResourceResponse>> getResourcesByCategory(@RequestParam Long categoryId) {
         return ResponseEntity.ok(resourceService.getResourcesByCategory(categoryId));
+    }
+
+    @GetMapping("/trending")
+    public ResponseEntity<List<ResourceResponse>> getTrendingResources(@RequestParam(defaultValue = "5") int limit) {
+        return ResponseEntity.ok(resourceService.getTrendingResources(limit));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -45,13 +52,21 @@ public class ResourceController {
     @GetMapping("/{id}/download")
     public ResponseEntity<org.springframework.core.io.Resource> downloadResource(@PathVariable Long id) throws IOException {
         Resource resource = resourceService.getResourceFile(id);
-        PathResource fileResource = new PathResource(Paths.get(resource.getFilePath()));
+        File file = new File(resource.getFilePath());
+        
+        if (!file.exists()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        FileSystemResource fileResource = new FileSystemResource(file);
         MediaType contentType = resource.getFileType() == null
             ? MediaType.APPLICATION_OCTET_STREAM
             : MediaType.parseMediaType(resource.getFileType());
 
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFileName() + "\"")
+            .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                .filename(resource.getFileName())
+                .build().toString())
             .contentType(contentType)
             .body(fileResource);
     }

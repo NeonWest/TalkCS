@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import { usePostUpdates } from '../hooks/usePostUpdates';
 import { getCategoryById } from '../api/categories';
@@ -34,6 +34,7 @@ export default function CategoryPage() {
     const { id } = useParams<{ id: string }>();
     const categoryId = Number(id);
     const navigate = useNavigate();
+    const location = useLocation();
     const { user, isAuthenticated, token } = useAuth();
 
     usePostUpdates(
@@ -64,7 +65,9 @@ export default function CategoryPage() {
     const [votingPostId, setVotingPostId] = useState<number | null>(null);
     const [votingResourceId, setVotingResourceId] = useState<number | null>(null);
     const [error, setError] = useState('');
-    const [activeTab, setActiveTab] = useState<'posts' | 'resources'>('posts');
+    const [activeTab, setActiveTab] = useState<'posts' | 'resources'>(
+        (location.state as any)?.activeTab === 'resources' ? 'resources' : 'posts'
+    );
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [hasNext, setHasNext] = useState(false);
@@ -231,7 +234,16 @@ export default function CategoryPage() {
 
     const handleDownloadResource = (resourceId: number, e: React.MouseEvent) => {
         e.stopPropagation();
-        window.open(`http://localhost:8080/api/resources/${resourceId}/download`, '_blank');
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+        const url = `${baseUrl}/api/resources/${resourceId}/download`;
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('target', '_blank');
+        link.setAttribute('download', '');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     return (

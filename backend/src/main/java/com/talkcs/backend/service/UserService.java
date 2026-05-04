@@ -69,6 +69,12 @@ public class UserService {
             .build();
     }
 
+    public UserResponse getCurrentUserProfile() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userrepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        return getUserProfile(user.getUsername());
+    }
+
     public UserResponse updateProfile(String bio) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userrepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));

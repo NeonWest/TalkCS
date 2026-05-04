@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tansta
 import { toast } from 'sonner';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../api/categories';
 import { getPosts, getTrendingPosts } from '../api/posts';
+import { getTrendingResources } from '../api/resources';
 import type { Category } from '../api/categories';
 import { useUI } from '../context/useUI';
 import { 
@@ -16,11 +17,11 @@ import {
     Clock, 
     Trash2,
     Zap,
-    Users,
     Bookmark,
     LayoutGrid,
     Flame,
-    ChevronDown
+    ChevronDown,
+    Download
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -63,6 +64,25 @@ export default function HomePage() {
         queryKey: ['trendingPosts'],
         queryFn: () => getTrendingPosts(8),
     });
+
+    const { data: trendingResources = [] } = useQuery({
+        queryKey: ['trendingResources'],
+        queryFn: () => getTrendingResources(5),
+    });
+
+    const handleDownloadResource = (resourceId: number, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+        const url = `${baseUrl}/api/resources/${resourceId}/download`;
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('target', '_blank');
+        link.setAttribute('download', ''); // Suggested by some browsers for force-download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     // Mutations
     const createMutation = useMutation({
@@ -359,16 +379,45 @@ export default function HomePage() {
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-primary to-orange-600 rounded-[2rem] p-6 text-primary-foreground shadow-2xl shadow-primary/30 relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                            <Users className="absolute bottom-[-10px] right-[-10px] w-24 h-24 opacity-20 transform -rotate-12" />
-                            <h4 className="text-lg font-black mb-2 relative z-10">TalkCS Community</h4>
-                            <p className="text-xs font-bold text-white/80 mb-6 leading-relaxed relative z-10">
-                                Connect with over 2,000+ developers sharing insights and building the future.
-                            </p>
-                            <button className="w-full py-3 bg-white text-primary rounded-xl font-black text-xs shadow-lg relative z-10 hover:bg-secondary transition-colors">
-                                Join Discord
-                            </button>
+                        <div className="bg-card/50 backdrop-blur-xl rounded-[2rem] border border-border p-6 shadow-xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 flex items-center gap-2 mb-6">
+                                <Download size={16} className="text-primary" />
+                                Trending Resources
+                            </h3>
+                            <div className="space-y-6">
+                                {trendingResources.length > 0 ? (
+                                    trendingResources.map((res) => (
+                                        <div 
+                                            key={res.id} 
+                                            className="w-full text-left group flex gap-4 items-start p-2 -m-2 rounded-2xl transition-all hover:bg-secondary/30"
+                                        >
+                                            <button 
+                                                onClick={(e) => handleDownloadResource(res.id, e)}
+                                                className="w-10 h-10 shrink-0 rounded-xl bg-secondary/80 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-sm"
+                                                title="Direct Download"
+                                            >
+                                                <Download size={18} />
+                                            </button>
+                                            <div 
+                                                className="min-w-0 flex-1 space-y-1 cursor-pointer"
+                                                onClick={() => navigate(`/category/${res.categoryId}`, { state: { activeTab: 'resources' } })}
+                                            >
+                                                <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                                                    {res.title}
+                                                </p>
+                                                <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                                                    <span>{res.fileType.split('/')[1]?.toUpperCase() || 'FILE'}</span>
+                                                    <span>•</span>
+                                                    <span>{res.voteScore} pts</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-xs font-bold text-muted-foreground/60 italic px-2">No resources found</p>
+                                )}
+                            </div>
                         </div>
 
                         <div className="px-6 text-[11px] text-muted-foreground/60 flex flex-wrap gap-x-4 gap-y-2 font-bold uppercase tracking-widest">
