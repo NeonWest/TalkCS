@@ -200,22 +200,22 @@ export default function CalendarPage() {
                         ) : (
                             <div className="grid gap-4">
                                 {proposals.map(p => (
-                                    <div key={p.id} className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border">
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <Badge variant="outline" className="border-primary/30 text-primary">{p.eventType}</Badge>
-                                                <h3 className="font-medium text-foreground">{p.title}</h3>
+                                    <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-muted rounded-lg border border-border">
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                                <Badge variant="outline" className="border-primary/30 text-primary shrink-0">{p.eventType}</Badge>
+                                                <h3 className="font-medium text-foreground truncate">{p.title}</h3>
                                             </div>
-                                            <p className="text-sm text-muted-foreground">{p.description}</p>
+                                            <p className="text-sm text-muted-foreground line-clamp-2">{p.description}</p>
                                             <p className="text-xs text-muted-foreground mt-1">
                                                 {p.startDate} {p.endDate ? `→ ${p.endDate}` : ''} · by {p.submittedByUsername}
                                             </p>
                                         </div>
-                                        <div className="flex gap-2">
-                                            <Button size="sm" onClick={() => handleApprove(p.id)} className="bg-green-600 hover:bg-green-700 text-white">
+                                        <div className="flex gap-2 shrink-0">
+                                            <Button size="sm" onClick={() => handleApprove(p.id)} className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white">
                                                 <Check className="h-4 w-4 mr-1" /> Approve
                                             </Button>
-                                            <Button size="sm" variant="destructive" onClick={() => setProposalAction({ id: p.id, note: '' })}>
+                                            <Button size="sm" variant="destructive" onClick={() => setProposalAction({ id: p.id, note: '' })} className="flex-1 sm:flex-none">
                                                 <X className="h-4 w-4 mr-1" /> Reject
                                             </Button>
                                         </div>

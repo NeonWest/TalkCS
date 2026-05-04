@@ -108,25 +108,25 @@ export default function GlobalPostComposer({ isOpen, onClose, initialCategoryId 
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose} />
             
-            <div className="relative w-full max-w-4xl bg-card border border-border shadow-2xl rounded-[2.5rem] overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+            <div className="relative w-full max-w-4xl bg-card border border-border shadow-2xl rounded-3xl sm:rounded-[2.5rem] overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh] animate-in zoom-in-95 duration-300">
                 {/* Header */}
-                <div className="px-8 py-6 border-b border-border flex items-center justify-between bg-accent/10">
+                <div className="px-5 sm:px-8 py-4 sm:py-6 border-b border-border flex items-center justify-between bg-accent/10">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-primary/20 flex items-center justify-center text-primary">
-                            <Plus size={24} strokeWidth={3} />
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-primary/20 flex items-center justify-center text-primary">
+                            <Plus className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={3} />
                         </div>
                         <div>
-                            <h2 className="text-xl font-black text-foreground">Create a Discussion</h2>
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Share your thoughts with the community</p>
+                            <h2 className="text-lg sm:text-xl font-black text-foreground">Create a Discussion</h2>
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Share your thoughts with the community</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2.5 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-all">
+                    <button onClick={onClose} className="p-2 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-all">
                         <X size={20} />
                     </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto no-scrollbar">
-                    <form onSubmit={handleCreate} className="p-8 space-y-8">
+                    <form onSubmit={handleCreate} className="p-5 sm:p-8 space-y-6 sm:space-y-8">
                         {/* Category Selector */}
                         <div className="space-y-3">
                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Post to Community</label>
@@ -134,15 +134,15 @@ export default function GlobalPostComposer({ isOpen, onClose, initialCategoryId 
                                 <button
                                     type="button"
                                     onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                                    className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all text-left group
+                                    className={`w-full flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 rounded-2xl border transition-all text-left group
                                         ${isCategoryDropdownOpen ? 'border-primary ring-4 ring-primary/10 bg-background' : 'border-border bg-secondary/30 hover:border-primary/50 hover:bg-secondary/50'}`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs transition-colors
+                                        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-black text-xs transition-colors
                                             ${selectedCategory ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                                             {selectedCategory ? selectedCategory.name.charAt(0).toUpperCase() : '?'}
                                         </div>
-                                        <span className={`font-bold ${selectedCategory ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                        <span className={`text-sm sm:text-base font-bold ${selectedCategory ? 'text-foreground' : 'text-muted-foreground'}`}>
                                             {selectedCategory ? selectedCategory.name : 'Choose a category...'}
                                         </span>
                                     </div>
@@ -200,7 +200,7 @@ export default function GlobalPostComposer({ isOpen, onClose, initialCategoryId 
                                     required
                                     value={form.title}
                                     onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                                    className="w-full bg-secondary/30 border border-border rounded-2xl px-6 py-4 text-xl font-bold text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background transition-all"
+                                    className="w-full bg-secondary/30 border border-border rounded-2xl px-5 sm:px-6 py-3 sm:py-4 text-lg sm:text-xl font-bold text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background transition-all"
                                     placeholder="What's on your mind?"
                                 />
                             </div>
@@ -244,7 +244,7 @@ export default function GlobalPostComposer({ isOpen, onClose, initialCategoryId 
                                     value={formTagInput}
                                     onChange={e => setFormTagInput(e.target.value)}
                                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }}
-                                    className="w-full bg-secondary/30 border border-border rounded-2xl px-6 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                                    className="w-full bg-secondary/30 border border-border rounded-2xl px-5 sm:px-6 py-2.5 sm:py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                                 />
                             </div>
                         </div>
@@ -252,8 +252,8 @@ export default function GlobalPostComposer({ isOpen, onClose, initialCategoryId 
                 </div>
 
                 {/* Footer Actions */}
-                <div className="px-8 py-6 border-t border-border bg-accent/5 flex items-center justify-between">
-                    <div className="flex-1 mr-8">
+                <div className="px-5 sm:px-8 py-4 sm:py-6 border-t border-border bg-accent/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex-1 w-full sm:mr-8">
                         {error && (
                             <div className="flex items-center gap-2 text-destructive text-xs font-bold animate-in slide-in-from-left-2 duration-300">
                                 <AlertCircle size={14} />
@@ -267,16 +267,17 @@ export default function GlobalPostComposer({ isOpen, onClose, initialCategoryId 
                             </div>
                         )}
                     </div>
-                    <div className="flex items-center gap-4 shrink-0">
-                        <button type="button" onClick={onClose} className="px-6 py-3 text-sm font-bold text-muted-foreground hover:bg-secondary rounded-2xl transition-all">
+                    <div className="flex items-center gap-3 sm:gap-4 shrink-0 w-full sm:w-auto">
+                        <button type="button" onClick={onClose} className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 text-sm font-bold text-muted-foreground hover:bg-secondary rounded-2xl transition-all">
                             Discard
                         </button>
                         <button
                             onClick={handleCreate}
                             disabled={creating || !selectedCategoryId || !form.title.trim()}
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-2xl font-black shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2"
+                            className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-primary-foreground px-6 sm:px-8 py-2.5 sm:py-3 rounded-2xl font-black shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2"
                         >
-                            {creating ? 'Publishing...' : 'Post Discussion'}
+                            <span className="hidden xs:inline">{creating ? 'Publishing...' : 'Post Discussion'}</span>
+                            <span className="xs:hidden">{creating ? '...' : 'Post'}</span>
                             <Send size={18} />
                         </button>
                     </div>
