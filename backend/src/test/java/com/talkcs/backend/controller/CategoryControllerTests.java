@@ -5,10 +5,12 @@ import com.talkcs.backend.dto.CategoryResponse;
 import com.talkcs.backend.security.JwtAuthFilter;
 import com.talkcs.backend.security.JwtUtils;
 import com.talkcs.backend.service.CategoryService;
+import com.talkcs.backend.testsupport.MethodSecurityTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -21,10 +23,13 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CategoryController.class)
+@Import(MethodSecurityTestConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 class CategoryControllerTests {
@@ -58,6 +63,36 @@ class CategoryControllerTests {
         req.setName("Tech"); req.setDescription("d");
         when(categoryservice.createCategory(any())).thenReturn(CategoryResponse.builder().id(1L).name("Tech").build());
 
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "STUDENT")
+    void createCategory_returns403ForStudent() throws Exception {
+        CategoryRequest req = new CategoryRequest();
+        req.setName("X"); req.setDescription("d");
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "STUDENT")
+    void deleteCategory_returns403ForStudent() throws Exception {
+        mockMvc.perform(delete("/api/categories/1"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "PROFESSOR")
+    void createCategory_returns200ForProfessor() throws Exception {
+        CategoryRequest req = new CategoryRequest();
+        req.setName("X"); req.setDescription("d");
+        when(categoryservice.createCategory(any())).thenReturn(CategoryResponse.builder().id(1L).build());
         mockMvc.perform(post("/api/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))

@@ -5,10 +5,12 @@ import com.talkcs.backend.model.SiteConfig;
 import com.talkcs.backend.security.JwtAuthFilter;
 import com.talkcs.backend.security.JwtUtils;
 import com.talkcs.backend.service.AdminService;
+import com.talkcs.backend.testsupport.MethodSecurityTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -20,6 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AdminController.class)
+@Import(MethodSecurityTestConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 class AdminControllerTests {
@@ -44,6 +47,9 @@ class AdminControllerTests {
         mockMvc.perform(get("/api/admin/config")).andExpect(status().isOk());
     }
 
-    // Role-based denial covered in integration tests; @WebMvcTest slice does not
-    // auto-load @EnableMethodSecurity, so @PreAuthorize is not enforced here.
+    @Test
+    @WithMockUser(roles = "STUDENT")
+    void getStats_returns403ForNonAdmin() throws Exception {
+        mockMvc.perform(get("/api/admin/stats")).andExpect(status().isForbidden());
+    }
 }
