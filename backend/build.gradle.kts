@@ -21,6 +21,8 @@ configurations {
 	}
 }
 
+val mockitoAgent = configurations.create("mockitoAgent")
+
 repositories {
 	mavenCentral()
 }
@@ -46,11 +48,13 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-websocket-test")
 	testImplementation("com.h2database:h2")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	mockitoAgent("org.mockito:mockito-core") { isTransitive = false }
 
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	jvmArgs("-javaagent:${mockitoAgent.asPath}")
 	finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
 }
 
