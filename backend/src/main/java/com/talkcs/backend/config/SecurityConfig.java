@@ -80,8 +80,15 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         
-        // Allow all origins for dev to rule out CORS issues
-        config.setAllowedOriginPatterns(List.of("*"));
+        // Same origins as the WebSocket endpoint: the configured frontend
+        // (app.base-url) plus the local Vite dev server.
+        config.setAllowedOriginPatterns(List.of(
+                frontendUrl,
+                "http://localhost:5173",
+                "http://localhost:5174",
+                "http://127.0.0.1:5173",
+                "http://127.0.0.1:5174"
+        ));
         
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
