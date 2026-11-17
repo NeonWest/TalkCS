@@ -67,6 +67,17 @@ class PostControllerTests {
     }
 
     @Test
+    void createPost_returns400WhenBodyTooLong() throws Exception {
+        PostRequest req = new PostRequest();
+        req.setTitle("t"); req.setBody("x".repeat(20001)); req.setCategoryId(1L);
+
+        mockMvc.perform(post("/api/posts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void getPostById_returns200() throws Exception {
         when(postservice.getPostById(5L)).thenReturn(PostResponse.builder().id(5L).title("x").build());
 

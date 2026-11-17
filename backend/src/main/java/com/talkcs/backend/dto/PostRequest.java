@@ -10,6 +10,7 @@ public class PostRequest {
     @NotBlank
     private String title;
     @NotBlank
+    @Size(max = 20000)
     private String body;
     @NotNull
     private Long categoryId;

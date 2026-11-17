@@ -173,4 +173,16 @@ class PostRepositoryTests {
         assertThat(first.getTotalPages()).isEqualTo(2);
         assertThat(all.getContent()).extracting(Post::getTitle).containsExactly("old busy", "quiet newest");
     }
+
+    @Test
+    void save_acceptsPostAndCommentBodiesLongerThan255Characters() {
+        String longBody = "x".repeat(5000);
+        Post post = postRepository.saveAndFlush(Post.builder().title("Long").body(longBody).author(author)
+                .category(category).status(com.talkcs.backend.model.PostStatus.OPEN).createdAt(LocalDateTime.now()).build());
+        com.talkcs.backend.model.Comment comment = commentRepository.saveAndFlush(com.talkcs.backend.model.Comment.builder()
+                .body(longBody).author(author).post(post).createdAt(LocalDateTime.now()).build());
+
+        assertThat(postRepository.findById(post.getId()).orElseThrow().getBody()).hasSize(5000);
+        assertThat(commentRepository.findById(comment.getId()).orElseThrow().getBody()).hasSize(5000);
+    }
 }

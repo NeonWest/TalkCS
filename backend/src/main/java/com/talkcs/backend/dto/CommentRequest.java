@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class CommentRequest{
     @NotBlank
+    @Size(max = 10000)
     private String body;
     @NotNull
     private Long postId;
