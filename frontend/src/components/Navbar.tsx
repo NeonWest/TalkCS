@@ -33,7 +33,7 @@ export default function Navbar() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'PROFESSOR';
+    const isAdmin = user?.role === 'ADMIN';
     const onAdmin = location.pathname === '/admin';
     const onLeaderboard = location.pathname === '/leaderboard';
     const onCalendar = location.pathname === '/calendar';
