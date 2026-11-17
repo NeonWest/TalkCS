@@ -6,6 +6,7 @@ import com.talkcs.backend.repository.PasswordResetTokenRepository;
 import com.talkcs.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,9 @@ public class PasswordResetService {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     @Transactional
     public void requestReset(String email) {
@@ -49,7 +53,7 @@ public class PasswordResetService {
         passwordResetTokenRepository.save(resetToken);
 
         // Send email
-        String resetLink = "http://localhost:5173/reset-password?token=" + token;
+        String resetLink = baseUrl + "/reset-password?token=" + token;
         String emailBody = "Click the link below to reset your TalkCS password:\n\n" + resetLink;
         try {
             emailService.sendNotificationEmail(

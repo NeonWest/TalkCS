@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -48,6 +49,18 @@ class PasswordResetServiceTests {
         verify(tokenRepository).deleteByUser(u);
         verify(tokenRepository).save(any(PasswordResetToken.class));
         verify(emailService).sendNotificationEmail(eq(u), any(), any());
+    }
+
+    @Test
+    void requestReset_buildsLinkFromConfiguredBaseUrl() {
+        ReflectionTestUtils.setField(passwordResetService, "baseUrl", "https://talkcs.example.org");
+        User u = User.builder().id(1L).email("u@t.com").username("u").build();
+        when(userRepository.findByEmail("u@t.com")).thenReturn(Optional.of(u));
+
+        passwordResetService.requestReset("u@t.com");
+
+        verify(emailService).sendNotificationEmail(eq(u), any(),
+            contains("https://talkcs.example.org/reset-password?token="));
     }
 
     @Test
