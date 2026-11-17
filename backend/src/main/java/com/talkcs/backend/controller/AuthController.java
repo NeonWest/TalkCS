@@ -3,6 +3,7 @@ package com.talkcs.backend.controller;
 import com.talkcs.backend.dto.AuthResponse;
 import com.talkcs.backend.dto.LoginRequest;
 import com.talkcs.backend.dto.RegisterRequest;
+import com.talkcs.backend.dto.ResetPasswordRequest;
 import com.talkcs.backend.service.AuthService;
 import com.talkcs.backend.service.PasswordResetService;
 import jakarta.validation.Valid;
@@ -38,10 +39,8 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) {
-        String token = request.get("token");
-        String newPassword = request.get("newPassword");
-        passwordResetService.resetPassword(token, newPassword);
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok("Password reset successfully.");
     }
 }

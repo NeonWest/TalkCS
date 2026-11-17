@@ -34,11 +34,11 @@ describe('ResetPasswordPage', () => {
     it('rejects short password', async () => {
         renderWithToken('abc');
         const inputs = screen.getAllByPlaceholderText('••••••••');
-        fireEvent.change(inputs[0], { target: { value: 'short' } });
-        fireEvent.change(inputs[1], { target: { value: 'short' } });
+        fireEvent.change(inputs[0], { target: { value: 'short12' } });
+        fireEvent.change(inputs[1], { target: { value: 'short12' } });
         fireEvent.click(screen.getByRole('button'));
         await waitFor(() => {
-            expect(screen.getByText(/at least 6 characters/i)).toBeInTheDocument();
+            expect(screen.getByText(/at least 8 characters/i)).toBeInTheDocument();
         });
     });
 
@@ -46,11 +46,11 @@ describe('ResetPasswordPage', () => {
         (authApi.resetPassword as ReturnType<typeof vi.fn>).mockResolvedValue('ok');
         renderWithToken('abc');
         const inputs = screen.getAllByPlaceholderText('••••••••');
-        fireEvent.change(inputs[0], { target: { value: 'newPw1!' } });
-        fireEvent.change(inputs[1], { target: { value: 'newPw1!' } });
+        fireEvent.change(inputs[0], { target: { value: 'newPassw0rd!' } });
+        fireEvent.change(inputs[1], { target: { value: 'newPassw0rd!' } });
         fireEvent.click(screen.getByRole('button'));
         await waitFor(() => {
-            expect(authApi.resetPassword).toHaveBeenCalledWith('abc', 'newPw1!');
+            expect(authApi.resetPassword).toHaveBeenCalledWith('abc', 'newPassw0rd!');
         });
     });
 });

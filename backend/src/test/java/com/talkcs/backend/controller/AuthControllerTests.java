@@ -96,7 +96,15 @@ class AuthControllerTests {
     void resetPassword_returns200OnValidToken() throws Exception {
         mockMvc.perform(post("/api/auth/reset-password")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"token\":\"abc\",\"newPassword\":\"pw\"}"))
+                .content("{\"token\":\"abc\",\"newPassword\":\"Password1!\"}"))
             .andExpect(status().isOk());
+    }
+
+    @Test
+    void resetPassword_returns400WhenPasswordTooShort() throws Exception {
+        mockMvc.perform(post("/api/auth/reset-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"token\":\"abc\",\"newPassword\":\"short12\"}"))
+            .andExpect(status().isBadRequest());
     }
 }
