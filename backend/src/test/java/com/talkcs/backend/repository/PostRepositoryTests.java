@@ -34,11 +34,19 @@ class PostRepositoryTests {
     @Autowired
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private VoteRepository voteRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
+
     private User author;
     private Category category;
 
     @BeforeEach
     void setUp() {
+        voteRepository.deleteAll();
+        commentRepository.deleteAll();
         postRepository.deleteAll();
         userRepository.deleteAll();
         categoryRepository.deleteAll();
@@ -116,5 +124,53 @@ class PostRepositoryTests {
 
         // Then
         assertThat(count).isEqualTo(2);
+    }
+
+    private Post savePost(String title, LocalDateTime createdAt) {
+        return postRepository.save(Post.builder().title(title).body("b").author(author).category(category)
+                .status(com.talkcs.backend.model.PostStatus.OPEN).createdAt(createdAt).build());
+    }
+
+    private User saveUser(String name) {
+        return userRepository.save(User.builder().username(name).email(name + "@test.com").build());
+    }
+
+    @Test
+    void findByCategoryIdOrderByVoteScore_ordersAcrossPages() {
+        LocalDateTime now = LocalDateTime.now();
+        Post oldPopular = savePost("old popular", now.minusDays(3));
+        Post middle = savePost("middle", now.minusDays(2));
+        Post newest = savePost("newest", now.minusDays(1));
+        User v1 = saveUser("v1"), v2 = saveUser("v2");
+        voteRepository.save(com.talkcs.backend.model.Vote.builder().voter(v1).post(oldPopular).value(1).createdAt(now).build());
+        voteRepository.save(com.talkcs.backend.model.Vote.builder().voter(v2).post(oldPopular).value(1).createdAt(now).build());
+        voteRepository.save(com.talkcs.backend.model.Vote.builder().voter(v1).post(newest).value(-1).createdAt(now).build());
+
+        Page<Post> first = postRepository.findByCategoryIdOrderByVoteScore(category.getId(), PageRequest.of(0, 1));
+        Page<Post> second = postRepository.findByCategoryIdOrderByVoteScore(category.getId(), PageRequest.of(1, 1));
+        Page<Post> third = postRepository.findAllOrderByVoteScore(PageRequest.of(2, 1));
+
+        assertThat(first.getContent()).extracting(Post::getTitle).containsExactly("old popular");
+        assertThat(second.getContent()).extracting(Post::getTitle).containsExactly("middle");
+        assertThat(third.getContent()).extracting(Post::getTitle).containsExactly("newest");
+        assertThat(first.getTotalElements()).isEqualTo(3);
+    }
+
+    @Test
+    void findByCategoryIdOrderByCommentCount_ordersAcrossPages() {
+        LocalDateTime now = LocalDateTime.now();
+        Post oldBusy = savePost("old busy", now.minusDays(3));
+        savePost("quiet newest", now.minusDays(1));
+        for (int i = 0; i < 2; i++) {
+            commentRepository.save(com.talkcs.backend.model.Comment.builder().body("c" + i).author(author)
+                    .post(oldBusy).createdAt(now).build());
+        }
+
+        Page<Post> first = postRepository.findByCategoryIdOrderByCommentCount(category.getId(), PageRequest.of(0, 1));
+        Page<Post> all = postRepository.findAllOrderByCommentCount(PageRequest.of(0, 10));
+
+        assertThat(first.getContent()).extracting(Post::getTitle).containsExactly("old busy");
+        assertThat(first.getTotalPages()).isEqualTo(2);
+        assertThat(all.getContent()).extracting(Post::getTitle).containsExactly("old busy", "quiet newest");
     }
 }

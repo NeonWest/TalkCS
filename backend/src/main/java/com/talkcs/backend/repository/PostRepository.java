@@ -15,6 +15,28 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     long countByCreatedAtAfter(java.time.LocalDateTime date);
 
+    // Sorting by net vote score / comment count has to happen in the query,
+    // otherwise only the rows of the current page would be reordered.
+    @org.springframework.data.jpa.repository.Query(
+        value = "SELECT p FROM Post p ORDER BY (SELECT COALESCE(SUM(v.value), 0) FROM Vote v WHERE v.post = p) DESC, p.createdAt DESC",
+        countQuery = "SELECT COUNT(p) FROM Post p")
+    Page<Post> findAllOrderByVoteScore(Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query(
+        value = "SELECT p FROM Post p WHERE p.category.id = :categoryId ORDER BY (SELECT COALESCE(SUM(v.value), 0) FROM Vote v WHERE v.post = p) DESC, p.createdAt DESC",
+        countQuery = "SELECT COUNT(p) FROM Post p WHERE p.category.id = :categoryId")
+    Page<Post> findByCategoryIdOrderByVoteScore(@org.springframework.data.repository.query.Param("categoryId") Long categoryId, Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query(
+        value = "SELECT p FROM Post p ORDER BY (SELECT COUNT(c) FROM Comment c WHERE c.post = p) DESC, p.createdAt DESC",
+        countQuery = "SELECT COUNT(p) FROM Post p")
+    Page<Post> findAllOrderByCommentCount(Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query(
+        value = "SELECT p FROM Post p WHERE p.category.id = :categoryId ORDER BY (SELECT COUNT(c) FROM Comment c WHERE c.post = p) DESC, p.createdAt DESC",
+        countQuery = "SELECT COUNT(p) FROM Post p WHERE p.category.id = :categoryId")
+    Page<Post> findByCategoryIdOrderByCommentCount(@org.springframework.data.repository.query.Param("categoryId") Long categoryId, Pageable pageable);
+
     @org.springframework.data.jpa.repository.Query(
         value = "SELECT p FROM Post p WHERE p.createdAt >= :since ORDER BY (SELECT COUNT(v) FROM Vote v WHERE v.post = p AND v.value = 1) * 2 + (SELECT COUNT(c) FROM Comment c WHERE c.post = p) DESC")
     List<Post> findTrendingPosts(@org.springframework.data.repository.query.Param("since") java.time.LocalDateTime since, org.springframework.data.domain.Pageable pageable);

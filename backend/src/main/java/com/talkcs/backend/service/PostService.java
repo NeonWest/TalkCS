@@ -36,33 +36,27 @@ public class PostService{
     private final NotificationService notificationService;
 
     public Map<String, Object> getAllPostsByCategoryId(Long categoryId, int page, int size, String sortBy) {
-        Sort sort = switch (sortBy) {
-            case "votes" -> Sort.by("id").descending();
-            case "comments" -> Sort.by("id").descending();
-            default -> Sort.by("createdAt").descending();
-        };
-
-        Pageable pageable = PageRequest.of(page, size, sort);
         Page<Post> postPage;
-        if (categoryId != null) {
-            postPage = postrepository.findByCategoryId(categoryId, pageable);
+        if ("votes".equals(sortBy)) {
+            Pageable pageable = PageRequest.of(page, size);
+            postPage = categoryId != null
+                ? postrepository.findByCategoryIdOrderByVoteScore(categoryId, pageable)
+                : postrepository.findAllOrderByVoteScore(pageable);
+        } else if ("comments".equals(sortBy)) {
+            Pageable pageable = PageRequest.of(page, size);
+            postPage = categoryId != null
+                ? postrepository.findByCategoryIdOrderByCommentCount(categoryId, pageable)
+                : postrepository.findAllOrderByCommentCount(pageable);
         } else {
-            postPage = postrepository.findAll(pageable);
+            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+            postPage = categoryId != null
+                ? postrepository.findByCategoryId(categoryId, pageable)
+                : postrepository.findAll(pageable);
         }
-        
+
         List<PostResponse> posts = postPage.getContent().stream()
             .map(this::toResponse)
             .toList();
-
-        if ("votes".equals(sortBy)) {
-            posts = posts.stream()
-                .sorted((a, b) -> Integer.compare(b.getVoteScore(), a.getVoteScore()))
-                .toList();
-        } else if ("comments".equals(sortBy)) {
-            posts = posts.stream()
-                .sorted((a, b) -> Integer.compare(b.getCommentCount(), a.getCommentCount()))
-                .toList();
-        }
 
         Map<String, Object> response = new HashMap<>();
         response.put("posts", posts);
