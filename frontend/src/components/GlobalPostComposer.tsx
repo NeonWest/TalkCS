@@ -228,7 +228,7 @@ export default function GlobalPostComposer({ isOpen, onClose, initialCategoryId 
                                         onClick={autoSuggestTags}
                                         className="text-[10px] font-black uppercase text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
                                     >
-                                        <Sparkles size={10} /> AI Suggest
+                                        <Sparkles size={10} /> Suggest tags
                                     </button>
                                 </div>
                                 <div className="flex flex-wrap gap-2 mb-3">
