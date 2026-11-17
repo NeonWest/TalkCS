@@ -1,0 +1,276 @@
+\chapter{Testing}
+\label{ch:testing}
+
+The correctness of TalkCS was verified with automated tests on both the backend and the
+frontend, complemented by manual testing of the complete application in the browser.
+This chapter describes the testing strategy, the test suites, and their results.
+
+\section{Testing Strategy}
+
+The automated tests follow the idea of the \emph{test pyramid}: a large number of fast,
+isolated unit tests for the business logic, a smaller number of tests for the web and
+persistence layers, and a few end-to-end style integration tests that exercise the
+complete stack. Table~\ref{tab:test-levels} gives an overview.
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{@{}l X r r@{}}
+    \toprule
+    \textbf{Level} & \textbf{Tools and scope} & \textbf{Classes / files} & \textbf{Tests} \\
+    \midrule
+    Backend service unit tests & JUnit 5, Mockito; services with mocked repositories & 20 & 118 \\
+    Backend controller tests & \code{@WebMvcTest}, MockMvc; HTTP layer with mocked services & 14 & 57 \\
+    Backend repository tests & \code{@DataJpaTest}, H2; JPA queries & 8 & 25 \\
+    Backend integration tests & \code{@SpringBootTest}; full application context & 3 & 5 \\
+    \midrule
+    Frontend API client tests & Vitest; Axios mocked & 14 & 60 \\
+    Frontend page, hook and component tests & Vitest, React Testing Library, jsdom & 13 & 40 \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Overview of the automated test suites}
+  \label{tab:test-levels}
+\end{table}
+
+All tests can be run with a single command from the project root:
+
+\begin{lstlisting}[language=bash,caption={Running all tests},label={lst:testsh}]
+./test.sh
+# which is equivalent to:
+cd backend  && ./gradlew test          # backend tests + JaCoCo report
+cd frontend && npm test -- --run       # frontend tests
+\end{lstlisting}
+
+Backend tests use a separate configuration profile (\code{application-test.properties})
+which replaces PostgreSQL with an H2 in-memory database in PostgreSQL compatibility mode,
+uses a fixed test JWT secret, and a dummy e-mail API key, so the tests never touch the
+development database or send real e-mails. Each test that needs a logged-in user sets the
+security context through a small helper class (\code{SecurityTestSupport}).
+
+\section{Backend Unit Tests}
+
+Service tests are plain JUnit 5 tests that run with the \code{MockitoExtension}. The
+service under test is created with \code{@InjectMocks}, and all of its dependencies
+(repositories, other services, the messaging template) are replaced with Mockito mocks.
+These tests run in milliseconds and check the business rules in isolation, both the
+expected behaviour and the error cases. The most important tested rules are:
+
+\begin{description}
+  \item[AuthService] registration hashes the password and returns a token; duplicate
+    e-mail addresses and usernames are rejected; login fails for unknown users and wrong
+    passwords.
+  \item[PasswordResetService] unknown e-mail addresses are silently ignored; a valid
+    request stores a token and sends an e-mail whose link is built from the configured
+    base URL; invalid, used and expired tokens are
+    rejected; a successful reset updates the password and marks the token as used.
+  \item[VoteService] self-votes are blocked; a new vote changes the author's reputation;
+    clicking the same vote again removes it; changing the direction adjusts the
+    reputation by the difference.
+  \item[PostService] (13 tests) posts are created and linked to existing categories only;
+    only the author can edit; the author and administrators can delete; accepting an
+    answer updates the reputation and notifies the answerer, and is blocked for other
+    users; withdrawing an acceptance reverses the rewards; bookmarking is idempotent.
+  \item[BadgeService] the first-post badge is awarded at the threshold and not below it;
+    badges are never awarded twice; the bronze expertise badge is awarded at 50 category
+    reputation.
+  \item[SimilarityService] an empty category yields no suggestions; a post sharing
+    specific terms with the draft is ranked above unrelated posts.
+  \item[TagSuggestionService] matching tags are returned; stop words and short tokens are
+    ignored; at most five tags are suggested.
+  \item[MentionService] mentions are extracted, de-duplicated and restricted to existing
+    users.
+  \item[ChatService] conversation participants are stored in normalized order and
+    reused; messages are persisted and broadcast to both participants; non-members cannot
+    send messages.
+  \item[CalendarService] events of administrators are public and those of students
+    private; proposals are created as pending; approval creates a public event; rejection
+    stores the note; non-owners cannot edit events.
+  \item[EmailDigestService] digests are sent only to users with recent unread
+    notifications who have not opted out.
+\end{description}
+
+Code~\ref{lst:test-vote} shows a typical service test, which checks that withdrawing a
+vote restores the author's reputation.
+
+\begin{lstlisting}[language=Java,caption={Unit test of vote toggling (\texttt{VoteServiceTests.java})},label={lst:test-vote}]
+@Test
+void voteOnPost_togglingSameVoteRemovesIt() {
+    SecurityTestSupport.setAuth("voter@t.com");
+    User voter = user(2L, "voter@t.com", 0);
+    User author = user(1L, "a@t.com", 11);
+    Post p = Post.builder().id(1L).author(author).category(cat()).build();
+    Vote existing = Vote.builder().id(50L).voter(voter).post(p).value(1).build();
+    when(userRepository.findByEmail("voter@t.com")).thenReturn(Optional.of(voter));
+    when(postRepository.findById(1L)).thenReturn(Optional.of(p));
+    when(voteRepository.findByVoterIdAndPostId(2L, 1L)).thenReturn(Optional.of(existing));
+    when(categoryReputationRepository.findByUserIdAndCategoryId(any(), any()))
+        .thenReturn(Optional.empty());
+
+    voteService.voteOnPost(1L, 1);
+    assertThat(author.getReputation()).isEqualTo(10);
+    verify(voteRepository).delete(existing);
+}
+\end{lstlisting}
+
+\section{Backend Controller Tests}
+
+Controller tests use Spring's \code{@WebMvcTest} slice, which starts only the web layer
+of the application: the controller under test, JSON serialization, validation and
+exception handling. Services are replaced with \code{@MockitoBean} mocks, and requests are
+sent with \code{MockMvc} without starting a real server. Every one of the fourteen REST
+controllers has its own test class, which verifies the URL mappings, request parameters,
+status codes and the structure of the JSON responses.
+
+Three of the classes (\code{AdminControllerTests}, \code{CategoryControllerTests} and
+\code{CalendarControllerTests}) additionally import a configuration that enables method
+security, and use \code{@WithMockUser} to verify the role-based access rules. For example,
+they check that a user with the Student role receives \code{403 Forbidden} when trying to
+read the admin statistics, create or archive a category, list the pending calendar
+proposals or approve a proposal (Code~\ref{lst:test-403}).
+
+\begin{lstlisting}[language=Java,caption={Verifying role-based access control (\texttt{CategoryControllerTests.java})},label={lst:test-403}]
+@Test
+@WithMockUser(roles = "STUDENT")
+void createCategory_returns403ForStudent() throws Exception {
+    CategoryRequest req = new CategoryRequest();
+    req.setName("X"); req.setDescription("d");
+    mockMvc.perform(post("/api/categories")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(req)))
+        .andExpect(status().isForbidden());
+}
+\end{lstlisting}
+
+\section{Backend Repository Tests}
+
+Repository tests use the \code{@DataJpaTest} slice, which starts Hibernate with the H2
+database and rolls back every test in a transaction. They verify the derived and custom
+queries that the services rely on, for example that archived categories are excluded,
+that only root comments are returned for a post, that posts sorted by vote score or
+comment count are ordered correctly across pages, that post and comment bodies longer
+than 255 characters are stored, that unread notifications are counted
+and marked as read correctly, that votes are filtered by value, and that the popular
+tags query orders tags by the number of posts using them.
+
+\section{Backend Integration Tests}
+
+Three test classes start the complete Spring application context with
+\code{@SpringBootTest}. The first one simply checks that the application context loads, which catches configuration
+errors such as missing beans or invalid properties. The second one,
+\code{UserLifecycleIntegrationTests}, exercises the whole security chain through real HTTP
+requests: it registers a new user, logs in with the same credentials, extracts the JWT
+from the response, and calls the protected \code{GET /api/users/me} endpoint with the
+token, expecting a successful response. This test passes through the real
+\code{JwtAuthFilter}, \code{UserLoader}, services and repositories. The third one,
+\code{CorsIntegrationTests}, sends CORS preflight requests and checks that the configured
+frontend URL and the local development server are allowed, while any other origin is
+rejected.
+
+\section{Backend Test Results and Coverage}
+
+All 205 backend tests in 45 test classes pass. The complete suite runs in about ten
+seconds. Code coverage is measured with JaCoCo, which is configured in Gradle to produce
+an HTML report after every test run (\code{backend/build/reports/jacoco/test/html}).
+Table~\ref{tab:coverage} summarizes the coverage per package.
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{@{}l r r@{}}
+    \toprule
+    \textbf{Package} & \textbf{Instruction coverage} & \textbf{Branch coverage} \\
+    \midrule
+    \code{config} & 95\% & 50\% \\
+    \code{model} & 90\% & 0\% \\
+    \code{dto} & 78\% & 50\% \\
+    \code{service} & 70\% & 63\% \\
+    \code{controller} & 52\% & 0\% \\
+    \code{security} & 45\% & 13\% \\
+    \midrule
+    \textbf{Total} & \textbf{69\%} & \textbf{57\%} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Backend code coverage measured with JaCoCo}
+  \label{tab:coverage}
+\end{table}
+
+The business logic in the \code{service} package, which contains most of the decisions
+of the application, is the most thoroughly tested part. The lower coverage of the
+\code{security} package is explained by the fact that the controller tests deliberately
+disable the security filters to test the web layer in isolation; the authentication
+filter is exercised by the integration test instead.
+
+\screenshot{backend-tests}{Gradle test report of the backend test suite}{fig:backend-tests}{0.9}
+
+\section{Frontend Tests}
+
+Frontend tests are written with Vitest, which shares its configuration with Vite, and run
+in a simulated browser environment (jsdom).
+
+\subsubsection*{API Client Tests}
+
+Each module of the \code{api} directory has a test file in which the shared Axios
+instance is replaced by a mock (\code{vi.mock('./api')}). The tests verify that every
+function calls the correct HTTP method and URL, encodes the query parameters correctly
+(for example, that \code{getPosts} omits \code{categoryId} when it is not given), sends
+the expected request body, and returns the data of the response. These tests guard the
+contract between the frontend and the REST API described in Section~\ref{sec:architecture}.
+
+\subsubsection*{Page, Hook and Component Tests}
+
+Components are rendered with React Testing Library and tested from the user's
+perspective, by finding elements by their label or text and simulating user input.
+Table~\ref{tab:fe-tests} lists the covered components.
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabularx}{\textwidth}{@{}l X@{}}
+    \toprule
+    \textbf{Component} & \textbf{Tests covered} \\
+    \midrule
+    \code{LoginPage} & Renders inputs; validation errors on empty submit; calls the login API on valid input; shows an error on failed login \\
+    \code{RegisterPage} & Renders fields; minimum length error for short passwords; calls the register API on valid input \\
+    \code{ForgotPasswordPage} & Renders input; success message after submit; error on failure \\
+    \code{ResetPasswordPage} & Invalid link without token; rejects mismatched and short passwords; submits valid token and password \\
+    \code{SearchPage} & Prompt for empty query; calls search and shows the result count; no-results state \\
+    \code{BadgesPage} & Fetches and renders badges; empty badge list \\
+    \code{LeaderboardPage} & Loading state; renders heading and users \\
+    \code{ProtectedRoute} & Redirects unauthenticated users to \route{/login}; renders children with a token \\
+    \code{useAuth} & Default state; login stores the token; logout clears the storage \\
+    \code{usePostUpdates} & No connection without category or token; subscribes on connect; dispatches created, updated and deleted events; deactivates on unmount \\
+    \code{useCommentUpdates} & No connection without post or token; refreshes when a frame arrives; deactivates on unmount \\
+    \code{Button}, \code{utils} & Variants and class name merging \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Frontend page, hook and component test coverage}
+  \label{tab:fe-tests}
+\end{table}
+
+The WebSocket hooks are tested by mocking the STOMP client: the tests capture the
+\code{onConnect} callback, invoke it manually, deliver fake message frames, and assert
+that the hook subscribes to the right destination, forwards the events, and deactivates
+the client when the component unmounts. In total the frontend suite contains 100 tests in
+27 files, and all of them pass.
+
+\screenshot{frontend-tests}{Vitest output of the frontend test suite}{fig:frontend-tests}{0.9}
+
+\section{Manual Testing}
+
+After each development phase, the complete application was started locally and the main
+user flows were tested manually: the backend endpoints with \code{curl}, and the user
+interface in the browser. The manual tests focused on aspects that are hard to automate:
+
+\begin{itemize}
+  \item real-time behaviour with two browsers logged in as different users (live comments,
+    live post lists, chat delivery and unread counters);
+  \item the role-dependent user interface for Student, Professor and Admin accounts;
+  \item the responsive layout on narrow screens using the browser's device emulation;
+  \item the dark and light themes on every page;
+  \item file uploads and downloads of different types and sizes, including the 50~MB
+    limit;
+  \item the password reset e-mail and link, and the delivery of notification e-mails.
+\end{itemize}
+
+Errors found during manual testing were fixed before the corresponding change was
+committed to the repository.

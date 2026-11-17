@@ -1,0 +1,45 @@
+\begin{tikzpicture}[
+    node distance=0.35cm,
+    c/.style={comp, minimum width=3.4cm},
+  ]
+  % ---------- Browser column ----------
+  \node[c, fill=tcblue] (pages) {React pages \& components};
+  \node[c, fill=tcblue, below=of pages] (ctx) {Auth / Theme / UI context};
+  \node[c, fill=tcblue, below=of ctx] (rq) {TanStack Query cache};
+  \node[c, fill=tcblue, below=of rq] (axios) {Axios API client\\\scriptsize (JWT interceptor)};
+  \node[c, fill=tcblue, below=of axios] (stompc) {STOMP client\\\scriptsize (SockJS)};
+  \node[c, fill=tcblue, below=of stompc] (ls) {localStorage\\\scriptsize (token, theme)};
+  \begin{scope}[on background layer]
+    \node[layerbox, fill=tcblue!35, fit=(pages)(ls), label={[font=\small\bfseries]above:Browser (React SPA)}] (L1) {};
+  \end{scope}
+
+  % ---------- Server column ----------
+  \node[c, fill=tcorangelight, right=2.3cm of pages] (filter) {Spring Security filter chain\\\scriptsize JwtAuthFilter};
+  \node[c, fill=tcorangelight, below=of filter] (ctrl) {REST controllers\\\scriptsize @PreAuthorize, @Valid};
+  \node[c, fill=tcorangelight, below=of ctrl] (svc) {Services\\\scriptsize business logic};
+  \node[c, fill=tcorangelight, below=of svc] (repo) {Spring Data JPA\\\scriptsize repositories};
+  \node[c, fill=tcorangelight, below=of repo] (broker) {STOMP broker\\\scriptsize /ws, WebSocketAuthInterceptor};
+  \node[c, fill=tcorangelight, below=of broker] (sched) {Scheduler\\\scriptsize daily e-mail digest};
+  \begin{scope}[on background layer]
+    \node[layerbox, fill=tcorangelight!40, fit=(filter)(sched), label={[font=\small\bfseries]above:Spring Boot backend}] (L2) {};
+  \end{scope}
+
+  % ---------- Data column ----------
+  \node[c, fill=tcgreen, right=2.3cm of ctrl, minimum width=2.9cm] (pg) {PostgreSQL\\\scriptsize 20 tables};
+  \node[c, fill=tcgreen, below=1.1cm of pg, minimum width=2.9cm] (fs) {File system\\\scriptsize uploads/, avatars/};
+  \node[c, fill=tcgreen, below=1.1cm of fs, minimum width=2.9cm] (mail) {Resend API\\\scriptsize e-mail delivery};
+  \begin{scope}[on background layer]
+    \node[layerbox, fill=tcgreen!40, fit=(pg)(mail), label={[font=\small\bfseries]above:Data \& external services}] (L3) {};
+  \end{scope}
+
+  % ---------- Arrows ----------
+  \draw[arrow] (axios.east) -- node[lbl, above, sloped]{HTTPS / JSON} (filter.west);
+  \draw[darrow] (stompc.east) -- node[lbl, below, sloped]{WebSocket / STOMP} (broker.west);
+  \draw[arrow] (filter) -- (ctrl);
+  \draw[arrow] (ctrl) -- (svc);
+  \draw[arrow] (svc) -- (repo);
+  \draw[arrow] (repo.east) -- node[lbl, below, sloped, pos=0.35]{JDBC} (pg.west);
+  \draw[arrow] (svc.east) -- node[lbl, above, sloped, pos=0.7]{files} (fs.west);
+  \draw[arrow] (sched.east) -- node[lbl, below, sloped]{HTTPS} (mail.west);
+  \draw[arrow] (svc.south west) to[bend right=35] node[lbl, left]{publish} (broker.north west);
+\end{tikzpicture}

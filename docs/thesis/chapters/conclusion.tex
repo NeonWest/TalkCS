@@ -1,0 +1,59 @@
+\chapter{Conclusion}
+\label{ch:conclusion}
+
+TalkCS was developed as a BSc thesis project at the Faculty of Informatics of Eötvös
+Loránd University, with the goal of giving university students a single, structured
+place for academic collaboration instead of scattered social media groups and chat
+channels. The resulting platform combines a question-and-answer forum organized by
+subjects, threaded and live-updating discussions, accepted answers, a voting and
+reputation system with levels, badges and a leaderboard, a per-subject resource library,
+global search and trending content, user profiles with following, mentions and
+notifications, real-time direct messaging, a shared academic calendar with a review
+workflow, and an administration panel for analytics, role management and configuration.
+
+The system was implemented as a three-tier application with a Spring Boot backend, a
+PostgreSQL database and a React single-page frontend. The backend exposes a documented
+REST API secured with stateless JWT authentication and role-based authorization, and a
+STOMP-over-WebSocket channel for real-time features. To prevent duplicate questions, a
+similarity detection algorithm based on the BM25 ranking function was designed and
+implemented, which combines the textual relevance of the post body with the similarity
+of titles and tags and runs while the user is still typing. The correctness of the
+backend is supported by 205 automated tests covering services, controllers, repositories
+and the full authentication flow, with 69\% instruction coverage, and the frontend is
+covered by 100 tests of its API clients, pages and hooks.
+
+\section*{Future Work}
+
+While the core functionality is complete, several directions could further improve the
+platform:
+
+\begin{itemize}
+  \item \textbf{Semantic similarity:} the lexical BM25 approach recognizes duplicates that
+    use the same terminology. Sentence embeddings produced by a language model would also
+    recognize questions that are phrased with entirely different words, and could be
+    used for smarter tag suggestions as well.
+  \item \textbf{Richer resource library:} written reviews of resources in addition to
+    votes, and organizing materials by semester or academic year.
+  \item \textbf{Moderation tools:} reporting of inappropriate content and a moderation
+    queue for professors.
+  \item \textbf{Configurable notifications:} letting users choose which notification types
+    they want to receive by e-mail, and watching individual posts.
+  \item \textbf{Branding in the interface:} applying the stored site name, tagline, colour
+    and logo throughout the user interface, so that each institution's installation
+    carries its own identity.
+  \item \textbf{Production hardening:} versioned database migrations (e.g. with Flyway)
+    instead of automatic schema updates, object storage for uploaded files, PostgreSQL
+    full-text search for large forums, and rate limiting of the
+    authentication endpoints.
+  \item \textbf{Mobile application:} because all functionality is available through the
+    REST and WebSocket API, a native mobile client could be built on the existing backend
+    without server-side changes.
+\end{itemize}
+
+Building TalkCS provided extensive hands-on experience with the full life cycle of a web
+application: designing a relational data model, building a secure layered backend with
+Spring, implementing real-time communication, developing a modern TypeScript frontend,
+applying a classical information retrieval algorithm to a practical problem, and testing
+the system at several levels. The project demonstrates that a feature-rich and practical
+academic platform can be delivered by a single developer within the timeframe of a
+thesis, and it provides a solid foundation that a university could deploy and extend.

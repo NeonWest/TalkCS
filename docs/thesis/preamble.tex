@@ -1,0 +1,162 @@
+% ---------------------------------------------------------------------
+%  Packages
+% ---------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,inner=3cm,outer=2.5cm,headheight=15pt]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\setlength{\emergencystretch}{3em}
+
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage[shortlabels]{enumitem}
+\usepackage[table,dvipsnames]{xcolor}
+\usepackage{pdfpages}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{xurl}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,shapes.multipart,fit,backgrounds,calc,shadows}
+\usepackage[hidelinks,backref=page]{hyperref}
+
+% ---------------------------------------------------------------------
+%  Colours used throughout (TalkCS orange accent)
+% ---------------------------------------------------------------------
+\definecolor{tcorange}{HTML}{F97316}
+\definecolor{tcorangelight}{HTML}{FFEDD5}
+\definecolor{tcdark}{HTML}{1F2937}
+\definecolor{tcgray}{HTML}{6B7280}
+\definecolor{tclight}{HTML}{F3F4F6}
+\definecolor{tcblue}{HTML}{DBEAFE}
+\definecolor{tcbluedark}{HTML}{1D4ED8}
+\definecolor{tcgreen}{HTML}{DCFCE7}
+\definecolor{tcgreendark}{HTML}{15803D}
+\definecolor{tcpurple}{HTML}{EDE9FE}
+\definecolor{codebg}{HTML}{F7F7F7}
+
+% ---------------------------------------------------------------------
+%  Headers / footers  (header: "N. Chapter title", footer: page number)
+% ---------------------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
+\fancyhead[C]{\small\textit{\leftmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+% ---------------------------------------------------------------------
+%  Chapter heading style
+% ---------------------------------------------------------------------
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries}
+  {\Large\chaptertitlename\ \thechapter}
+  {12pt}
+  {\huge}
+\titlespacing*{\chapter}{0pt}{0pt}{30pt}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+% ---------------------------------------------------------------------
+%  Bibliography back-references: "(cit. on p. X)"
+% ---------------------------------------------------------------------
+\renewcommand*{\backref}[1]{}
+\renewcommand*{\backrefalt}[4]{%
+  \ifcase #1 %
+  \or (cit. on p.~#2).%
+  \else (cit. on pp.~#2).%
+  \fi}
+
+% ---------------------------------------------------------------------
+%  Code listings ("Code 2.1")
+% ---------------------------------------------------------------------
+\renewcommand{\lstlistingname}{Code}
+\renewcommand{\lstlistlistingname}{List of Codes}
+\lstdefinelanguage{TypeScript}{
+  keywords={const,let,var,function,return,if,else,for,while,import,export,from,default,async,await,new,class,interface,type,extends,implements,true,false,null,undefined,try,catch,finally},
+  sensitive=true,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  morestring=[b]`
+}
+\lstdefinelanguage{Properties}{
+  comment=[l]{\#},
+  morestring=[b]"
+}
+\lstset{
+  basicstyle=\ttfamily\footnotesize\setstretch{1.0},
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{black!20},
+  numbers=left,
+  numberstyle=\tiny\color{tcgray},
+  numbersep=8pt,
+  xleftmargin=1.6em,
+  framexleftmargin=1.4em,
+  keywordstyle=\color{tcbluedark}\bfseries,
+  commentstyle=\color{tcgreendark}\itshape,
+  stringstyle=\color{BrickRed},
+  showstringspaces=false,
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  tabsize=2,
+  captionpos=b,
+  aboveskip=1em,
+  belowskip=1em,
+  literate={→}{{$\rightarrow$}}1 {—}{{---}}1 {✓}{{\checkmark}}1
+}
+
+% ---------------------------------------------------------------------
+%  Helpers
+% ---------------------------------------------------------------------
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\ui}[1]{\textbf{#1}}          % UI element names (buttons, tabs)
+\newcommand{\route}[1]{\texttt{#1}}       % URL routes
+
+% Screenshot helper: includes figures/screenshots/<file>.png if present,
+% otherwise draws a clearly marked placeholder so the document still builds.
+% Usage: \screenshot{file-name}{Caption text}{fig:label}{width-fraction}
+\newcommand{\screenshot}[4]{%
+  \begin{figure}[H]
+    \centering
+    \IfFileExists{figures/screenshots/#1.png}{%
+      \includegraphics[width=#4\textwidth]{figures/screenshots/#1.png}%
+    }{%
+      \fbox{\begin{minipage}[c][0.40\textwidth][c]{\dimexpr#4\textwidth-2\fboxsep-2\fboxrule\relax}
+        \centering\color{tcgray}
+        \textbf{Screenshot placeholder}\\[0.5em]
+        \texttt{figures/screenshots/\detokenize{#1}.png}\\[0.5em]
+        \small #2
+      \end{minipage}}%
+    }
+    \caption{#2}
+    \label{#3}
+  \end{figure}%
+}
+
+% TikZ styles shared by diagrams
+\tikzset{
+  layerbox/.style={draw=black!40, rounded corners=4pt, thick, inner sep=8pt},
+  comp/.style={draw=black!55, rounded corners=2pt, fill=white, minimum width=3.0cm, minimum height=0.75cm, font=\footnotesize, align=center},
+  arrow/.style={-{Stealth[length=2.2mm]}, thick, black!70},
+  darrow/.style={{Stealth[length=2.2mm]}-{Stealth[length=2.2mm]}, thick, black!70},
+  lbl/.style={font=\scriptsize, fill=white, inner sep=1.5pt},
+}

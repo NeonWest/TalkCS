@@ -1,0 +1,19 @@
+# LaTeX build files
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.out
+*.toc
+*.lof
+*.lot
+*.lol
+*.bbl
+*.blg
+*.brf
+*.synctex.gz
+
+# Personal data: the registration form contains the Neptun code,
+# and the compiled PDF embeds the form.
+topic_registration_form.pdf
+main.pdf

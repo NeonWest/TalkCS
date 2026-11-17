@@ -1,0 +1,53 @@
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    uc/.style={ellipse, draw=black!65, minimum width=4.4cm, minimum height=0.75cm, font=\scriptsize, inner sep=0.5pt, align=center},
+    ucs/.style={uc, fill=tcblue!70},
+    ucp/.style={uc, fill=tcgreen!90},
+    uca/.style={uc, fill=tcorangelight},
+    assoc/.style={black!50},
+    gen/.style={-{Triangle[open, length=3mm, width=3mm]}, thick},
+  ]
+  \newcommand{\stick}[3]{%
+    \begin{scope}[shift={(#1)}]
+      \draw[thick, fill=white] (0,0.55) circle (0.22);
+      \draw[thick] (0,0.33) -- (0,-0.35);
+      \draw[thick] (-0.35,0.12) -- (0.35,0.12);
+      \draw[thick] (0,-0.35) -- (-0.28,-0.85);
+      \draw[thick] (0,-0.35) -- (0.28,-0.85);
+      \node[font=\small\bfseries, fill=white, inner sep=1pt] at (0,-1.15) {#3};
+      \coordinate (#2-l) at (-0.4,0.1);
+      \coordinate (#2-r) at (0.4,0.1);
+      \coordinate (#2-top) at (0,0.8);
+      \coordinate (#2-bot) at (0,-1.4);
+    \end{scope}}
+
+  % ---------------- Student ----------------
+  \foreach \i/\t in {0/Register and log in, 1/Reset password, 2/Create post with tags, 3/Comment and reply, 4/Vote on content, 5/Accept an answer, 6/Bookmark posts}
+    \node[ucs] (sl\i) at (2.4, -\i*0.95) {\t};
+  \foreach \i/\t in {0/Upload and download resources, 1/Search, 2/View profiles and leaderboard, 3/Follow users, 4/Chat with users, 5/Manage private events, 6/Propose public event}
+    \node[ucs] (sr\i) at (11.6, -\i*0.95) {\t};
+  \stick{7,-2.85}{S}{Student}
+  \foreach \i in {0,...,6} { \draw[assoc] (S-l) -- (sl\i.east); \draw[assoc] (S-r) -- (sr\i.west); }
+
+  % ---------------- Professor ----------------
+  \foreach \i/\t in {0/Create and edit categories, 1/Publish public events}
+    \node[ucp] (pl\i) at (2.4, -8.3-\i*0.95) {\t};
+  \foreach \i/\t in {0/Review event proposals, 1/Delete any resource}
+    \node[ucp] (pr\i) at (11.6, -8.3-\i*0.95) {\t};
+  \stick{7,-8.85}{P}{Professor}
+  \foreach \i in {0,1} { \draw[assoc] (P-l) -- (pl\i.east); \draw[assoc] (P-r) -- (pr\i.west); }
+
+  % ---------------- Admin ----------------
+  \foreach \i/\t in {0/View analytics, 1/Manage users and roles, 2/Configure branding}
+    \node[uca] (al\i) at (2.4, -12.1-\i*0.95) {\t};
+  \foreach \i/\t in {0/Archive and restore categories, 1/Delete any post or comment}
+    \node[uca] (ar\i) at (11.6, -12.1-\i*0.95) {\t};
+  \stick{7,-13.05}{A}{Admin}
+  \foreach \i in {0,1,2} { \draw[assoc] (A-l) -- (al\i.east); }
+  \foreach \i in {0,1} { \draw[assoc] (A-r) -- (ar\i.west); }
+
+  % generalization: Professor -> Student, Admin -> Professor
+  \draw[gen] (P-top) -- (S-bot);
+  \draw[gen] (A-top) -- (P-bot);
+
+\end{tikzpicture}}

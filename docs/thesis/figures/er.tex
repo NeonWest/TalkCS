@@ -1,0 +1,97 @@
+% Entity-relationship diagram, drawn in two parts for readability.
+\tikzset{
+  entity/.style={rectangle split, rectangle split parts=2, draw=black!70, thick,
+    rectangle split part fill={tcorange!85, white}, text width=3.1cm,
+    font=\scriptsize\linespread{1.0}\selectfont, anchor=north, inner sep=3pt,
+    rectangle split part align={center, left}},
+  fk/.style={-{Stealth[length=2mm]}, thick, black!70, rounded corners=3pt},
+  ufk/.style={-{Stealth[length=2mm]}, thick, tcbluedark!70, rounded corners=3pt},
+}
+\newcommand{\ent}[3]{\textbf{\textcolor{white}{#1}}\nodepart{two}#2}
+\newcommand{\pk}[1]{\underline{#1}\ \textcolor{tcorange}{\tiny PK}}
+\newcommand{\fkk}[1]{#1\ \textcolor{tcbluedark}{\tiny FK}}
+
+\begin{subfigure}{\textwidth}
+\centering
+\resizebox{0.95\textwidth}{!}{%
+\begin{tikzpicture}
+  % Row 1
+  \node[entity] (bm) at (1.7,0) {\ent{bookmarks}{\pk{id}\\\fkk{user\_id}\\\fkk{post\_id}\\created\_at}{}};
+  \node[entity] (us) at (7.55,0) {\ent{users}{\pk{id}\\username \textcolor{tcgray}{\tiny U}\\email \textcolor{tcgray}{\tiny U}\\password (BCrypt)\\role\\reputation\\bio, avatar\_url\\created\_at}{}};
+  \node[entity] (cr) at (13.4,0) {\ent{category\_reputations}{\pk{id}\\\fkk{user\_id}\\\fkk{category\_id}\\reputation}{}};
+  % Row 2
+  \node[entity] (po) at (1.7,-4.3) {\ent{posts}{\pk{id}\\title, body\\status\\\fkk{user\_id}\\\fkk{category\_id}\\\fkk{accepted\_answer\_id}\\created\_at}{}};
+  \node[entity] (co) at (5.6,-4.3) {\ent{comments}{\pk{id}\\body\\\fkk{user\_id}\\\fkk{post\_id}\\\fkk{parent\_id}\\created\_at}{}};
+  \node[entity] (vo) at (9.5,-4.3) {\ent{votes}{\pk{id}\\value ($\pm 1$)\\\fkk{user\_id}\\\fkk{post\_id}\\\fkk{comment\_id}\\\fkk{resource\_id}}{}};
+  \node[entity] (re) at (13.4,-4.3) {\ent{resources}{\pk{id}\\title, description\\file\_name, file\_type\\file\_size, file\_path\\\fkk{user\_id}\\\fkk{category\_id}\\created\_at}{}};
+  % Row 3
+  \node[entity] (pt) at (1.7,-9.2) {\ent{post\_tags}{\fkk{\pk{post\_id}}\\\fkk{\pk{tag\_id}}}{}};
+  \node[entity] (ta) at (5.6,-9.2) {\ent{tags}{\pk{id}\\name \textcolor{tcgray}{\tiny U}}{}};
+  \node[entity] (ca) at (13.4,-9.2) {\ent{categories}{\pk{id}\\name \textcolor{tcgray}{\tiny U}\\description\\archived}{}};
+
+  % references to users (blue)
+  \draw[ufk] (bm.east |- 0,-0.9) -- (us.west |- 0,-0.9);
+  \draw[ufk] (cr.west |- 0,-0.9) -- (us.east |- 0,-0.9);
+  \draw[ufk] (po.north) -- (po.north |- 0,-3.6) -| ([xshift=-1.2cm]us.south);
+  \draw[ufk] (co.north) -- ([xshift=-0.4cm]us.south);
+  \draw[ufk] (vo.north) -- ([xshift=0.4cm]us.south);
+  \draw[ufk] (re.north) -- (re.north |- 0,-3.6) -| ([xshift=1.2cm]us.south);
+  % other references
+  \draw[fk] (bm.south) -- (po.north -| bm.south) ;
+  \draw[fk] (co.west |- 0,-5.4) -- (po.east |- 0,-5.4);
+  \draw[fk] (po.east |- 0,-6.2) -- (co.west |- 0,-6.2);
+  \draw[fk] (vo.west |- 0,-5.6) -- (co.east |- 0,-5.6);
+  \draw[fk] (vo.east |- 0,-5.6) -- (re.west |- 0,-5.6);
+  \draw[fk] (vo.south) -- ++(0,-0.55) -| ([xshift=0.6cm]po.south);
+  \draw[fk] ([xshift=-0.6cm]pt.north) -- ([xshift=-0.6cm]po.south);
+  \draw[fk] (pt.east |- 0,-9.75) -- (ta.west |- 0,-9.75);
+  \draw[fk] (re.south) -- (ca.north);
+  \draw[fk] (po.south) -- ++(0,-0.85) -| ([xshift=-0.8cm]ca.north);
+  \draw[fk] (cr.east) -- ++(0.45,0) |- (ca.east);
+  % self reference of comments
+  \draw[fk] ([xshift=1.0cm]co.south) -- ++(0,-0.35) -- ++(0.65,0) |- ([yshift=-0.9cm]co.east);
+  \node[font=\tiny, anchor=west] at ([xshift=1.0cm, yshift=-0.25cm]co.south) {parent};
+\end{tikzpicture}}
+\caption{Forum content: users, categories, posts, comments, tags, votes and resources}
+\label{fig:er-a}
+\end{subfigure}
+
+\vspace{0.3cm}
+
+\begin{subfigure}{\textwidth}
+\centering
+\resizebox{0.86\textwidth}{!}{%
+\begin{tikzpicture}
+  % Row 1
+  \node[entity] (fo) at (1.7,0) {\ent{follows}{\pk{id}\\\fkk{follower\_id}\\\fkk{following\_id}\\created\_at}{}};
+  \node[entity] (no) at (5.6,0) {\ent{notifications}{\pk{id}\\\fkk{recipient\_id}\\type, message\\link, is\_read\\created\_at}{}};
+  \node[entity] (pr) at (9.5,0) {\ent{password\_reset\_tokens}{\pk{id}\\token \textcolor{tcgray}{\tiny U}\\\fkk{user\_id}\\expires\_at, used}{}};
+  \node[entity] (sc) at (13.4,0) {\ent{site\_config}{\pk{id} (=1)\\site\_name, site\_tagline\\primary\_color, logo\_url}{}};
+  % Row 2
+  \node[entity] (cc) at (1.7,-3.6) {\ent{chat\_conversations}{\pk{id}\\\fkk{user\_a\_id}\\\fkk{user\_b\_id}\\last\_message\_at}{}};
+  \node[entity] (us) at (7.55,-3.6) {\ent{users}{\pk{id}\\username, email, \dots}{}};
+  \node[entity] (ub) at (13.4,-3.6) {\ent{user\_badges}{\pk{id}\\\fkk{user\_id}\\\fkk{badge\_id}\\awarded\_at}{}};
+  % Row 3
+  \node[entity] (cm) at (1.7,-7.0) {\ent{chat\_messages}{\pk{id}\\\fkk{conversation\_id}\\\fkk{sender\_id}\\\fkk{recipient\_id}\\content, sent\_at\\is\_read}{}};
+  \node[entity] (ce) at (5.6,-7.0) {\ent{calendar\_events}{\pk{id}\\title, description\\start\_date, end\_date\\event\_type, is\_public\\\fkk{category\_id}\\\fkk{created\_by\_id}}{}};
+  \node[entity] (cp) at (9.5,-7.0) {\ent{calendar\_event\_proposals}{\pk{id}\\title, description, dates\\event\_type, status\\admin\_note\\\fkk{category\_id}\\\fkk{submitted\_by\_id}}{}};
+  \node[entity] (ba) at (13.4,-7.0) {\ent{badges}{\pk{id}\\name \textcolor{tcgray}{\tiny U}\\description, icon\_key\\type}{}};
+  % Row 4
+  \node[entity] (ca) at (7.55,-11.0) {\ent{categories}{\pk{id}\\name, \dots}{}};
+
+  \draw[ufk] (fo.south) -- (fo.south |- 0,-2.9) -| ([xshift=-1.0cm]us.north);
+  \draw[ufk] (no.south) -- (no.south |- 0,-3.2) -| ([xshift=-0.3cm]us.north);
+  \draw[ufk] (pr.south) -- (pr.south |- 0,-3.2) -| ([xshift=0.3cm]us.north);
+  \draw[ufk] (cc.east |- 0,-4.3) -- (us.west |- 0,-4.3);
+  \draw[ufk] (ub.west |- 0,-4.3) -- (us.east |- 0,-4.3);
+  \draw[ufk] (cm.east |- 0,-8.2) -- ++(0.25,0) |- ([yshift=-0.2cm]us.west |- 0,-4.65) -- (us.west |- 0,-4.65);
+  \draw[ufk] (ce.north) -- ([xshift=-0.5cm]us.south);
+  \draw[ufk] (cp.north) -- ([xshift=0.5cm]us.south);
+  \draw[fk] (cm.north) -- (cc.south);
+  \draw[fk] (ub.south) -- (ba.north);
+  \draw[fk] (ce.south) -- (ce.south |- 0,-10.4) -| ([xshift=-0.5cm]ca.north);
+  \draw[fk] (cp.south) -- (cp.south |- 0,-10.4) -| ([xshift=0.5cm]ca.north);
+\end{tikzpicture}}
+\caption{Community and system: following, notifications, chat, badges, calendar, configuration}
+\label{fig:er-b}
+\end{subfigure}

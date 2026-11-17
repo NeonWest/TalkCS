@@ -1,0 +1,214 @@
+\subsection{Tables and Schema}
+\label{sec:tables}
+
+This section describes every table of the database. Column names follow Hibernate's
+default naming strategy, which converts the camel-case field names of the entities to
+snake case. \textbf{PK} marks primary keys, \textbf{FK} foreign keys, and \textbf{U}
+unique columns or column groups.
+
+\newcommand{\dbtable}[3]{%
+  \begin{table}[H]
+    \centering\small
+    \begin{tabularx}{\textwidth}{@{}p{0.29\textwidth} p{0.17\textwidth} X@{}}
+      \toprule
+      \textbf{Column} & \textbf{Type} & \textbf{Description} \\
+      \midrule
+      #3
+      \bottomrule
+    \end{tabularx}
+    \caption{The \texttt{#2} table}
+    \label{tab:db-#1}
+  \end{table}}
+
+\subsubsection*{Users and Authentication}
+
+\dbtable{users}{users}{
+  id (PK) & bigint & Identifier of the user \\
+  username & varchar & Unique display name, used for mentions and profile URLs \\
+  email & varchar & Unique e-mail address, used for login and as JWT subject \\
+  password & varchar & BCrypt hash of the password \\
+  role & varchar & \code{STUDENT}, \code{PROFESSOR} or \code{ADMIN} \\
+  reputation & integer & Total reputation (default 0) \\
+  email\_notifications\_enabled & boolean & Whether e-mails are sent (default true) \\
+  bio & text & Short self-description \\
+  avatar\_url & varchar & Stored file name of the avatar image \\
+  created\_at & timestamp & Time of registration \\
+}
+
+\dbtable{password_reset_tokens}{password\_reset\_tokens}{
+  id (PK) & bigint & Identifier \\
+  token (U) & varchar & Random UUID sent in the reset link \\
+  user\_id (FK) & bigint & User who requested the reset \\
+  expires\_at & timestamp & Expiry time (one hour after creation) \\
+  used & boolean & Whether the token has already been used \\
+}
+
+\subsubsection*{Forum Content}
+
+\dbtable{categories}{categories}{
+  id (PK) & bigint & Identifier \\
+  name (U) & varchar & Name of the subject or course \\
+  description & varchar & Short description \\
+  archived & boolean & Soft-deletion flag (default false) \\
+  created\_at & timestamp & Creation time \\
+}
+
+\dbtable{posts}{posts}{
+  id (PK) & bigint & Identifier \\
+  title & varchar & Title of the question or discussion \\
+  body & text & Markdown content \\
+  user\_id (FK) & bigint & Author \\
+  category\_id (FK) & bigint & Category of the post \\
+  status & varchar & \code{OPEN}, \code{SOLVED} or \code{CLOSED} (default \code{OPEN}) \\
+  accepted\_answer\_id (FK) & bigint & Accepted comment, if any \\
+  created\_at & timestamp & Creation time \\
+}
+
+\dbtable{comments}{comments}{
+  id (PK) & bigint & Identifier \\
+  body & text & Markdown content \\
+  user\_id (FK) & bigint & Author \\
+  post\_id (FK) & bigint & Post the comment belongs to \\
+  parent\_id (FK) & bigint & Parent comment for replies; \code{NULL} for root comments \\
+  created\_at & timestamp & Creation time \\
+}
+
+\dbtable{tags}{tags}{
+  id (PK) & bigint & Identifier \\
+  name (U) & varchar & Normalized (lower-case) tag name \\
+}
+
+\dbtable{post_tags}{post\_tags}{
+  post\_id (PK, FK) & bigint & Tagged post \\
+  tag\_id (PK, FK) & bigint & Tag \\
+}
+
+\dbtable{resources}{resources}{
+  id (PK) & bigint & Identifier \\
+  title & varchar & Title given by the uploader \\
+  description & varchar & Optional description \\
+  file\_name & varchar & Original file name \\
+  file\_type & varchar & MIME type \\
+  file\_size & bigint & Size in bytes \\
+  file\_path & varchar & Storage path on the server \\
+  user\_id (FK) & bigint & Uploader \\
+  category\_id (FK) & bigint & Category of the resource \\
+  created\_at & timestamp & Upload time \\
+}
+
+\subsubsection*{Voting, Reputation and Badges}
+
+\dbtable{votes}{votes}{
+  id (PK) & bigint & Identifier \\
+  value & integer & $+1$ (up-vote) or $-1$ (down-vote) \\
+  user\_id (FK) & bigint & Voter \\
+  post\_id (FK) & bigint & Voted post, or \code{NULL} \\
+  comment\_id (FK) & bigint & Voted comment, or \code{NULL} \\
+  resource\_id (FK) & bigint & Voted resource, or \code{NULL} (cascade on delete) \\
+  created\_at & timestamp & Time of the vote \\
+  \multicolumn{3}{@{}l}{\textit{U: (user\_id, post\_id), (user\_id, comment\_id), (user\_id, resource\_id)}} \\
+}
+
+\dbtable{category_reputations}{category\_reputations}{
+  id (PK) & bigint & Identifier \\
+  user\_id (FK) & bigint & User \\
+  category\_id (FK) & bigint & Category \\
+  reputation & integer & Reputation of the user within the category \\
+  \multicolumn{3}{@{}l}{\textit{U: (user\_id, category\_id)}} \\
+}
+
+\dbtable{badges}{badges}{
+  id (PK) & bigint & Identifier \\
+  name (U) & varchar & Name of the badge, e.g. \emph{Rising Star} \\
+  description & varchar & What the badge is awarded for \\
+  icon\_key & varchar & Key selecting the icon in the frontend \\
+  type & varchar & \code{MILESTONE} or \code{SPECIAL} \\
+}
+
+\dbtable{user_badges}{user\_badges}{
+  id (PK) & bigint & Identifier \\
+  user\_id (FK) & bigint & User who earned the badge \\
+  badge\_id (FK) & bigint & Earned badge \\
+  awarded\_at & timestamp & Time of the award \\
+  \multicolumn{3}{@{}l}{\textit{U: (user\_id, badge\_id)}} \\
+}
+
+\subsubsection*{Social Features}
+
+\dbtable{follows}{follows}{
+  id (PK) & bigint & Identifier \\
+  follower\_id (FK) & bigint & User who follows \\
+  following\_id (FK) & bigint & User who is followed \\
+  created\_at & timestamp & Time of following \\
+  \multicolumn{3}{@{}l}{\textit{U: (follower\_id, following\_id)}} \\
+}
+
+\dbtable{bookmarks}{bookmarks}{
+  id (PK) & bigint & Identifier \\
+  user\_id (FK) & bigint & User \\
+  post\_id (FK) & bigint & Bookmarked post \\
+  created\_at & timestamp & Time of bookmarking \\
+  \multicolumn{3}{@{}l}{\textit{U: (user\_id, post\_id)}} \\
+}
+
+\dbtable{notifications}{notifications}{
+  id (PK) & bigint & Identifier \\
+  recipient\_id (FK) & bigint & Notified user \\
+  type & varchar & \code{MENTION}, \code{REPLY}, \code{VOTE\_MILESTONE}, \code{ACCEPTED\_ANSWER} or \code{FOLLOW} \\
+  message & varchar & Text shown to the user \\
+  link & varchar & Relative URL of the related page \\
+  is\_read & boolean & Whether the notification has been read \\
+  created\_at & timestamp & Creation time \\
+}
+
+\dbtable{chat_conversations}{chat\_conversations}{
+  id (PK) & bigint & Identifier \\
+  user\_a\_id (FK) & bigint & Participant with the smaller ID \\
+  user\_b\_id (FK) & bigint & Participant with the larger ID \\
+  last\_message\_at & timestamp & Time of the last message, used for ordering \\
+  \multicolumn{3}{@{}l}{\textit{U: (user\_a\_id, user\_b\_id)}} \\
+}
+
+\dbtable{chat_messages}{chat\_messages}{
+  id (PK) & bigint & Identifier \\
+  conversation\_id (FK) & bigint & Conversation \\
+  sender\_id (FK) & bigint & Sender \\
+  recipient\_id (FK) & bigint & Recipient \\
+  content & text & Message text \\
+  sent\_at & timestamp & Time of sending \\
+  is\_read & boolean & Whether the recipient has read the message \\
+}
+
+\subsubsection*{Calendar and Configuration}
+
+\dbtable{calendar_events}{calendar\_events}{
+  id (PK) & bigint & Identifier \\
+  title & varchar & Title \\
+  description & varchar & Optional description \\
+  start\_date, end\_date & date & First and last day of the event \\
+  event\_type & varchar & \code{EXAM}, \code{DEADLINE}, \code{LECTURE} or \code{OTHER} \\
+  category\_id (FK) & bigint & Optional related category \\
+  created\_by\_id (FK) & bigint & Creator \\
+  is\_public & boolean & Visible to everyone (true) or only to the creator (false) \\
+  created\_at & timestamp & Creation time \\
+}
+
+\dbtable{calendar_event_proposals}{calendar\_event\_proposals}{
+  id (PK) & bigint & Identifier \\
+  title, description & varchar & Proposed title and description \\
+  start\_date, end\_date & date & Proposed dates \\
+  event\_type & varchar & Proposed event type \\
+  category\_id (FK) & bigint & Optional related category \\
+  submitted\_by\_id (FK) & bigint & Proposing user \\
+  status & varchar & \code{PENDING}, \code{APPROVED} or \code{REJECTED} \\
+  admin\_note & varchar & Optional note of the reviewer \\
+  created\_at & timestamp & Submission time \\
+}
+
+\dbtable{site_config}{site\_config}{
+  id (PK) & bigint & Always 1 (single-row table) \\
+  site\_name & varchar & Name of the installation (default \emph{TalkCS}) \\
+  site\_tagline & varchar & Tagline (default \emph{University Forum Platform}) \\
+  primary\_color & varchar & Primary colour (default \code{\#f97316}) \\
+  logo\_url & varchar & URL of a custom logo \\
+}

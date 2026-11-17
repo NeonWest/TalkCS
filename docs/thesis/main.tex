@@ -1,0 +1,79 @@
+% =====================================================================
+%  TalkCS: Academic Forum System -- BSc Thesis
+%  Eötvös Loránd University, Faculty of Informatics
+%
+%  Build:  pdflatex main  ->  bibtex main  ->  pdflatex main  ->  pdflatex main
+%          (or simply: latexmk -pdf main.tex)   -- works on Overleaf as-is
+% =====================================================================
+\documentclass[12pt,a4paper,oneside]{report}
+
+% ---------------------------------------------------------------------
+%  >>> FILL THESE IN <<<
+% ---------------------------------------------------------------------
+\newcommand{\thesistitle}{TalkCS: Academic Forum System}
+\newcommand{\authorname}{Omar Atakishiyev}
+\newcommand{\authorprogramme}{Computer Science BSc}
+\newcommand{\supervisorname}{Dr. Dávid Szabó}
+\newcommand{\supervisortitle}{Assistant Professor, PhD}
+\newcommand{\departmentname}{Department of Media and Educational Technology}
+\newcommand{\thesisyear}{2026}
+% The signed Thesis Topic Registration Form (PDF) -- put it next to main.tex
+\newcommand{\topicformfile}{topic_registration_form.pdf}
+% ---------------------------------------------------------------------
+
+\input{preamble}
+
+\begin{document}
+
+\input{titlepage}
+
+% Thesis topic registration form (included automatically if the PDF exists)
+\IfFileExists{\topicformfile}{%
+  \includepdf[pages=-]{\topicformfile}%
+}{%
+  \thispagestyle{empty}
+  \begin{center}
+    \vspace*{6cm}
+    {\large\color{red} Insert the signed Thesis Topic Registration Form here.}\\[1em]
+    Save it as \texttt{\detokenize\expandafter{\topicformfile}} next to \texttt{main.tex};\\
+    it will replace this page automatically.
+  \end{center}
+  \clearpage
+}
+
+\pagenumbering{arabic}
+\tableofcontents
+\cleardoublepage
+
+\input{chapters/introduction}
+\input{chapters/userdoc}
+\input{chapters/devdoc}
+\input{chapters/testing}
+\input{chapters/conclusion}
+
+\input{chapters/acknowledgements}
+
+% Bibliography
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{unsrt}
+\bibliography{references}
+
+% Lists
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Codes}
+\lstlistoflistings
+
+\end{document}

@@ -1,0 +1,24 @@
+\begin{tikzpicture}[
+    actor/.style={draw=black!60, fill=tclight, rounded corners=2pt, minimum width=2.3cm, minimum height=0.7cm, font=\footnotesize\bfseries},
+    msg/.style={-{Stealth[length=2mm]}, thick},
+    ret/.style={-{Stealth[length=2mm]}, dashed, black!70},
+    m/.style={font=\scriptsize, above, midway},
+    note/.style={draw=black!60, fill=tcorangelight, font=\scriptsize, align=center, inner sep=2pt},
+  ]
+  \def\H{-8.6}
+  \foreach \x/\n/\t in {0/a/Alice (browser), 3.25/i/Interceptor, 6.5/b/STOMP broker, 9.75/s/ChatService, 13/z/Bob (browser)} {
+    \node[actor] (\n) at (\x,0) {\t};
+    \draw[black!35, dashed] (\x,-0.35) -- (\x,\H);
+  }
+  \draw[msg] (0,-1.0) -- node[m]{CONNECT + JWT} (3.25,-1.0);
+  \node[note, anchor=west] at (3.4,-1.55) {validate token, set principal};
+  \draw[msg] (0,-2.2) -- node[m]{SUBSCRIBE own topic} (3.25,-2.2);
+  \node[note, anchor=west] at (3.4,-2.75) {topic ID = own ID? allow};
+  \draw[msg] (13,-3.4) -- node[m]{CONNECT, SUBSCRIBE own topic} (6.5,-3.4);
+  \draw[msg] (0,-4.2) -- node[m]{SEND /app/chat.send \{conversationId, content\}} (9.75,-4.2);
+  \node[note, anchor=east] at (9.6,-4.8) {check membership, save ChatMessage};
+  \draw[msg] (9.75,-5.5) -- node[m]{send to /topic/user/\{Bob\}/messages} (6.5,-5.5);
+  \draw[msg] (9.75,-6.15) -- node[m]{send to /topic/user/\{Alice\}/messages} (6.5,-6.15);
+  \draw[ret] (6.5,-6.95) -- node[m]{MESSAGE} (13,-6.95);
+  \draw[ret] (6.5,-7.6) -- node[m]{MESSAGE (echo to sender)} (0,-7.6);
+\end{tikzpicture}

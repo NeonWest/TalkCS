@@ -1,0 +1,41 @@
+\begin{titlepage}
+  \pagenumbering{gobble}
+  \noindent\begin{minipage}[c]{0.30\textwidth}
+    \centering
+    % Put the official ELTE crest as figures/elte_logo.png (or .pdf)
+    \IfFileExists{figures/elte_logo.png}{\includegraphics[width=0.85\linewidth]{figures/elte_logo.png}}{%
+    \IfFileExists{figures/elte_logo.pdf}{\includegraphics[width=0.85\linewidth]{figures/elte_logo.pdf}}{%
+      \tikz\draw[black!30,dashed] (0,0) circle (1.9cm) node[text=black!40,font=\scriptsize,align=center]{ELTE crest\\(figures/elte\_logo.png)};}}
+  \end{minipage}%
+  \begin{minipage}[c]{0.68\textwidth}
+    \centering
+    {\Large\scshape Eötvös Loránd University}\\[1.2em]
+    {\large\scshape Faculty of Informatics}\\[1.2em]
+    {\scshape \departmentname}
+  \end{minipage}
+
+  \vspace{4.5cm}
+  \begin{center}
+    {\LARGE\bfseries \thesistitle\par}
+  \end{center}
+
+  \vspace{4cm}
+  \noindent
+  \begin{minipage}[t]{0.5\textwidth}
+    \textit{Supervisor:}\\[0.4em]
+    \supervisorname\\
+    {\small \supervisortitle}
+  \end{minipage}%
+  \begin{minipage}[t]{0.5\textwidth}
+    \hfill\begin{tabular}[t]{@{}l@{}}
+    \textit{Author:}\\[0.4em]
+    \authorname\\
+    {\small \authorprogramme}
+    \end{tabular}
+  \end{minipage}
+
+  \vfill
+  \begin{center}
+    \textit{Budapest, \thesisyear}
+  \end{center}
+\end{titlepage}

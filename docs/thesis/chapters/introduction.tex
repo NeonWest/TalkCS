@@ -1,0 +1,69 @@
+\chapter{Introduction}
+\label{ch:introduction}
+
+University students constantly need to ask questions, share study materials, and
+coordinate around exams and deadlines. In practice, most of this communication is
+scattered across social media groups and instant messaging channels that were never
+designed for academic collaboration. Answers to the same question are posted again
+and again, valuable explanations sink to the bottom of a chat history within hours,
+course materials are shared as loose attachments that are hard to find later, and
+there is no way to tell a reliable answer from a guess. As a result, knowledge that
+one cohort of students has already worked out is rarely available to the next one.
+
+\emph{TalkCS} is a web-based academic forum platform that addresses this problem. It
+gives a university a single, structured place where students can ask and answer
+questions, upload and rate course resources, follow each other, chat in real time,
+and keep track of important academic dates. Discussions are organized into
+categories that correspond to courses or subjects, every post can be tagged and
+searched, and a voting and reputation system rewards helpful contributions so that
+the best answers rise to the top. The platform is designed to be deployed by an
+institution and customized to its needs: administrators manage categories, user
+roles and branding, and can monitor the activity of the community through a simple
+analytics dashboard.
+
+The system is built as a classic three-tier web application. The backend is a
+REST and WebSocket API implemented in Java with the Spring Boot framework~\cite{springboot},
+secured with Spring Security~\cite{springsecurity} and stateless JSON Web Tokens~\cite{jwt},
+and stores its data in a PostgreSQL~\cite{postgresql} relational database. The frontend is a
+single-page application written in TypeScript~\cite{typescript} with React~\cite{react}, built with
+Vite~\cite{vite} and styled with Tailwind CSS~\cite{tailwind}. Real-time features (live comment
+threads and direct messaging) use the STOMP protocol over WebSocket connections~\cite{stomp}.
+
+The main features of TalkCS are:
+
+\begin{itemize}
+  \item \textbf{Question-and-answer discussions:} Users publish posts with Markdown
+    formatting and syntax-highlighted code blocks into subject categories, attach up to
+    five tags, and receive automatic tag suggestions based on the text they write.
+  \item \textbf{Duplicate question detection:} While a user is typing a new post, the
+    system searches the selected category for similar existing posts using a ranking
+    algorithm that combines the BM25 relevance function~\cite{bm25} with title and tag
+    similarity, and warns the user before a duplicate is created.
+  \item \textbf{Threaded comments and accepted answers:} Posts can be answered with
+    arbitrarily nested comments. The author of a question can accept one answer, which
+    marks the question as \emph{solved}.
+  \item \textbf{Voting, reputation and gamification:} Posts, comments and resources can
+    be up- or down-voted. Votes and accepted answers change the reputation of the
+    author, which determines the user's level, the leaderboard position, and a set of
+    milestone and subject-expertise badges.
+  \item \textbf{Resource library:} Each category has a dedicated library where users
+    upload, download and vote on course materials independently of the discussions.
+  \item \textbf{Social features:} User profiles, a follow system, \code{@username}
+    mentions, bookmarks, in-app notifications, and a daily e-mail digest.
+  \item \textbf{Real-time direct messaging} between any two users of the platform.
+  \item \textbf{Shared academic calendar:} Users keep private events and propose public
+    ones (exams, deadlines, lectures), which professors or administrators review.
+  \item \textbf{Administration:} Usage analytics, user and role management, category
+    management with archiving, and branding configuration.
+  \item \textbf{Comfortable user experience:} Global search, trending posts and
+    resources, a responsive layout for mobile devices, and dark and light themes.
+\end{itemize}
+
+The rest of this thesis is organized as follows. Chapter~\ref{ch:userdoc} is the user
+documentation: it describes the system requirements, the installation process, and
+walks through every feature of the application from the point of view of its users.
+Chapter~\ref{ch:devdoc} is the developer documentation, covering the architecture,
+the database design, the structure of the backend and frontend code, and the most
+interesting implementation details. Chapter~\ref{ch:testing} presents the testing
+strategy and its results, and Chapter~\ref{ch:conclusion} summarizes the work and
+outlines possible future improvements.

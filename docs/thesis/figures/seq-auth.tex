@@ -1,0 +1,36 @@
+\begin{tikzpicture}[
+    actor/.style={draw=black!60, fill=tclight, rounded corners=2pt, minimum width=2.3cm, minimum height=0.7cm, font=\footnotesize\bfseries},
+    msg/.style={-{Stealth[length=2mm]}, thick},
+    ret/.style={-{Stealth[length=2mm]}, dashed, black!70},
+    m/.style={font=\scriptsize, above, midway},
+    note/.style={draw=black!60, fill=tcorangelight, font=\scriptsize, align=center, inner sep=2pt},
+    phase/.style={font=\scriptsize\bfseries\itshape, text=tcgray, anchor=west},
+  ]
+  \def\H{-12.3}
+  \foreach \x/\n/\t in {0/u/Browser, 3.25/f/JwtAuthFilter, 6.5/c/Controller, 9.75/s/Service, 13/d/Database} {
+    \node[actor] (\n) at (\x,0) {\t};
+    \draw[black!35, dashed] (\x,-0.35) -- (\x,\H);
+  }
+  % ---- Login ----
+  \node[phase] at (-1.4,-0.75) {1. Login};
+  \draw[msg] (0,-1.3) -- node[m]{POST /api/auth/login} (3.25,-1.3);
+  \draw[msg] (3.25,-1.85) -- node[m]{no token: pass on} (6.5,-1.85);
+  \draw[msg] (6.5,-2.4) -- node[m]{login(request)} (9.75,-2.4);
+  \draw[msg] (9.75,-2.95) -- node[m]{findByEmail} (13,-2.95);
+  \draw[ret] (13,-3.5) -- node[m]{User} (9.75,-3.5);
+  \node[note, anchor=west] at (9.9,-4.15) {BCrypt match,\\generate JWT};
+  \draw[ret] (9.75,-4.9) -- node[m]{AuthResponse} (6.5,-4.9);
+  \draw[ret] (6.5,-5.45) -- node[m]{200 OK \{token, user\}} (0,-5.45);
+  \node[note, anchor=west] at (0.15,-6.0) {store token in localStorage};
+  % ---- Authenticated request ----
+  \node[phase] at (-1.4,-6.75) {2. Authenticated request};
+  \draw[msg] (0,-7.3) -- node[m]{GET /api/users/me + Bearer} (3.25,-7.3);
+  \node[note, anchor=west] at (3.4,-7.9) {verify signature and expiry};
+  \draw[msg] (3.25,-8.55) -- node[m]{loadUserByUsername(email)} (13,-8.55);
+  \draw[ret] (13,-9.1) -- node[m]{UserDetails + role} (3.25,-9.1);
+  \draw[msg] (3.25,-9.65) -- node[m]{SecurityContext set} (6.5,-9.65);
+  \draw[msg] (6.5,-10.2) -- node[m]{getCurrentUserProfile()} (9.75,-10.2);
+  \draw[ret] (9.75,-10.75) -- node[m]{UserResponse} (6.5,-10.75);
+  \draw[ret] (6.5,-11.3) -- node[m]{200 OK (JSON)} (0,-11.3);
+  \draw[ret, BrickRed] (3.25,-11.95) -- node[m, text=BrickRed]{invalid token: 401} (0,-11.95);
+\end{tikzpicture}
