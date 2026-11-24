@@ -369,7 +369,7 @@ invalid field. After a successful registration you are logged in automatically a
 redirected to the home page. If the username or the e-mail address is already taken,
 an error message is shown at the top of the form.
 
-\screenshot{register}{Registration page}{fig:register}{0.85}
+\screenshot{register}{Registration page}{fig:register}{0.6}
 
 \subsubsection*{Login}
 
@@ -378,7 +378,7 @@ address and password, and click \ui{Sign in}. On success you are redirected to
 the home page. Your session remains valid for 24 hours; after it expires, you are
 returned to the login page automatically.
 
-\screenshot{login}{Login page}{fig:login}{0.85}
+\screenshot{login}{Login page}{fig:login}{0.6}
 
 \subsubsection*{Password Recovery}
 
@@ -393,7 +393,7 @@ The link is valid for one hour and can be used only once. It opens the
 must be at least 8 characters long and both fields must match. After the password has
 been changed, you are redirected to the login page.
 
-\screenshot{forgot-password}{Password recovery: requesting a reset link}{fig:forgot}{0.85}
+\screenshot{forgot-password}{Password recovery: requesting a reset link}{fig:forgot}{0.6}
 
 \subsection{Navigation and the Home Page}
 
@@ -475,7 +475,7 @@ When the form is complete, click \ui{Post} to publish the discussion, or
 \ui{Discard} to close the dialog. Users mentioned in the content with
 \code{@username} receive a notification (see Section~\ref{sec:guide-notifications}).
 
-\screenshot{composer}{Post composer with tag suggestions and the similar posts warning}{fig:composer}{0.9}
+\screenshot{composer}{Post composer with tag suggestions and the similar posts warning}{fig:composer}{1.0}
 
 \subsection{Reading and Answering a Post}
 
@@ -553,7 +553,7 @@ or description contains it) and \ui{Users} (whose username contains it). The sea
 case-insensitive. If nothing matches, the message \emph{``No results found.''} is
 displayed.
 
-\screenshot{search}{Search results grouped into posts, categories and users}{fig:search}{0.9}
+\screenshot{search}{Search results grouped into posts, categories and users}{fig:search}{1.0}
 
 \subsection{Reputation, Levels and Badges}
 \label{sec:guide-reputation}
@@ -600,14 +600,14 @@ silver or gold expert badge of that subject (for example \emph{Algorithms Expert
 milestone badges, with the ones not yet earned greyed out, and below them the special
 achievements the user has earned.
 
-\screenshot{badges}{Badges page with milestones and special achievements}{fig:badges}{0.9}
+\screenshot{badges}{Badges page with milestones and special achievements}{fig:badges}{1.0}
 
 \subsubsection*{Leaderboard}
 
 The \ui{Leaderboard} (\route{/leaderboard}) ranks the twenty users with the highest
 reputation and shows their level and reputation.
 
-\screenshot{leaderboard}{Leaderboard of the top users}{fig:leaderboard}{0.85}
+\screenshot{leaderboard}{Leaderboard of the top users}{fig:leaderboard}{1.0}
 
 \subsection{Profiles and Following}
 
@@ -648,7 +648,7 @@ every weekday at 8:00 the server sends a \emph{Daily Digest} e-mail that lists a
 notifications you received in the last 24 hours and have not read yet. If you have no
 unread notifications, no digest is sent.
 
-\screenshot{notifications}{Notification bell with the list of notifications}{fig:notifications}{0.7}
+\screenshot[!htb]{notifications}{Notification bell with the list of notifications}{fig:notifications}{0.6}
 
 \subsection{Direct Messaging}
 
@@ -728,7 +728,7 @@ the default. The sun/moon button in the navigation bar switches the theme instan
 across the whole application, including the Markdown editor, and the choice is
 remembered by the browser for later visits.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
   \centering
   \IfFileExists{figures/screenshots/theme-dark.png}{%
     \begin{subfigure}{\textwidth}\includegraphics[width=\linewidth]{figures/screenshots/theme-dark.png}\caption{Dark mode}\end{subfigure}\\[1em]

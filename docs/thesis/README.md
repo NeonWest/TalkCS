@@ -3,6 +3,7 @@
 ## Build
 - **Overleaf:** upload the zip as a new project and click Recompile (pdfLaTeX, BibTeX run automatically).
 - **Local:** `latexmk -pdf main.tex`  (or pdflatex → bibtex → pdflatex → pdflatex)
+- **Lightweight alternative:** `tectonic -X compile main.tex` (`brew install tectonic`, ~20 MB; downloads only the packages it needs and caches them)
 
 ## Fill in before submitting
 1. `main.tex`, lines 13–19: your surname, supervisor name and title, and department.

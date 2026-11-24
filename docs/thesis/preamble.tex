@@ -134,21 +134,22 @@
 % Screenshot helper: includes figures/screenshots/<file>.png if present,
 % otherwise draws a clearly marked placeholder so the document still builds.
 % Usage: \screenshot{file-name}{Caption text}{fig:label}{width-fraction}
-\newcommand{\screenshot}[4]{%
-  \begin{figure}[H]
+% Optional first argument: float placement (default htbp).
+\newcommand{\screenshot}[5][htbp]{%
+  \begin{figure}[#1]
     \centering
-    \IfFileExists{figures/screenshots/#1.png}{%
-      \includegraphics[width=#4\textwidth]{figures/screenshots/#1.png}%
+    \IfFileExists{figures/screenshots/#2.png}{%
+      \includegraphics[width=#5\textwidth]{figures/screenshots/#2.png}%
     }{%
-      \fbox{\begin{minipage}[c][0.40\textwidth][c]{\dimexpr#4\textwidth-2\fboxsep-2\fboxrule\relax}
+      \fbox{\begin{minipage}[c][0.40\textwidth][c]{\dimexpr#5\textwidth-2\fboxsep-2\fboxrule\relax}
         \centering\color{tcgray}
         \textbf{Screenshot placeholder}\\[0.5em]
-        \texttt{figures/screenshots/\detokenize{#1}.png}\\[0.5em]
-        \small #2
+        \texttt{figures/screenshots/\detokenize{#2}.png}\\[0.5em]
+        \small #3
       \end{minipage}}%
     }
-    \caption{#2}
-    \label{#3}
+    \caption{#3}
+    \label{#4}
   \end{figure}%
 }
 
