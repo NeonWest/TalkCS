@@ -74,7 +74,7 @@ export default function ProfilePage() {
                                 <div className="flex-shrink-0">
                                     {profile.avatarUrl ? (
                                         <img
-                                            src={`http://localhost:8080${profile.avatarUrl}`}
+                                            src={`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}${profile.avatarUrl}`}
                                             alt={profile.username}
                                             className="w-16 h-16 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-primary/30"
                                         />
